@@ -40,6 +40,8 @@
         background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
     }
 
+    .hidden { display: none !important; }
+
     .icon-btn {
         width: 40px; height: 40px;
         border-radius: 50%;
@@ -290,32 +292,57 @@ let dataAll = [];
 
 // توليد فصول وهمية عشان نبين "الفخامة"
 // دالة عرض الفصول الحقيقية
+// دالة عرض الفصول (هنخليها تعرض "قريباً" أو تخفي القسم لو مفيش فصول)
 function renderChapters(manga) {
     const chaptersContainer = document.getElementById('chapters-list');
+    const chaptersSection = document.querySelector('.chapters-section');
     
-    // هنجيب عدد الفصول من الداتا الحقيقية، ولو مش موجود هنخليه 0
-    const realChaptersCount = manga.chapters_count || 0; 
-    document.getElementById('chapters-count').innerText = realChaptersCount;
-    
-    if (realChaptersCount === 0) {
-        chaptersContainer.innerHTML = '<p style="text-align:center; color: var(--text-muted); padding: 20px;">لا توجد فصول متاحة حالياً.</p>';
+    // لو مبعتنش عدد فصول من البوت، هنخفي القسم عشان الفخامة متضربش
+    if (!manga.chapters_count) {
+        chaptersSection.classList.add('hidden'); 
         return;
     }
 
     let html = '';
-    // اللوب ده هيعمل كروت على قد العدد الحقيقي
-    for(let i = realChaptersCount; i >= 1; i--) {
+    for(let i = manga.chapters_count; i >= 1; i--) {
         html += `
             <div class="chapter-card" onclick="openChapter(${manga.id}, ${i})">
-                <div>
-                    <div class="chap-num">الفصل ${i}</div>
-                    <div class="chap-date">متوفر الآن</div>
-                </div>
+                <div><div class="chap-num">الفصل ${i}</div><div class="chap-date">متوفر</div></div>
                 <div class="play-icon"><i class="fas fa-play"></i></div>
-            </div>
-        `;
+            </div>`;
     }
     chaptersContainer.innerHTML = html;
+}
+
+async function init(){
+    try {
+        const res = await fetch('data.json');
+        const data = await res.json();
+        const m = data.mangas.find(x => x.id == (new URLSearchParams(location.search).get('id') || data.mangas[0].id));
+
+        if(!m) return;
+
+        document.getElementById('bg').src = m.image_url;
+        document.getElementById('poster').src = m.image_url;
+        document.getElementById('title').innerText = m.title;
+        document.getElementById('desc').innerText = m.description;
+
+        // إخفاء إحصائيات المشاهدات والفصول لأنها مش موجودة في الداتا بيز
+        document.querySelector('.quick-stats').classList.add('hidden');
+
+        // التصنيفات
+        if(m.genre) {
+            let parts = m.genre.includes('•') ? m.genre.split('•') : m.genre.split(',');
+            document.getElementById('genres').innerHTML = parts.map(g => `<span class="tag">${g.trim()}</span>`).join('');
+        }
+
+        setupInteractiveRating(parseFloat(m.rating) || 0);
+        renderChapters(m);
+
+        document.getElementById('readBtn').onclick = () => {
+            window.location.href = `https://t.me/${data.bot_username}?start=m${m.id}`;
+        };
+    } catch (e) { console.log(e); }
 }
 
 // نظام التقييم التفاعلي
