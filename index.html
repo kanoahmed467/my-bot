@@ -73,6 +73,7 @@ header{
     grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
     gap:12px;
     padding:12px;
+    overflow:visible;
 }
 
 /* CARD */
@@ -95,10 +96,20 @@ header{
         transform:translateY(0);
     }
 }
+
 .card:hover{
     transform:scale(1.08);
-    z-index:20;
-    box-shadow:0 20px 40px rgba(0,0,0,0.7);
+    z-index:50; /* مهم */
+}
+
+
+.grid:hover .card:not(:hover){
+    filter: blur(2px) brightness(0.7);
+    transition:0.3s;
+}
+
+.filters button.active{
+    background:var(--primary);
 }
 
 /* IMAGE */
@@ -240,6 +251,14 @@ header{
     padding:40px;
     color:var(--primary);
 }
+
+@media (hover: none) {
+    .overlay {
+        opacity: 1;
+        background: linear-gradient(to top, rgba(0,0,0,0.9), transparent 70%);
+    }
+}
+
 </style>
 </head>
 
@@ -345,11 +364,12 @@ function search(q){
 }
 
 function filter(type){
-    if(type==='all') return render(dataAll);
+    document.querySelectorAll('.filters button').forEach(b=>b.classList.remove('active'));
+    event.target.classList.add('active');
 
+    if(type==='all') return render(dataAll);
     render(dataAll.filter(m=>m.status.includes(type)));
 }
-
 init();
 </script>
 
