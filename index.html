@@ -259,13 +259,58 @@ header{
     }
 }
 
+/* 🔥 Search Container */
+.search-box{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:#12121a;
+    padding:10px 12px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,0.05);
+    transition:0.3s;
+    position:relative;
+}
+
+/* Glow */
+.search-box:focus-within{
+    border-color:var(--primary);
+    box-shadow:0 0 15px rgba(139,92,246,0.4);
+    transform:scale(1.02);
+}
+
+/* Icon */
+.search-box .icon{
+    font-size:14px;
+    color:#aaa;
+}
+
+/* Input */
+.search-box input{
+    flex:1;
+    background:transparent;
+    border:none;
+    outline:none;
+    color:#fff;
+    font-family:'Cairo';
+    font-size:13px;
+}
+
+/* Placeholder */
+.search-box input::placeholder{
+    color:#777;
+}
+
 </style>
 </head>
 
 <body>
 
 <header>
-<input class="search" placeholder="🔍 ابحث..." onkeyup="search(this.value)">
+<div class="search-box">
+    <span class="icon">🔍</span>
+    <input type="text" placeholder="ابحث عن مانجا..." onkeyup="search(this.value)">
+</div>
 </header>
 
 <div class="filters">
