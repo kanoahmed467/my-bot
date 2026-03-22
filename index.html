@@ -327,6 +327,54 @@ header{
     caret-color:#8b5cf6;
 }
 
+/* زر المسح */
+.clear-btn{
+    font-size:13px;
+    cursor:pointer;
+    color:#888;
+    display:none;
+}
+.clear-btn:hover{
+    color:#fff;
+}
+
+/* Dropdown */
+.search-results{
+    margin-top:5px;
+    background:#12121a;
+    border-radius:12px;
+    overflow:hidden;
+    max-height:250px;
+    overflow-y:auto;
+    display:none;
+    border:1px solid rgba(255,255,255,0.05);
+    animation:fadeIn 0.2s ease;
+}
+
+
+@keyframes fadeIn{
+    from{opacity:0; transform:translateY(-10px)}
+    to{opacity:1; transform:translateY(0)}
+}
+/* كل نتيجة */
+.result-item{
+    padding:10px;
+    font-size:13px;
+    cursor:pointer;
+    border-bottom:1px solid rgba(255,255,255,0.05);
+    transition:0.2s;
+}
+
+.result-item:hover{
+    background:rgba(139,92,246,0.2);
+}
+
+/* highlight */
+.highlight{
+    color:#8b5cf6;
+    font-weight:bold;
+}
+
 </style>
 </head>
 
@@ -336,10 +384,17 @@ header{
 <div class="search-wrap">
     <div class="search-box">
         <svg class="icon" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 1 0 14 15.5l.27.28v.79L20 21.5 21.5 20l-6-6zM10 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
+            <path fill="currentColor"
+            d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 1 0 14 15.5l.27.28v.79L20 21.5 21.5 20l-6-6zM10 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
         </svg>
-        <input type="text" placeholder="ابحث عن عمل..." onkeyup="search(this.value)">
+
+        <input id="searchInput" type="text" placeholder="ابحث عن مانجا...">
+
+        <span class="clear-btn" onclick="clearSearch()">✖</span>
     </div>
+
+    <div id="searchResults" class="search-results"></div>
+</div>
 </div>
 </header>
 
@@ -446,6 +501,64 @@ function filter(type){
     render(dataAll.filter(m=>m.status.includes(type)));
 }
 init();
+
+const input = document.getElementById('searchInput');
+const resultsBox = document.getElementById('searchResults');
+const clearBtn = document.querySelector('.clear-btn');
+
+input.addEventListener('input', () => {
+    let q = input.value.toLowerCase();
+
+    // زر المسح
+    clearBtn.style.display = q ? 'block' : 'none';
+
+    if(!q){
+        resultsBox.style.display = 'none';
+        render(dataAll);
+        return;
+    }
+
+    let filtered = dataAll.filter(m =>
+        m.title.toLowerCase().includes(q)
+    );
+
+    render(filtered);
+    showResults(filtered, q);
+});
+
+function showResults(arr, q){
+    if(arr.length === 0){
+        resultsBox.innerHTML = `<div class="result-item">مفيش نتائج</div>`;
+        resultsBox.style.display = 'block';
+        return;
+    }
+
+    resultsBox.innerHTML = arr.slice(0,5).map(m=>{
+        let title = m.title.replace(
+            new RegExp(q, 'gi'),
+            match => `<span class="highlight">${match}</span>`
+        );
+
+        return `
+        <div class="result-item" onclick="goTo(${m.id})">
+            ${title}
+        </div>
+        `;
+    }).join('');
+
+    resultsBox.style.display = 'block';
+}
+
+function goTo(id){
+    window.location.href = `details.html?id=${id}`;
+}
+
+function clearSearch(){
+    input.value = '';
+    resultsBox.style.display = 'none';
+    clearBtn.style.display = 'none';
+    render(dataAll);
+}
 </script>
 
 </body>
