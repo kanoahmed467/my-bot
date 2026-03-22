@@ -3,480 +3,411 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تفاصيل العمل | إحصائياتي ستايل</title>
-    
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
-        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+    <title>تفاصيل العمل والإحصائيات</title>
 
-        body.stats-body {
-            background-color: #0f141e;
-            color: #ffffff;
-            font-family: 'Cairo', sans-serif;
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            /* الألوان من تصميمك الخاص */
+            --bg-main: #0f141e;
+            --bg-card: #1e1b24;
+            --border: #2d2433;
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            
+            /* ألوان الإحصائيات */
+            --accent-red: #f43f5e;
+            --accent-purple: #a855f7;
+            --accent-orange: #f97316;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+        }
+
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
         }
 
-        .stats-container {
-            padding: 20px;
-            max-width: 600px;
-            margin: 0 auto;
-            padding-bottom: 80px;
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            overflow-x: hidden;
         }
 
-        /* شريط التنقل العلوي البسيط */
+        /* النافذة العلوية */
         .top-nav {
+            position: fixed;
+            top: 0; width: 100%;
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(15, 20, 30, 0.9), transparent);
         }
-        .nav-btn {
-            background-color: #1a2235;
-            border: 1px solid #2d3748;
-            color: #e2e8f0;
+
+        .icon-btn {
             width: 40px; height: 40px;
-            border-radius: 12px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: white;
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
-            text-decoration: none;
+            font-size: 18px; cursor: pointer;
+            transition: 0.3s;
+        }
+        .icon-btn:hover { background: var(--accent-purple); border-color: var(--accent-purple); }
+
+        /* البانر والبوستر */
+        .hero-banner {
+            position: relative;
+            height: 35vh;
+            width: 100%;
+            background: url('https://i.pinimg.com/originals/e5/bd/69/e5bd69c13b341f22d4f21051fa871bfa.jpg') center/cover;
+        }
+        .hero-banner::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(0deg, var(--bg-main) 0%, rgba(15,20,30,0.5) 100%);
+            backdrop-filter: blur(3px);
         }
 
-        .page-title {
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+            margin-top: -80px;
+            padding: 0 20px 40px;
+            max-width: 800px;
+            margin-inline: auto;
+        }
+
+        .meta-header {
+            display: flex;
+            gap: 20px;
+            align-items: flex-end;
+            margin-bottom: 25px;
+        }
+
+        .poster-container {
+            width: 130px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid var(--border);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            background: var(--bg-card);
+        }
+        .poster-container img { width: 100%; display: block; }
+
+        .meta-info h1 {
             font-size: 24px;
-            font-weight: 700;
-            margin: 0;
+            font-weight: 800;
+            margin-bottom: 5px;
         }
 
-        .section-title {
+        .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .tag {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 12px; font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        /* نظام التبويبات (Tabs) نفس اللي بالصورة */
+        .tabs-header {
+            display: flex;
+            justify-content: space-around;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+            background: var(--bg-main);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            padding-top: 10px;
+        }
+        
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
             font-size: 16px;
             font-weight: 700;
-            margin: 20px 0 10px 0;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+        .tab-btn.active { color: var(--text-main); }
+        .tab-btn.active::after {
+            content: ''; position: absolute; bottom: -1px; left: 0; width: 100%;
+            height: 3px; background: var(--text-main); border-radius: 3px 3px 0 0;
         }
 
-        /* كارت المعلومات الأساسية (نفس ستايل الكروت) */
-        .info-card {
-            background-color: #1a2235;
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* البطاقات العامة للتابات */
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 15px;
-            display: flex;
-            gap: 15px;
+            padding: 20px;
             margin-bottom: 20px;
-            border: 1px solid #2d3748;
         }
 
-        .info-poster {
-            width: 90px;
-            border-radius: 8px;
-            object-fit: cover;
-            background-color: #1e1b24;
-        }
+        .section-title { font-size: 18px; font-weight: 800; margin-bottom: 15px; text-align: center; }
+        .desc-text { color: var(--text-muted); line-height: 1.8; font-size: 14px; }
 
-        .info-details {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+        /* ستايل قائمة الفصول */
+        .chapter-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            padding: 15px; border-radius: 10px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
         }
+        .chap-num { font-weight: 700; font-size: 15px; }
+        .chap-date { font-size: 12px; color: var(--text-muted); }
 
-        .info-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin: 0 0 5px 0;
-            color: #f1f5f9;
-        }
-
-        .info-author {
-            font-size: 13px;
-            color: #94a3b8;
+        /* --- تخصيص الإحصائيات (Stats) --- */
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
             margin-bottom: 10px;
         }
 
-        /* كارت الإحصائيات العلوية (نسخ لصق من الإحصائيات) */
-        .top-stats-card {
-            background-color: #1e1b24;
-            border: 1px solid #2d2433;
-            border-radius: 12px;
+        /* كاستم ليجند للدائرة (نفس الصورة) */
+        .doughnut-wrapper {
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            padding: 20px 10px;
-            margin-bottom: 20px;
+            gap: 20px;
+        }
+        .doughnut-container { width: 50%; height: 200px; position: relative; }
+        
+        .custom-legend { width: 50%; display: flex; flex-direction: column; gap: 10px; }
+        .legend-item { display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 600; }
+        .legend-color-box { display: flex; align-items: center; gap: 8px; color: var(--text-main); }
+        .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+        @media (max-width: 600px) {
+            .doughnut-wrapper { flex-direction: column; }
+            .doughnut-container { width: 100%; }
+            .custom-legend { width: 100%; }
         }
 
-        .stat-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .divider { width: 1px; background-color: #333; }
-        .stat-value { font-size: 22px; font-weight: 700; margin-bottom: 5px; }
-        .stat-label { font-size: 12px; color: #a0a0a0; }
-
-        .red-text { color: #f43f5e; }
-        .purple-text { color: #a855f7; }
-        .orange-text { color: #f97316; }
-        .blue-text { color: #3b82f6; }
-        .green-text { color: #10b981; }
-
-        /* شبكة حالة القراءة (لقائمتي) */
-        .reading-status-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-
-        .status-card {
-            border-radius: 10px;
-            padding: 15px 5px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #1a202c;
-            border: 1px solid #2d3748;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .status-card i { font-size: 18px; margin-bottom: 5px; }
-        .status-label { font-size: 11px; color: #cbd5e1; text-align: center;}
-
-        /* الألوان عند التفعيل (Active) */
-        .status-card.purple-card.active { border-color: #a855f7; background-color: rgba(168, 85, 247, 0.15); color: #a855f7; }
-        .status-card.orange-card.active { border-color: #f97316; background-color: rgba(249, 115, 22, 0.15); color: #f97316; }
-        .status-card.blue-card.active { border-color: #3b82f6; background-color: rgba(59, 130, 246, 0.15); color: #3b82f6; }
-        .status-card.green-card.active { border-color: #10b981; background-color: rgba(16, 185, 129, 0.15); color: #10b981; }
-
-        /* بطاقة حسب النوع (للقصة، التصنيفات، الفصول) */
-        .type-stats-card {
-            background-color: #1a2235;
-            border-radius: 12px;
-            padding: 15px 20px;
-            margin-bottom: 20px;
-        }
-
-        .type-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #2d3748;
-        }
-        .type-item:last-child { border-bottom: none; padding-bottom: 0; }
-        .type-item:first-child { padding-top: 0; }
-
-        .type-name {
-            display: flex;
-            align-items: center;
-            font-size: 14px;
-            color: #e2e8f0;
-            font-weight: 600;
-        }
-
-        .dot { width: 8px; height: 8px; border-radius: 50%; margin-left: 10px; }
-        .red-dot { background-color: #f43f5e; }
-        .blue-dot { background-color: #3b82f6; }
-        .yellow-dot { background-color: #eab308; }
-        .green-dot { background-color: #10b981; }
-
-        .type-value { color: #94a3b8; font-size: 14px; }
-
-        /* التقييم التفاعلي داخل بطاقة */
-        .stars-container { display: flex; flex-direction: row-reverse; gap: 5px; }
-        .stars-container i { color: #2d3748; font-size: 20px; cursor: pointer; }
-        .stars-container i.active, .stars-container i:hover, .stars-container i:hover ~ i { color: #eab308; }
-
-        /* وصف القصة */
-        .story-text {
-            font-size: 13px;
-            color: #cbd5e1;
-            line-height: 1.8;
-            margin: 0;
-        }
-
-        /* قائمة الفصول التفاعلية */
-        .chapter-row {
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .chapter-row:hover { background-color: rgba(255,255,255,0.02); }
-        .chapter-read { color: #10b981 !important; }
-
-        /* زر القراءة */
-        .read-btn {
-            width: 100%;
-            background-color: #3b82f6;
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 12px;
-            font-family: 'Cairo', sans-serif;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 10px;
-            display: flex; justify-content: center; align-items: center; gap: 10px;
-        }
     </style>
 </head>
-<body class="stats-body">
+<body>
 
-    <div class="stats-container">
+<nav class="top-nav">
+    <div class="icon-btn"><i class="fas fa-arrow-right"></i></div>
+    <div class="icon-btn"><i class="fas fa-ellipsis-v"></i></div>
+</nav>
+
+<div class="hero-banner"></div>
+
+<div class="content-wrapper">
+    
+    <div class="meta-header">
+        <div class="poster-container">
+            <img src="https://i.pinimg.com/originals/e5/bd/69/e5bd69c13b341f22d4f21051fa871bfa.jpg" alt="Poster">
+        </div>
+        <div class="meta-info">
+            <h1>الإمبراطور الروحي الإلهي</h1>
+            <div class="tags-container">
+                <span class="tag">أكشن</span>
+                <span class="tag">فانتازيا</span>
+                <span class="tag">مانهوا</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="tabs-header">
+        <button class="tab-btn" onclick="switchTab('details', this)">التفاصيل</button>
+        <button class="tab-btn" onclick="switchTab('chapters', this)">الفصول</button>
+        <button class="tab-btn active" onclick="switchTab('stats', this)">إحصائيات</button>
+    </div>
+
+    <div id="details" class="tab-content">
+        <div class="card">
+            <p class="desc-text">هنا يكتب وصف المانجا والقصة بالتفصيل. بطل القصة يعود بالزمن ليصحح أخطاء الماضي ويصبح أقوى إمبراطور...</p>
+        </div>
+    </div>
+
+    <div id="chapters" class="tab-content">
+        <div class="chapter-card">
+            <div><div class="chap-num">الفصل 10</div><div class="chap-date">منذ يومين</div></div>
+            <i class="fas fa-chevron-left" style="color: var(--text-muted)"></i>
+        </div>
+        <div class="chapter-card">
+            <div><div class="chap-num">الفصل 9</div><div class="chap-date">منذ أسبوع</div></div>
+            <i class="fas fa-chevron-left" style="color: var(--text-muted)"></i>
+        </div>
+    </div>
+
+    <div id="stats" class="tab-content active">
         
-        <div class="top-nav">
-            <div class="nav-btn" onclick="history.back()"><i class="fas fa-arrow-right"></i></div>
-            <h1 class="page-title">التفاصيل</h1>
-            <div class="nav-btn" onclick="share()"><i class="fas fa-share-alt"></i></div>
-        </div>
-
-        <div class="info-card">
-            <img id="poster" src="" alt="Poster" class="info-poster">
-            <div class="info-details">
-                <h2 id="title" class="info-title">جاري التحميل...</h2>
-                <span class="info-author" id="status-text">مستمر</span>
-                <span class="info-author" id="type-text">مانجا</span>
+        <div class="card">
+            <h3 class="section-title">تصويتات</h3>
+            <div class="chart-container">
+                <canvas id="ratingsBarChart"></canvas>
             </div>
         </div>
 
-        <div class="top-stats-card">
-            <div class="stat-item">
-                <span class="stat-value blue-text" id="views-count">0</span>
-                <span class="stat-label">مشاهدة</span>
-            </div>
-            <div class="divider"></div>
-            <div class="stat-item">
-                <span class="stat-value purple-text" id="chapters-count">0</span>
-                <span class="stat-label">فصل</span>
-            </div>
-            <div class="divider"></div>
-            <div class="stat-item">
-                <span class="stat-value orange-text" id="rating-display">0.0</span>
-                <span class="stat-label">التقييم</span>
-            </div>
-        </div>
-
-        <h2 class="section-title">إضافة لقائمتي</h2>
-        <div class="reading-status-grid">
-            <div class="status-card purple-card" onclick="setStatus('planned')" id="btn-planned">
-                <i class="fas fa-bookmark"></i>
-                <span class="status-label">مخطط</span>
-            </div>
-            <div class="status-card orange-card" onclick="setStatus('paused')" id="btn-paused">
-                <i class="fas fa-pause-circle"></i>
-                <span class="status-label">متوقف</span>
-            </div>
-            <div class="status-card blue-card" onclick="setStatus('completed')" id="btn-completed">
-                <i class="fas fa-check-circle"></i>
-                <span class="status-label">مكتمل</span>
-            </div>
-            <div class="status-card green-card" onclick="setStatus('reading')" id="btn-reading">
-                <i class="fas fa-book-reader"></i>
-                <span class="status-label">قيد القراءة</span>
-            </div>
-        </div>
-
-        <button class="read-btn" id="readBtn">
-            <i class="fas fa-book-open"></i> ابدأ القراءة الآن
-        </button>
-
-        <h2 class="section-title">معلومات إضافية</h2>
-        <div class="type-stats-card">
-            <div class="type-item">
-                <div class="type-name"><span class="dot yellow-dot"></span> تقييمي الشخصي</div>
-                <div class="stars-container" id="my-rating-stars">
+        <div class="card">
+            <div class="doughnut-wrapper">
+                <div class="doughnut-container">
+                    <canvas id="statusDoughnutChart"></canvas>
+                </div>
+                <div class="custom-legend">
+                    <div class="legend-item">
+                        <div class="legend-color-box"><span class="legend-dot" style="background:#3b82f6;"></span> المانجا المفضلة:</div>
+                        <span>1152</span>
                     </div>
-            </div>
-            <div class="type-item" id="genres-container">
-                <div class="type-name"><span class="dot blue-dot"></span> التصنيفات</div>
-                <div class="type-value" id="genres">...</div>
+                    <div class="legend-item">
+                        <div class="legend-color-box"><span class="legend-dot" style="background:#10b981;"></span> أقرأها حالياً:</div>
+                        <span>276</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color-box"><span class="legend-dot" style="background:#f43f5e;"></span> أرغب بقراءتها:</div>
+                        <span>430</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color-box"><span class="legend-dot" style="background:#a855f7;"></span> تم قراءتها:</div>
+                        <span>45</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color-box"><span class="legend-dot" style="background:#ec4899;"></span> لا أرغب بقراءتها:</div>
+                        <span>48</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <h2 class="section-title">القصة</h2>
-        <div class="type-stats-card">
-            <p class="story-text" id="desc">...</p>
-        </div>
-
-        <h2 class="section-title">الفصول</h2>
-        <div class="type-stats-card" id="chapters-list" style="max-height: 300px; overflow-y: auto;">
+        <div class="card">
+            <h3 class="section-title" style="font-size: 14px;">متوسط تقييم القصة، الشخصيات، والرسم (كل خانة = 2 نقاط)</h3>
+            <div class="chart-container" style="height: 300px;">
+                <canvas id="radarChart"></canvas>
             </div>
+        </div>
 
     </div>
 
-    <script>
-    let currentMangaData = null;
-    let myMangaStats = JSON.parse(localStorage.getItem('myMangaStats')) || {};
-    let currentMangaId = new URLSearchParams(location.search).get('id');
+</div>
 
-    // دالة لتحديث واجهة "قائمتي" (تحديد الزر النشط)
-    function updateStatusUI(status) {
-        document.getElementById('btn-planned').classList.remove('active');
-        document.getElementById('btn-paused').classList.remove('active');
-        document.getElementById('btn-completed').classList.remove('active');
-        document.getElementById('btn-reading').classList.remove('active');
-
-        if(status === 'planned') document.getElementById('btn-planned').classList.add('active');
-        else if(status === 'paused') document.getElementById('btn-paused').classList.add('active');
-        else if(status === 'completed') document.getElementById('btn-completed').classList.add('active');
-        else if(status === 'reading') document.getElementById('btn-reading').classList.add('active');
+<script>
+    // --- دالة التبديل بين التبويبات ---
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active');
     }
 
-    // دالة لحفظ حالة القراءة (مخطط، متوقف، الخ)
-    function setStatus(status) {
-        if(!currentMangaData) return;
+    // --- إعدادات Chart.js الافتراضية للتماشي مع الثيم الداكن ---
+    Chart.defaults.color = '#a0a0a0';
+    Chart.defaults.font.family = "'Cairo', sans-serif";
+    Chart.defaults.scale.grid.color = 'rgba(45, 36, 51, 0.5)'; // لون خطوط الشبكة الداكنة
+
+    window.onload = function() {
         
-        // إذا لم يكن العمل موجوداً مسبقاً في الإحصائيات، أنشئه
-        if (!myMangaStats[currentMangaId]) {
-            myMangaStats[currentMangaId] = {
-                status: 'none',
-                readChapters: [],
-                rating: 0,
-                type: currentMangaData.type || 'manga' // مهم جداً للإحصائيات
-            };
-        }
-        
-        // إذا ضغط على نفس الحالة، قم بإلغائها
-        if (myMangaStats[currentMangaId].status === status) {
-            myMangaStats[currentMangaId].status = 'none';
-            updateStatusUI('none');
-        } else {
-            myMangaStats[currentMangaId].status = status;
-            updateStatusUI(status);
-        }
-
-        // حفظ في الـ LocalStorage ليتم قراءته في صفحة الإحصائيات
-        localStorage.setItem('myMangaStats', JSON.stringify(myMangaStats));
-    }
-
-    // إعداد نجوم التقييم الشخصي
-    function setupRatingUI() {
-        let userRating = 0;
-        if (myMangaStats[currentMangaId] && myMangaStats[currentMangaId].rating) {
-            userRating = myMangaStats[currentMangaId].rating;
-        }
-
-        const container = document.getElementById('my-rating-stars');
-        let html = '';
-        for(let i = 5; i >= 1; i--) {
-            const isActive = (userRating / 2) >= i ? 'active' : ''; 
-            html += `<i class="fas fa-star ${isActive}" onclick="rateManga(${i})"></i>`;
-        }
-        container.innerHTML = html;
-    }
-
-    // حفظ التقييم الشخصي
-    function rateManga(val) {
-        if (!myMangaStats[currentMangaId]) {
-            myMangaStats[currentMangaId] = { status: 'none', readChapters: [], rating: 0, type: currentMangaData.type || 'manga' };
-        }
-        
-        let newRating = val * 2;
-        myMangaStats[currentMangaId].rating = newRating;
-        localStorage.setItem('myMangaStats', JSON.stringify(myMangaStats));
-        
-        setupRatingUI(); // تحديث شكل النجوم
-    }
-
-    // دالة لتمييز الفصل كمقروء
-    function markChapterRead(chapterNum) {
-        if (!myMangaStats[currentMangaId]) {
-            myMangaStats[currentMangaId] = { status: 'none', readChapters: [], rating: 0, type: currentMangaData.type || 'manga' };
-        }
-
-        let readArray = myMangaStats[currentMangaId].readChapters;
-        if (!readArray.includes(chapterNum)) {
-            readArray.push(chapterNum);
-            localStorage.setItem('myMangaStats', JSON.stringify(myMangaStats));
-        }
-
-        alert(`تم فتح الفصل ${chapterNum} وإضافته كـ (مقروء) للإحصائيات!`);
-        renderChapters(currentMangaData); // تحديث واجهة الفصول
-    }
-
-    // عرض قائمة الفصول
-    function renderChapters(manga) {
-        const chaptersContainer = document.getElementById('chapters-list');
-        if (!manga.chapters_count || manga.chapters_count == 0) {
-            chaptersContainer.innerHTML = '<div class="type-item"><div class="type-name">لا توجد فصول بعد</div></div>';
-            return;
-        }
-
-        let readList = [];
-        if (myMangaStats[currentMangaId]) {
-            readList = myMangaStats[currentMangaId].readChapters || [];
-        }
-
-        let html = '';
-        for(let i = manga.chapters_count; i >= 1; i--) {
-            let isRead = readList.includes(i);
-            let readTextClass = isRead ? "type-value chapter-read" : "type-value";
-            let readIcon = isRead ? '<i class="fas fa-check"></i> مقروء' : '<i class="fas fa-play"></i>';
-
-            html += `
-                <div class="type-item chapter-row" onclick="markChapterRead(${i})">
-                    <div class="type-name"><span class="dot ${isRead ? 'green-dot' : 'red-dot'}"></span> الفصل ${i}</div>
-                    <div class="${readTextClass}">${readIcon}</div>
-                </div>`;
-        }
-        chaptersContainer.innerHTML = html;
-    }
-
-    // جلب البيانات وبدء الصفحة
-    async function init() {
-        try {
-            const res = await fetch('data.json');
-            const data = await res.json();
-            
-            if (!currentMangaId) currentMangaId = data.mangas[0].id;
-            
-            currentMangaData = data.mangas.find(x => x.id == currentMangaId);
-
-            if(!currentMangaData) {
-                document.getElementById('title').innerText = "العمل غير متوفر";
-                return;
+        // 1. Bar Chart (التصويتات)
+        const ctxBar = document.getElementById('ratingsBarChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+                datasets: [{
+                    label: 'تصويتات',
+                    data: [5, 0, 0, 0, 0, 0, 2, 2, 1, 18], // الداتا من صورتك
+                    backgroundColor: '#f43f5e', // اللون الأحمر من الكود الخاص بك
+                    borderRadius: 4,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, display: false }, // إخفاء أرقام المحور الصادي ليكون شكلها أنظف
+                    x: { grid: { display: false } }
+                }
             }
+        });
 
-            // ملء البيانات في الصفحة
-            document.getElementById('poster').src = currentMangaData.image_url;
-            document.getElementById('title').innerText = currentMangaData.title;
-            document.getElementById('status-text').innerText = currentMangaData.status || 'مستمر';
-            document.getElementById('type-text').innerText = currentMangaData.type === 'manhwa' ? 'مانهوا' : (currentMangaData.type === 'manhua' ? 'مانهوا صينية' : 'مانجا');
-            
-            document.getElementById('chapters-count').innerText = currentMangaData.chapters_count || 0;
-            document.getElementById('views-count').innerText = (currentMangaData.views >= 1000) ? (currentMangaData.views/1000).toFixed(1) + 'K' : (currentMangaData.views || 0);
-            document.getElementById('rating-display').innerText = currentMangaData.rating || "0.0";
-            
-            document.getElementById('desc').innerText = currentMangaData.description || "لا يوجد وصف حالياً.";
-
-            if(currentMangaData.genre) {
-                let genreList = currentMangaData.genre.includes('•') ? currentMangaData.genre.split('•') : currentMangaData.genre.split(',');
-                document.getElementById('genres').innerText = genreList.join(' ، ');
+        // 2. Doughnut Chart (حالة القراءة)
+        const ctxDoughnut = document.getElementById('statusDoughnutChart').getContext('2d');
+        new Chart(ctxDoughnut, {
+            type: 'doughnut',
+            data: {
+                labels: ['المانجا المفضلة', 'أقرأها حالياً', 'أرغب بقراءتها', 'تم قراءتها', 'لا أرغب بقراءتها'],
+                datasets: [{
+                    data: [1152, 276, 430, 45, 48],
+                    backgroundColor: [
+                        '#3b82f6', // أزرق
+                        '#10b981', // أخضر
+                        '#f43f5e', // أحمر
+                        '#a855f7', // بنفسجي
+                        '#ec4899'  // وردي
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#1e1b24', // لون خلفية الكارد عشان يعمل فاصل بين الألوان
+                    cutout: '65%' // حجم الفراغ في النص زي الصورة
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false } // قفلنا الليجند الافتراضي عشان عملنا واحد كاستم بـ HTML
+                }
             }
+        });
 
-            // ضبط حالة العمل السابقة إن وجدت في الإحصائيات
-            if (myMangaStats[currentMangaId] && myMangaStats[currentMangaId].status) {
-                updateStatusUI(myMangaStats[currentMangaId].status);
+        // 3. Radar Chart (تقييم القصة والشخصيات والرسم)
+        const ctxRadar = document.getElementById('radarChart').getContext('2d');
+        new Chart(ctxRadar, {
+            type: 'radar',
+            data: {
+                labels: ['القصة', 'الشخصيات', 'الرسم'],
+                datasets: [{
+                    label: 'التقييم',
+                    data: [8.11, 7.93, 8.04], // الداتا من صورتك
+                    backgroundColor: 'rgba(249, 115, 22, 0.4)', // البرتقالي الشفاف
+                    borderColor: '#f97316',
+                    pointBackgroundColor: '#3b82f6', // نقط زرقاء على الحواف
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(45, 36, 51, 0.8)' },
+                        grid: { color: 'rgba(45, 36, 51, 0.8)' },
+                        pointLabels: {
+                            font: { size: 14, family: "'Cairo', sans-serif", weight: 'bold' },
+                            color: '#ffffff'
+                        },
+                        ticks: { display: false, min: 0, max: 10 } // من 0 ل 10 وإخفاء الأرقام الداخلية
+                    }
+                }
             }
+        });
+    };
+</script>
 
-            setupRatingUI();
-            renderChapters(currentMangaData);
-
-            document.getElementById('readBtn').onclick = () => {
-                window.location.href = `https://t.me/${data.bot_username}?start=m${currentMangaData.id}`;
-            };
-
-        } catch (error) {
-            console.error("خطأ:", error);
-        }
-    }
-
-    function share() {
-        if (navigator.share) navigator.share({ title: document.title, url: window.location.href });
-        else alert("تم نسخ الرابط!");
-    }
-
-    init();
-    </script>
 </body>
 </html>
