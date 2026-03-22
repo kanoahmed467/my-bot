@@ -82,11 +82,6 @@ header{
     overflow:hidden;
     transition:0.3s;
     position:relative;
-    overflow: hidden; /* مهم جداً */
-
-}
-
-.card{
     animation:fadeUp 0.4s ease;
 }
 
@@ -118,6 +113,8 @@ header{
     height: 100%;
     object-fit: cover;
     display: block;
+    transition:0.4s;
+
 }
 
 .card:hover .poster img{
@@ -141,18 +138,22 @@ header{
 
 
 
-/* overlay */
-.overlay {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden; /* يمنع التهريب */
+.overlay{
+    position:absolute;
+    inset:0;
+    background:linear-gradient(to top, rgba(0,0,0,0.95), transparent 60%);
+    opacity:0;
+    transition:0.3s;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    padding:8px;
 }
 
 .card:hover .overlay{
     opacity:1;
 }
+
 .overlay h3{
     font-size:12px;
 }
@@ -310,9 +311,13 @@ function render(arr){
 
             <img src="${m.image_url}" decoding="async">
 
-            <div class="overlay">
-    <div style="font-size:12px;font-weight:800">${m.title}</div>
-    <div style="font-size:10px;color:#aaa">${cleanGenres(m.genre).join(' • ')}</div>
+   <div class="overlay">
+    <div style="font-size:11px;font-weight:800;line-height:1.3;max-height:32px;overflow:hidden">
+        ${m.title}
+    </div>
+    <div style="font-size:9px;color:#aaa">
+        ${cleanGenres(m.genre).join(' • ')}
+    </div>
 </div>
         </div>
 
