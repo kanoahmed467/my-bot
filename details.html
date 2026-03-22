@@ -3,25 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تفاصيل العمل | إحصائيات تفاعلية</title>
+    <title>تفاصيل العمل | إحصائيات</title>
 
-    <!-- الخطوط والأيقونات ومكتبة الرسم البياني -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* دمج ستايل صفحة الإحصائيات (الألوان الداكنة والكروت) */
+        /* --- نفس التصميم الفخم المعتمد --- */
         :root {
-            --bg-main: #0f141e;      /* لون الخلفية الرئيسي من صفحة الإحصائيات */
-            --bg-card: #1e1b24;      /* لون الكروت الأساسي */
-            --bg-card-alt: #1a202c;  /* لون الكروت البديل */
-            --border-color: #2d2433; /* لون الحدود */
+            --bg-main: #0f141e;      
+            --bg-card: #1e1b24;      
+            --bg-card-alt: #1a202c;  
+            --border-color: #2d2433; 
             --border-alt: #2d3748;   
-            
             --text-main: #ffffff;
-            --text-muted: #94a3b8;   /* لون النصوص الثانوية */
-            
+            --text-muted: #94a3b8;   
             --c-red: #f43f5e;
             --c-blue: #3b82f6;
             --c-green: #10b981;
@@ -33,18 +30,8 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
         body { background-color: var(--bg-main); color: var(--text-main); overflow-x: hidden; }
 
-        /* --- الهيدر والبانر --- */
-        .top-nav {
-            position: fixed; top: 0; width: 100%; padding: 20px; display: flex;
-            justify-content: space-between; z-index: 100;
-            background: linear-gradient(to bottom, rgba(15, 20, 30, 0.9), transparent);
-        }
-        .icon-btn {
-            width: 40px; height: 40px; border-radius: 50%; background: var(--bg-card);
-            border: 1px solid var(--border-color); color: white;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 18px; cursor: pointer; transition: 0.3s;
-        }
+        .top-nav { position: fixed; top: 0; width: 100%; padding: 20px; display: flex; justify-content: space-between; z-index: 100; background: linear-gradient(to bottom, rgba(15, 20, 30, 0.9), transparent); }
+        .icon-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; transition: 0.3s; }
         .icon-btn:hover { border-color: var(--c-purple); color: var(--c-purple); }
 
         .hero-banner { position: relative; height: 45vh; width: 100%; }
@@ -53,14 +40,12 @@
 
         .content-wrapper { position: relative; z-index: 10; margin-top: -120px; padding: 0 20px 40px; max-width: 900px; margin-inline: auto; }
 
-        /* --- بيانات العمل العلوية --- */
         .meta-header { display: flex; gap: 20px; align-items: flex-end; margin-bottom: 25px; }
         .poster-container { width: 140px; border-radius: 12px; overflow: hidden; border: 2px solid var(--border-alt); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
         .poster-container img { width: 100%; display: block; }
         .meta-info { flex-grow: 1; }
         .manga-title { font-size: 28px; font-weight: 800; margin-bottom: 5px; }
         
-        /* التقييم العام */
         .overall-rating { display: inline-flex; align-items: center; gap: 8px; background: var(--bg-card); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 10px; }
         .overall-rating i { color: var(--c-orange); }
         .overall-rating span { font-weight: 800; font-size: 16px; }
@@ -68,7 +53,6 @@
         .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; }
         .tag { background: var(--bg-card-alt); border: 1px solid var(--border-alt); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--text-muted); }
 
-        /* أزرار الإجراءات */
         .action-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 30px; }
         .btn { padding: 14px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; transition: 0.3s; }
         .btn-read { background-color: var(--c-purple); color: white; }
@@ -76,7 +60,6 @@
         .btn-fav { background: var(--bg-card); border: 1px solid var(--border-color); color: white; }
         .btn-fav.active { background: rgba(244, 63, 94, 0.1); border-color: var(--c-red); color: var(--c-red); }
 
-        /* --- التبويبات (نفس ستايل الإحصائيات) --- */
         .tabs-header { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 25px; }
         .tab-btn { flex: 1; background: none; border: none; color: var(--text-muted); padding: 15px 5px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.3s; border-bottom: 2px solid transparent; }
         .tab-btn.active { color: white; border-bottom-color: var(--c-purple); }
@@ -86,24 +69,18 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         .section-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; color: white; }
-        
-        /* التفاصيل والفصول */
         .desc-text { color: var(--text-muted); line-height: 1.8; font-size: 14px; background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); }
         .chapter-card { background: var(--bg-card-alt); border: 1px solid var(--border-alt); padding: 12px 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
         .chapter-card.read { border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.05); }
         .chapter-card.read .chap-num { color: var(--c-green); text-decoration: line-through; }
 
-        /* --- تصميم الإحصائيات (بناءً على الكود الخاص بك والصور) --- */
         .stats-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
-        
-        /* 1. أزرار التفاعل (التقييم وحالة القراءة) */
         .interactive-section { background: var(--bg-card-alt); border: 1px solid var(--border-alt); border-radius: 12px; padding: 15px; margin-bottom: 20px; }
         .reading-status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
         .status-card { border-radius: 8px; padding: 10px 5px; display: flex; flex-direction: column; align-items: center; background-color: var(--bg-main); border: 1px solid var(--border-color); cursor: pointer; transition: 0.2s; }
         .status-card.active { transform: scale(1.05); }
         .status-label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-top: 5px; }
         
-        /* ألوان الحالات */
         .status-card[data-status="planned"].active { border-color: var(--c-red); background: rgba(244, 63, 94, 0.1); } .status-card[data-status="planned"].active .status-label { color: var(--c-red); }
         .status-card[data-status="reading"].active { border-color: var(--c-green); background: rgba(16, 185, 129, 0.1); } .status-card[data-status="reading"].active .status-label { color: var(--c-green); }
         .status-card[data-status="completed"].active { border-color: var(--c-purple); background: rgba(168, 85, 247, 0.1); } .status-card[data-status="completed"].active .status-label { color: var(--c-purple); }
@@ -115,10 +92,7 @@
         .stars-group i { color: #333; font-size: 18px; cursor: pointer; transition: 0.2s; }
         .stars-group i.active, .stars-group i:hover, .stars-group i:hover ~ i { color: var(--c-orange); }
 
-        /* 2. الجرافات (محتوى الصور) */
         .chart-wrapper { position: relative; width: 100%; }
-        
-        /* الدونات والليجند */
         .doughnut-layout { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
         .doughnut-container { width: 50%; height: 180px; position: relative; }
         .custom-legend { width: 50%; display: flex; flex-direction: column; gap: 10px; }
@@ -137,71 +111,54 @@
 <body>
 
 <nav class="top-nav">
-    <div class="icon-btn"><i class="fas fa-arrow-right"></i></div>
-    <div class="icon-btn"><i class="fas fa-share-alt"></i></div>
+    <div class="icon-btn" onclick="window.history.back()"><i class="fas fa-arrow-right"></i></div>
+    <div class="icon-btn" onclick="navigator.share({title: document.title, url: window.location.href})"><i class="fas fa-share-alt"></i></div>
 </nav>
 
 <div class="hero-banner">
-    <img src="https://i.pinimg.com/736x/82/33/7f/82337f7c469275171731ba332f7a94cb.jpg" alt="Background">
+    <img id="bg-img" src="" alt="Background">
 </div>
 
 <div class="content-wrapper">
     
-    <!-- بيانات العمل -->
     <div class="meta-header">
         <div class="poster-container">
-            <img src="https://i.pinimg.com/736x/82/33/7f/82337f7c469275171731ba332f7a94cb.jpg" alt="Poster">
+            <img id="poster-img" src="" alt="Poster">
         </div>
         <div class="meta-info">
-            <h1 class="manga-title">DIVINE SOUL EMPEROR</h1>
+            <h1 class="manga-title" id="manga-title">جاري التحميل...</h1>
             <div class="overall-rating">
                 <i class="fas fa-star"></i>
-                <span id="global-rating-text">8.0</span> <span style="font-size: 12px; color: var(--text-muted);">/ 10</span>
+                <span id="global-rating-text">0.0</span> <span style="font-size: 12px; color: var(--text-muted);">/ 10</span>
             </div>
         </div>
     </div>
 
-    <div class="tags-container">
-        <span class="tag">أكشن</span><span class="tag">خيال</span><span class="tag">فنون قتالية</span>
-    </div>
+    <div class="tags-container" id="genres-container"></div>
 
     <div class="action-grid">
-        <button class="btn btn-read"><i class="fas fa-book-open"></i> الفصول</button>
+        <button class="btn btn-read" onclick="switchTab('tab-chapters', document.querySelectorAll('.tab-btn')[1])"><i class="fas fa-book-open"></i> الفصول</button>
         <button class="btn btn-fav" id="favBtn" onclick="toggleFav()"><i class="fas fa-bookmark"></i> حفظ</button>
     </div>
 
-    <!-- التبويبات -->
     <div class="tabs-header">
         <button class="tab-btn active" onclick="switchTab('tab-details', this)">التفاصيل</button>
         <button class="tab-btn" onclick="switchTab('tab-chapters', this)">الفصول</button>
         <button class="tab-btn" onclick="switchTab('tab-stats', this)">إحصائيات</button>
     </div>
 
-    <!-- التفاصيل -->
     <div id="tab-details" class="tab-content active">
-        <div class="desc-text">شاب يعود بالزمن ليصحح أخطاء الماضي ويصعد لقمة عالم التدريب والفنون القتالية...</div>
+        <div class="desc-text" id="manga-desc">جاري جلب القصة...</div>
     </div>
 
-    <!-- الفصول -->
     <div id="tab-chapters" class="tab-content">
-        <div id="chapters-list">
-            <div class="chapter-card" onclick="this.classList.toggle('read')">
-                <span class="chap-num" style="font-weight: 700;">الفصل 1</span>
-                <i class="fas fa-check-circle" style="color: var(--text-muted);"></i>
-            </div>
-            <div class="chapter-card" onclick="this.classList.toggle('read')">
-                <span class="chap-num" style="font-weight: 700;">الفصل 2</span>
-                <i class="fas fa-check-circle" style="color: var(--text-muted);"></i>
-            </div>
-        </div>
+        <div id="chapters-list"></div>
     </div>
 
-    <!-- الإحصائيات (متطابقة مع الصور وتفاعلية) -->
     <div id="tab-stats" class="tab-content">
         
-        <!-- لوحة تحكم المستخدم (تفاعلية) -->
         <div class="interactive-section">
-            <h3 class="section-title" style="font-size: 14px; text-align: center; margin-bottom: 15px;">تفاعلك يغير الإحصائيات!</h3>
+            <h3 class="section-title" style="font-size: 14px; text-align: center; margin-bottom: 15px;">شاركنا رأيك في العمل!</h3>
             
             <div class="reading-status-grid">
                 <div class="status-card" data-status="reading" onclick="setUserStatus('reading')">
@@ -236,31 +193,28 @@
             </div>
         </div>
 
-        <!-- 1. جراف التصويتات (صورة 1) -->
         <div class="stats-card">
-            <h3 class="section-title" style="text-align: right; font-size: 16px;">تصويتات</h3>
+            <h3 class="section-title" style="text-align: right; font-size: 16px;">تصويتات الأعضاء</h3>
             <div class="chart-wrapper" style="height: 180px;">
                 <canvas id="votesBarChart"></canvas>
             </div>
         </div>
 
-        <!-- 2. جراف الدونات لحالة القراءة (صورة 2) -->
         <div class="stats-card">
             <div class="doughnut-layout">
                 <div class="doughnut-container">
                     <canvas id="statusDoughnutChart"></canvas>
                 </div>
                 <div class="custom-legend">
-                    <div class="legend-item"><span class="legend-dot" style="background:var(--c-blue);"></span> المانجا المفضلة: <span id="val-fav">1152</span></div>
-                    <div class="legend-item"><span class="legend-dot" style="background:var(--c-green);"></span> أقرأها حاليا: <span id="val-reading">276</span></div>
-                    <div class="legend-item"><span class="legend-dot" style="background:var(--c-red);"></span> أرغب بقراءتها: <span id="val-planned">430</span></div>
-                    <div class="legend-item"><span class="legend-dot" style="background:var(--c-purple);"></span> تم قراءتها: <span id="val-completed">45</span></div>
-                    <div class="legend-item"><span class="legend-dot" style="background:var(--c-pink);"></span> لا أرغب بقراءتها: <span id="val-dropped">48</span></div>
+                    <div class="legend-item"><span class="legend-dot" style="background:var(--c-blue);"></span> المانجا المفضلة: <span id="val-fav">0</span></div>
+                    <div class="legend-item"><span class="legend-dot" style="background:var(--c-green);"></span> أقرأها حاليا: <span id="val-reading">0</span></div>
+                    <div class="legend-item"><span class="legend-dot" style="background:var(--c-red);"></span> أرغب بقراءتها: <span id="val-planned">0</span></div>
+                    <div class="legend-item"><span class="legend-dot" style="background:var(--c-purple);"></span> تم قراءتها: <span id="val-completed">0</span></div>
+                    <div class="legend-item"><span class="legend-dot" style="background:var(--c-pink);"></span> لا أرغب بقراءتها: <span id="val-dropped">0</span></div>
                 </div>
             </div>
         </div>
 
-        <!-- 3. جراف الرادار للتقييم المفصل (صورة 3) -->
         <div class="stats-card">
             <h3 class="section-title" style="text-align: center; font-size: 14px; margin-bottom: 20px;">متوسط تقييم القصة، الشخصيات، والرسم (كل خانة = 2 نقاط)</h3>
             <div class="chart-wrapper" style="height: 250px;">
@@ -273,7 +227,28 @@
 </div>
 
 <script>
-// تبديل التبويبات
+// --- 1. إعداد الـ ID وجلب البيانات من data.json ---
+const urlParams = new URLSearchParams(window.location.search);
+const currentMangaId = urlParams.get('id') || '10'; // افتراضي 10 للتجربة
+
+// بناء رابط الصورة بناءً على الـ ID
+const imageUrl = `https://github.com/kanoahmed467/my-bot/blob/main/covers/${currentMangaId}.jpg?raw=true`;
+
+// بيانات السيرفر العامة (سيتم تعبئتها من data.json)
+let globalData = {
+    votes:[0,0,0,0,0,0,0,0,0,0],
+    status: { fav: 0, reading: 0, planned: 0, completed: 0, dropped: 0 },
+    radar: { story: 0, chars: 0, art: 0 },
+    ratingOut10: 0
+};
+
+// بيانات المستخدم الحالي (من LocalStorage)
+let userData = JSON.parse(localStorage.getItem(`user_stats_manga_${currentMangaId}`)) || {
+    isFav: false, status: null, rating: { story: 0, chars: 0, art: 0, total: 0 }
+};
+
+let barChart, doughnutChart, radarChart;
+
 function switchTab(tabId, btn) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -281,23 +256,65 @@ function switchTab(tabId, btn) {
     btn.classList.add('active');
 }
 
-// ----------------------------------------------------
-// --- منطق البيانات الحقيقية والجرافات (الدمج التفاعلي) ---
-// ----------------------------------------------------
+// دالة جلب البيانات الأساسية
+async function loadMangaData() {
+    try {
+        const response = await fetch('data.json');
+        const data = await response.json();
+        
+        // البحث عن المانجا بالايدي
+        const manga = data.mangas.find(m => m.id == currentMangaId);
 
-// 1. بيانات السيرفر الوهمية (القاعدة الأساسية)
-let globalData = {
-    votes:[5, 0, 0, 0, 0, 0, 2, 2, 1, 18], // تقييمات من 1 لـ 10
-    status: { fav: 1152, reading: 276, planned: 430, completed: 45, dropped: 48 },
-    radar: { story: 8.11, chars: 7.93, art: 8.04 }
-};
+        if(manga) {
+            // تحديث واجهة التفاصيل
+            document.getElementById('manga-title').innerText = manga.title;
+            document.getElementById('manga-desc').innerText = manga.description || 'لا يوجد وصف متاح.';
+            document.getElementById('bg-img').src = imageUrl;
+            document.getElementById('poster-img').src = imageUrl;
 
-// 2. بيانات المستخدم (تُحفظ في LocalStorage)
-let userData = JSON.parse(localStorage.getItem('manga_1_user_data')) || {
-    isFav: false, status: null, rating: { story: 0, chars: 0, art: 0, total: 0 }
-};
+            // التصنيفات
+            if(manga.genre) {
+                const genres = manga.genre.split('•');
+                document.getElementById('genres-container').innerHTML = genres.map(g => `<span class="tag">${g.trim()}</span>`).join('');
+            }
 
-// تهيئة النجوم
+            // الفصول
+            renderChaptersList(manga.chapters_count || 1);
+
+            // افتراض أن data.json يحتوي على كائن global_stats (إذا لم يوجد نضع قيم وهمية مبدئية)
+            globalData = manga.global_stats || {
+                votes:[5, 2, 0, 1, 3, 5, 12, 25, 40, 150], // تقييمات الأعضاء (كم واحد أعطى 10؟)
+                status: { fav: 1152, reading: 276, planned: 430, completed: 45, dropped: 48 },
+                radar: { story: 8.11, chars: 7.93, art: 8.04 },
+                ratingOut10: 8.5
+            };
+
+            document.getElementById('global-rating-text').innerText = globalData.ratingOut10;
+
+            // تشغيل الرسوم البيانية
+            initCharts();
+            updateDashboard(); 
+        } else {
+            document.getElementById('manga-title').innerText = "العمل غير متوفر!";
+        }
+    } catch (error) {
+        console.error("خطأ في جلب البيانات:", error);
+    }
+}
+
+function renderChaptersList(count) {
+    let html = '';
+    for(let i = count; i >= 1; i--) {
+        html += `
+        <div class="chapter-card" onclick="this.classList.toggle('read')">
+            <span class="chap-num" style="font-weight: 700;">الفصل ${i}</span>
+            <i class="fas fa-check-circle" style="color: var(--text-muted);"></i>
+        </div>`;
+    }
+    document.getElementById('chapters-list').innerHTML = html;
+}
+
+// --- الجرافات والدمج التفاعلي ---
 function renderStars() {
     ['story', 'chars', 'art'].forEach(cat => {
         const container = document.getElementById(`rate-${cat}`);
@@ -310,159 +327,100 @@ function renderStars() {
     });
 }
 
-// كائنات الجرافات (Chart.js)
-let barChart, doughnutChart, radarChart;
-
-// إعداد الجرافات لأول مرة
 function initCharts() {
     Chart.defaults.color = '#94a3b8';
     Chart.defaults.font.family = "'Cairo', sans-serif";
     Chart.defaults.font.weight = 'bold';
 
-    // 1. Bar Chart (التصويتات) - نفس الصورة 1
     const ctxBar = document.getElementById('votesBarChart').getContext('2d');
     barChart = new Chart(ctxBar, {
         type: 'bar',
-        data: {
-            labels:['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
-            datasets: [{
-                data:[...globalData.votes],
-                backgroundColor: '#f43f5e',
-                barPercentage: 0.5
-            }]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { display: false, grid: { display: false } },
-                x: { grid: { display: false }, ticks: { color: '#ffffff' } }
-            }
-        }
+        data: { labels:['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'], datasets:[{ data: globalData.votes, backgroundColor: '#f43f5e', barPercentage: 0.5 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false, grid: { display: false } }, x: { grid: { display: false }, ticks: { color: '#ffffff' } } } }
     });
 
-    // 2. Doughnut Chart (حالة القراءة) - نفس الصورة 2
     const ctxDoughnut = document.getElementById('statusDoughnutChart').getContext('2d');
     doughnutChart = new Chart(ctxDoughnut, {
         type: 'doughnut',
-        data: {
-            labels:['مفضلة', 'أقرأها', 'أرغب', 'مكتملة', 'متروكة'],
-            datasets:[{
-                data:[globalData.status.fav, globalData.status.reading, globalData.status.planned, globalData.status.completed, globalData.status.dropped],
-                backgroundColor:['#3b82f6', '#10b981', '#f43f5e', '#a855f7', '#ec4899'],
-                borderWidth: 2, borderColor: '#1e1b24', cutout: '65%'
-            }]
-        },
+        data: { labels:['مفضلة', 'أقرأها', 'أرغب', 'مكتملة', 'متروكة'], datasets:[{ data:[0,0,0,0,0], backgroundColor:['#3b82f6', '#10b981', '#f43f5e', '#a855f7', '#ec4899'], borderWidth: 2, borderColor: '#1e1b24', cutout: '65%' }] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
     });
 
-    // 3. Radar Chart (الرادار) - نفس الصورة 3
     const ctxRadar = document.getElementById('radarChart').getContext('2d');
     radarChart = new Chart(ctxRadar, {
         type: 'radar',
-        data: {
-            labels:['القصة', 'الرسم', 'الشخصيات'], // ترتيب الصورة
-            datasets: [{
-                data:[globalData.radar.story, globalData.radar.art, globalData.radar.chars],
-                backgroundColor: 'rgba(249, 115, 22, 0.6)', // تعبئة برتقالي
-                borderColor: '#3b82f6', // إطار أزرق مثل الصورة
-                borderWidth: 2,
-                pointRadius: 0 // إخفاء النقاط لمطابقة الصورة
-            }]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                r: {
-                    angleLines: { display: false },
-                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                    pointLabels: { color: '#ffffff', font: { size: 13 } },
-                    ticks: { display: false, min: 0, max: 10 }
-                }
-            }
-        }
+        data: { labels:['القصة', 'الرسم', 'الشخصيات'], datasets: [{ data:[0,0,0], backgroundColor: 'rgba(249, 115, 22, 0.6)', borderColor: '#3b82f6', borderWidth: 2, pointRadius: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { angleLines: { display: false }, grid: { color: 'rgba(255, 255, 255, 0.05)' }, pointLabels: { color: '#ffffff', font: { size: 13 } }, ticks: { display: false, min: 0, max: 10 } } } }
     });
 }
 
-// دالة تحديث الأرقام والجرافات بناءً على تفاعل المستخدم
+// دالة تحديث الواجهة عند تفاعل المستخدم (تدمج تقييمه مع تقييم السيرفر)
 function updateDashboard() {
-    // 1. تحديث زر المفضلة
     const favBtn = document.getElementById('favBtn');
     if (userData.isFav) { favBtn.classList.add('active'); favBtn.innerHTML = '<i class="fas fa-bookmark"></i> محفوظ'; }
     else { favBtn.classList.remove('active'); favBtn.innerHTML = '<i class="far fa-bookmark"></i> حفظ'; }
 
-    // 2. تحديث أزرار حالة القراءة
     document.querySelectorAll('.status-card').forEach(card => card.classList.remove('active'));
     if(userData.status) document.querySelector(`.status-card[data-status="${userData.status}"]`).classList.add('active');
 
-    // 3. حساب البيانات المدمجة (السيرفر + المستخدم)
+    // دمج بيانات المستخدم المحلية مع الإحصائيات العامة القادمة من JSON
     let tempStatus = {...globalData.status};
-    if (userData.isFav) tempStatus.fav++;
+    if (userData.isFav) tempStatus.fav++; // هنا نزيد العداد العام برقم 1 ليظهر للمستخدم أنه أثر في الإحصائيات
     if (userData.status) tempStatus[userData.status]++;
 
     let tempVotes = [...globalData.votes];
     if (userData.rating.total > 0) {
-        // التقييم من 1 لـ 10
         let userVoteIndex = userData.rating.total - 1;
         tempVotes[userVoteIndex]++;
     }
 
-    let tempRadar = {
-        story: userData.rating.story > 0 ? ((globalData.radar.story * 100) + (userData.rating.story * 2)) / 101 : globalData.radar.story,
-        chars: userData.rating.chars > 0 ? ((globalData.radar.chars * 100) + (userData.rating.chars * 2)) / 101 : globalData.radar.chars,
-        art: userData.rating.art > 0 ? ((globalData.radar.art * 100) + (userData.rating.art * 2)) / 101 : globalData.radar.art,
-    };
-
-    // 4. تحديث النصوص (الليجند)
+    // تحديث النصوص في الدونات
     document.getElementById('val-fav').innerText = tempStatus.fav;
     document.getElementById('val-reading').innerText = tempStatus.reading;
     document.getElementById('val-planned').innerText = tempStatus.planned;
     document.getElementById('val-completed').innerText = tempStatus.completed;
     document.getElementById('val-dropped').innerText = tempStatus.dropped;
 
-    // 5. تحديث الجرافات (Live Update)
-    if(doughnutChart) {
-        doughnutChart.data.datasets[0].data =[tempStatus.fav, tempStatus.reading, tempStatus.planned, tempStatus.completed, tempStatus.dropped];
-        doughnutChart.update();
-    }
-    if(barChart) {
-        barChart.data.datasets[0].data = tempVotes;
-        barChart.update();
-    }
-    if(radarChart) {
-        radarChart.data.datasets[0].data =[tempRadar.story.toFixed(2), tempRadar.art.toFixed(2), tempRadar.chars.toFixed(2)];
-        radarChart.update();
-    }
+    // تحديث الرسوم البيانية
+    if(doughnutChart) { doughnutChart.data.datasets[0].data =[tempStatus.fav, tempStatus.reading, tempStatus.planned, tempStatus.completed, tempStatus.dropped]; doughnutChart.update(); }
+    if(barChart) { barChart.data.datasets[0].data = tempVotes; barChart.update(); }
+    if(radarChart) { radarChart.data.datasets[0].data =[globalData.radar.story, globalData.radar.art, globalData.radar.chars]; radarChart.update(); }
 
-    // حفظ في المتصفح
-    localStorage.setItem('manga_1_user_data', JSON.stringify(userData));
+    localStorage.setItem(`user_stats_manga_${currentMangaId}`, JSON.stringify(userData));
     renderStars();
 }
 
-// التفاعلات (Events)
-function toggleFav() { userData.isFav = !userData.isFav; updateDashboard(); }
+// التفاعلات
+function toggleFav() { 
+    userData.isFav = !userData.isFav; 
+    updateDashboard(); 
+    sendUpdateToServer('fav', userData.isFav); // محاكاة الإرسال
+}
 
 function setUserStatus(status) {
     if(userData.status === status) userData.status = null; else userData.status = status;
     updateDashboard();
+    sendUpdateToServer('status', userData.status); // محاكاة الإرسال
 }
 
 function rateCategory(category, val) {
     userData.rating[category] = val;
-    // حساب التقييم الكلي من 10 (متوسط الـ 3 أقسام مضروب في 2)
     let sum = userData.rating.story + userData.rating.chars + userData.rating.art;
     let partsRated = (userData.rating.story>0?1:0) + (userData.rating.chars>0?1:0) + (userData.rating.art>0?1:0);
     userData.rating.total = Math.round((sum / partsRated) * 2);
-    
     updateDashboard();
+    sendUpdateToServer('rating', userData.rating); // محاكاة الإرسال
 }
 
-// التشغيل عند الفتح
-window.onload = () => {
-    initCharts();
-    updateDashboard();
-};
+// دالة محاكاة (هنا تضع كود ربط قاعدة البيانات لاحقاً)
+function sendUpdateToServer(type, value) {
+    console.log(`[محاكاة] جاري إرسال إلى قاعدة البيانات: تم تحديث ${type} بقيمة`, value);
+    // fetch('https://api.yourdatabase.com/updateStats', { method: 'POST', body: JSON.stringify({ mangaId: currentMangaId, type, value }) })
+}
+
+// بدء التشغيل
+window.onload = loadMangaData;
+
 </script>
 
 </body>
