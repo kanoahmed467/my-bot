@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تفاصيل العمل</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+
+<style>
+:root{
+    --bg:#08080c;
+    --card:#12121a;
+    --primary:#8b5cf6;
+    --text:#fff;
+    --dim:#aaa;
+}
+
+body{
+    margin:0;
+    font-family:'Cairo',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+}
+
+/* 🔥 Banner */
+.banner{
+    position:relative;
+    height:250px;
+    overflow:hidden;
+}
+
+.banner img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    filter:blur(20px) brightness(0.5);
+    transform:scale(1.2);
+}
+
+/* overlay */
+.banner::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(to top,#08080c,transparent);
+}
+
+/* 🔙 back */
+.back{
+    position:absolute;
+    top:15px;
+    right:15px;
+    font-size:18px;
+    cursor:pointer;
+}
+
+/* 🧱 container */
+.container{
+    padding:15px;
+    margin-top:-80px;
+}
+
+/* 🖼 poster */
+.poster{
+    width:120px;
+    border-radius:12px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.5);
+}
+
+/* 📝 title */
+.title{
+    font-size:18px;
+    font-weight:900;
+    margin-top:10px;
+}
+
+/* ⭐ rating */
+.rating{
+    margin-top:5px;
+    color:#fbbf24;
+}
+
+/* 🎯 button */
+.btn{
+    margin-top:10px;
+    background:var(--primary);
+    padding:10px;
+    border-radius:10px;
+    text-align:center;
+    font-weight:800;
+    cursor:pointer;
+}
+
+/* 📚 genres */
+.genres{
+    margin-top:10px;
+    display:flex;
+    gap:5px;
+    flex-wrap:wrap;
+}
+.tag{
+    background:#1f1f2a;
+    padding:4px 8px;
+    border-radius:6px;
+    font-size:11px;
+}
+
+/* 📖 desc */
+.desc{
+    margin-top:15px;
+    line-height:1.6;
+    color:var(--dim);
+}
+
+/* 🎬 animation */
+.fade{
+    animation:fadeUp .5s ease;
+}
+
+@keyframes fadeUp{
+    from{opacity:0; transform:translateY(20px)}
+    to{opacity:1; transform:translateY(0)}
+}
+</style>
+</head>
+
+<body>
+
+<div class="banner">
+    <img id="bg">
+    <div class="back" onclick="history.back()">←</div>
+</div>
+
+<div class="container fade">
+    <img id="poster" class="poster">
+
+    <div id="title" class="title"></div>
+    <div id="rating" class="rating"></div>
+
+    <div class="btn" id="readBtn">📖 اقرأ الآن</div>
+
+    <div id="genres" class="genres"></div>
+
+    <div id="desc" class="desc"></div>
+</div>
+
+<script>
+let dataAll = [];
+
+async function init(){
+    const res = await fetch('data.json');
+    const data = await res.json();
+    dataAll = data.mangas;
+
+    const id = new URLSearchParams(location.search).get('id');
+    const m = dataAll.find(x => x.id == id);
+
+    if(!m) return;
+
+    document.getElementById('bg').src = m.image_url;
+    document.getElementById('poster').src = m.image_url;
+    document.getElementById('title').innerText = m.title;
+    document.getElementById('rating').innerText = "⭐ " + m.rating;
+
+    document.getElementById('desc').innerText = m.description || "لا يوجد وصف حالياً";
+
+    document.getElementById('genres').innerHTML =
+        m.genre.split(',').slice(0,4).map(g => `<span class="tag">${g}</span>`).join('');
+
+    document.getElementById('readBtn').onclick = () => {
+        window.location.href = `https://t.me/${data.bot_username}?start=m${m.id}`;
+    };
+}
+
+init();
+</script>
+
+</body>
+</html>
