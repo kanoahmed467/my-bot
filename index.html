@@ -3,105 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>فهرس المملكة</title>
+    <title>Kingdom Library Pro</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #0f0f13; --card: #1c1c24; --accent: #7c3aed; --text: #ffffff; }
-        body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Cairo', sans-serif; }
-        
-        header { position: sticky; top: 0; background: rgba(15, 15, 19, 0.85); backdrop-filter: blur(12px); padding: 15px 20px; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        h1 { margin: 0; font-size: 22px; text-align: center; color: var(--accent); text-shadow: 0 0 10px rgba(124, 58, 237, 0.4); }
-        
-        .search-box { margin-top: 15px; display: flex; gap: 10px; }
-        input { flex: 1; padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; font-family: 'Cairo'; outline: none; }
-        input:focus { border-color: var(--accent); box-shadow: 0 0 10px rgba(124, 58, 237, 0.2); }
-        
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; padding: 20px; }
-        
-        .card { background: var(--card); border-radius: 16px; overflow: hidden; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); transition: transform 0.2s; }
-        .card:active { transform: scale(0.95); }
-        
-        .cover-wrapper { 
-            width: 100%; 
-            aspect-ratio: 2/3; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            position: relative; 
-            overflow: hidden; 
-        }
-        
-        .cover-img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 2; 
-            transition: opacity 0.3s;
+        :root {
+            --primary: #8b5cf6;
+            --secondary: #ec4899;
+            --bg: #0b0b0f;
+            --surface: #16161e;
+            --text-main: #ffffff;
+            --text-dim: #94a3b8;
+            --glass: rgba(255, 255, 255, 0.03);
+            --gradient: linear-gradient(45deg, var(--primary), var(--secondary));
         }
 
-        .cover-initial { 
-            position: relative;
-            z-index: 1; 
-            font-size: 50px; 
-            font-weight: 900; 
-            color: rgba(255,255,255,0.3); 
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            margin: 0; padding: 0; 
+            background: var(--bg); 
+            color: var(--text-main); 
+            font-family: 'Cairo', sans-serif;
+            overflow-x: hidden;
         }
-        
-        .badge { position: absolute; top: 8px; right: 8px; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 3; }
-        .status-releasing { color: #34d399; }
-        .status-finished { color: #f87171; }
-        
-        .info { padding: 12px; }
-        .title { font-size: 13px; font-weight: bold; margin: 0 0 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .genres { font-size: 10px; color: #9ca3af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        .loader { text-align: center; margin-top: 50px; color: var(--accent); font-weight: bold; }
+
+        /* الهيدر الاحترافي */
+        header {
+            position: sticky; top: 0;
+            background: rgba(11, 11, 15, 0.8);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .logo-area { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; }
+        .logo-area h1 { margin: 0; font-size: 24px; font-weight: 900; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .search-container { position: relative; width: 100%; }
+        input {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: var(--surface);
+            color: white;
+            font-family: 'Cairo';
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 20px rgba(139, 92, 246, 0.2); }
+
+        /* شريط التصنيفات */
+        .categories {
+            display: flex; gap: 10px; overflow-x: auto; padding: 10px 0 5px;
+            scrollbar-width: none;
+        }
+        .categories::-webkit-scrollbar { display: none; }
+        .cat-chip {
+            padding: 6px 15px; background: var(--glass); border-radius: 20px;
+            font-size: 13px; white-space: nowrap; border: 1px solid rgba(255,255,255,0.05);
+            cursor: pointer; transition: 0.3s;
+        }
+        .cat-chip.active { background: var(--primary); border-color: var(--primary); }
+
+        /* الشبكة والبطاقات */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 12px;
+            padding: 20px;
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card {
+            background: var(--surface);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+        .card:active { transform: scale(0.96); }
+
+        .cover-box {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 2/3;
+            background: #1e1e26;
+        }
+
+        .cover-img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: opacity 0.5s;
+        }
+
+        .initial-bg {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 40px; font-weight: 900; color: rgba(255,255,255,0.1);
+            z-index: 1;
+        }
+
+        .status-badge {
+            position: absolute; top: 8px; left: 8px;
+            padding: 3px 8px; border-radius: 6px;
+            font-size: 9px; font-weight: 700;
+            backdrop-filter: blur(5px);
+            z-index: 10;
+        }
+        .releasing { background: rgba(16, 185, 129, 0.8); color: white; }
+        .completed { background: rgba(239, 68, 68, 0.8); color: white; }
+
+        .card-info { padding: 10px; background: linear-gradient(to top, var(--surface), transparent); }
+        .manga-title {
+            font-size: 13px; font-weight: 700; margin: 0;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            overflow: hidden; line-height: 1.4; height: 36px;
+        }
+        .manga-meta {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 8px; font-size: 11px; color: var(--text-dim);
+        }
+        .rating-star { color: #fbbf24; display: flex; align-items: center; gap: 3px; }
+
+        /* لودر فخم */
+        .shimmer {
+            width: 50px; height: 50px; border: 3px solid var(--glass);
+            border-top-color: var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 50px auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>🏰 مكتبة المملكة</h1>
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="ابحث عن اسم العمل أو التصنيف..." onkeyup="filterMangas()">
+        <div class="logo-area">
+            <h1>🏰 مـكـتـبـة الـمـمـلـكـة</h1>
         </div>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="ابحث عن مانجا، مانهوا..." onkeyup="filterContent()">
+        </div>
+        <div class="categories" id="genreBar">
+            <div class="cat-chip active" onclick="filterGenre('الكل')">الكل</div>
+            </div>
     </header>
 
-    <div id="loader" class="loader">جاري تحميل الفهرس... ⏳</div>
+    <div id="loader" class="shimmer"></div>
     <div id="mangaGrid" class="grid"></div>
 
     <script>
         let allMangas = [];
         let botUsername = "";
+        let activeGenre = "الكل";
 
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
-        window.Telegram.WebApp.setHeaderColor('#0f0f13');
-
-        function getGradient(id) {
-            const hues = [260, 320, 200, 150, 10, 45, 190];
-            const h = hues[id % hues.length];
-            return `linear-gradient(135deg, hsl(${h}, 80%, 20%), hsl(${h + 40}, 80%, 10%))`;
-        }
+        window.Telegram.WebApp.setHeaderColor('#0b0b0f');
 
         async function init() {
             try {
-                // تخطي كاش ملف الـ JSON
-                const response = await fetch('data.json?t=' + new Date().getTime());
+                const response = await fetch('data.json?v=' + new Date().getTime());
                 const data = await response.json();
                 allMangas = data.mangas;
                 botUsername = data.bot_username;
                 
                 document.getElementById('loader').style.display = 'none';
+                extractGenres();
                 renderMangas(allMangas);
             } catch (err) {
-                console.error(err);
-                document.getElementById('loader').innerText = "❌ لم يتم تحديث الفهرس بعد أو توجد مشكلة في الاتصال.";
+                document.getElementById('loader').innerHTML = "<p style='text-align:center'>حدث خطأ في الاتصال ⚠️</p>";
             }
+        }
+
+        function extractGenres() {
+            const genres = new Set();
+            allMangas.forEach(m => m.genre.split(',').forEach(g => genres.add(g.trim())));
+            const bar = document.getElementById('genreBar');
+            genres.forEach(g => {
+                const chip = document.createElement('div');
+                chip.className = 'cat-chip';
+                chip.innerText = g;
+                chip.onclick = () => filterGenre(g, chip);
+                bar.appendChild(chip);
+            });
+        }
+
+        function filterGenre(genre, element) {
+            activeGenre = genre;
+            document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+            if(element) element.classList.add('active');
+            else document.querySelector('.cat-chip').classList.add('active');
+            filterContent();
         }
 
         function renderMangas(mangas) {
@@ -109,46 +206,40 @@
             grid.innerHTML = '';
             
             mangas.forEach(m => {
-                const statusClass = (m.status && m.status.includes('مستمر')) ? 'status-releasing' : 'status-finished';
-                const firstLetter = m.title ? m.title.charAt(0) : '?';
-                const gradient = getGradient(m.id);
-                
-                // 🛠️ التعديل هنا: إضافة توقيت زمني لرابط الصورة لتخطي كاش سيرفرات جيت هاب
+                const isReleasing = m.status.includes('مستمر');
                 const timestamp = new Date().getTime();
                 
-                // 🛠️ تغيير onerror ليقوم بإخفاء الصورة تماماً (display: none) لو لم تنجح في التحميل
-                const coverImgHtml = m.image_url ? 
-                    `<img src="${m.image_url}?v=${timestamp}" class="cover-img" alt="${m.title}" onerror="this.style.display='none'; console.warn('لم يتم العثور على صورة للعمل رقم ${m.id}');">` : '';
-
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.onclick = () => {
-                    const deepLink = `https://t.me/${botUsername}?start=m${m.id}`;
-                    window.Telegram.WebApp.openTelegramLink(deepLink);
-                };
+                card.onclick = () => window.Telegram.WebApp.openTelegramLink(`https://t.me/${botUsername}?start=m${m.id}`);
 
                 card.innerHTML = `
-                    <div class="cover-wrapper" style="background: ${gradient};">
-                        <div class="cover-initial">${firstLetter}</div>
-                        ${coverImgHtml}
-                        <span class="badge ${statusClass}">${m.status || 'غير محدد'}</span>
+                    <div class="cover-box">
+                        <div class="initial-bg">${m.title.charAt(0)}</div>
+                        <span class="status-badge ${isReleasing ? 'releasing' : 'completed'}">
+                            ${isReleasing ? 'مستمر' : 'مكتمل'}
+                        </span>
+                        ${m.image_url ? `<img src="${m.image_url}?v=${timestamp}" class="cover-img" loading="lazy" onerror="this.style.opacity='0'">` : ''}
                     </div>
-                    <div class="info">
-                        <h3 class="title">${m.title}</h3>
-                        <div class="genres">${m.genre || ''}</div>
-                        <div class="rating" style="font-size:11px; color:#fbbf24; margin-top:5px; font-weight:bold;">⭐ ${m.rating || 'N/A'}</div>
+                    <div class="card-info">
+                        <h3 class="manga-title">${m.title}</h3>
+                        <div class="manga-meta">
+                            <span class="rating-star">⭐ ${m.rating}</span>
+                            <span>${m.genre.split(',')[0]}</span>
+                        </div>
                     </div>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        function filterMangas() {
+        function filterContent() {
             const query = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = allMangas.filter(m => 
-                (m.title && m.title.toLowerCase().includes(query)) || 
-                (m.genre && m.genre.toLowerCase().includes(query))
-            );
+            const filtered = allMangas.filter(m => {
+                const matchesSearch = m.title.toLowerCase().includes(query) || m.genre.toLowerCase().includes(query);
+                const matchesGenre = activeGenre === "الكل" || m.genre.includes(activeGenre);
+                return matchesSearch && matchesGenre;
+            });
             renderMangas(filtered);
         }
 
