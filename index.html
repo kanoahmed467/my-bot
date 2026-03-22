@@ -3,229 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Kingdom Library Pro</title>
+    <title>Kingdom Library Elite</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
+            --bg: #08080c;
+            --surface: #12121a;
             --primary: #8b5cf6;
-            --secondary: #ec4899;
-            --bg: #0b0b0f;
-            --surface: #16161e;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
             --text-main: #ffffff;
             --text-dim: #94a3b8;
-            --glass: rgba(255, 255, 255, 0.03);
-            --gradient: linear-gradient(45deg, var(--primary), var(--secondary));
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            margin: 0; padding: 0; 
-            background: var(--bg); 
-            color: var(--text-main); 
-            font-family: 'Cairo', sans-serif;
-            overflow-x: hidden;
-        }
+        body { margin: 0; background: var(--bg); color: var(--text-main); font-family: 'Cairo', sans-serif; overflow-x: hidden; }
 
-        /* الهيدر الاحترافي */
         header {
-            position: sticky; top: 0;
-            background: rgba(11, 11, 15, 0.8);
-            backdrop-filter: blur(20px);
-            padding: 20px;
-            z-index: 1000;
+            position: sticky; top: 0; z-index: 1000; padding: 15px;
+            background: rgba(8, 8, 12, 0.9); backdrop-filter: blur(15px);
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
-        .logo-area { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; }
-        .logo-area h1 { margin: 0; font-size: 24px; font-weight: 900; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-        .search-container { position: relative; width: 100%; }
-        input {
-            width: 100%;
-            padding: 14px 20px;
-            border-radius: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: var(--surface);
-            color: white;
-            font-family: 'Cairo';
-            font-size: 15px;
-            transition: all 0.3s;
+        .search-bar {
+            width: 100%; padding: 12px 20px; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1); background: var(--surface);
+            color: white; font-family: 'Cairo'; outline: none; transition: 0.3s;
         }
-        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 20px rgba(139, 92, 246, 0.2); }
+        .search-bar:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(139, 92, 246, 0.3); }
 
-        /* شريط التصنيفات */
-        .categories {
-            display: flex; gap: 10px; overflow-x: auto; padding: 10px 0 5px;
-            scrollbar-width: none;
-        }
-        .categories::-webkit-scrollbar { display: none; }
-        .cat-chip {
-            padding: 6px 15px; background: var(--glass); border-radius: 20px;
-            font-size: 13px; white-space: nowrap; border: 1px solid rgba(255,255,255,0.05);
-            cursor: pointer; transition: 0.3s;
-        }
-        .cat-chip.active { background: var(--primary); border-color: var(--primary); }
-
-        /* الشبكة والبطاقات */
+        /* الشبكة */
         .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-            gap: 12px;
-            padding: 20px;
-            animation: fadeIn 0.8s ease;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px; padding: 15px;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .card {
-            background: var(--surface);
-            border-radius: 12px;
-            overflow: hidden;
-            position: relative;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255,255,255,0.03);
+        /* الكارت الجديد */
+        .manga-card {
+            background: var(--surface); border-radius: 14px; overflow: hidden;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255,255,255,0.03); position: relative;
         }
-        .card:active { transform: scale(0.96); }
+        .manga-card:active { transform: scale(0.95); }
 
-        .cover-box {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 2/3;
-            background: #1e1e26;
+        .poster-wrapper {
+            position: relative; width: 100%; aspect-ratio: 2 / 3.2; background: #1a1a24;
         }
+        .poster-img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
 
-        .cover-img {
-            width: 100%; height: 100%; object-fit: cover;
-            transition: opacity 0.5s;
+        /* أنيميشن النبض للعلامات */
+        .status-dot {
+            position: absolute; top: 10px; right: 10px;
+            padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 800;
+            color: white; z-index: 10; display: flex; align-items: center; gap: 5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-
-        .initial-bg {
-            position: absolute; inset: 0;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 40px; font-weight: 900; color: rgba(255,255,255,0.1);
-            z-index: 1;
+        
+        /* تأثير النبض للمستمر */
+        .dot-releasing { background: var(--accent-green); animation: pulse-green 2s infinite; }
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
 
-        .status-badge {
-            position: absolute; top: 8px; left: 8px;
-            padding: 3px 8px; border-radius: 6px;
-            font-size: 9px; font-weight: 700;
-            backdrop-filter: blur(5px);
-            z-index: 10;
+        /* تأثير النبض للمكتمل */
+        .dot-completed { background: var(--accent-red); animation: pulse-red 2s infinite; }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
-        .releasing { background: rgba(16, 185, 129, 0.8); color: white; }
-        .completed { background: rgba(239, 68, 68, 0.8); color: white; }
 
-        .card-info { padding: 10px; background: linear-gradient(to top, var(--surface), transparent); }
-        .manga-title {
-            font-size: 13px; font-weight: 700; margin: 0;
-            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-            overflow: hidden; line-height: 1.4; height: 36px;
+        .card-content { padding: 10px; }
+        .manga-name {
+            font-size: 14px; font-weight: 700; margin: 0; line-height: 1.3;
+            height: 38px; display: -webkit-box; -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical; overflow: hidden;
         }
-        .manga-meta {
-            display: flex; justify-content: space-between; align-items: center;
+
+        /* تنسيق التصنيفات النظيف */
+        .genre-tags {
             margin-top: 8px; font-size: 11px; color: var(--text-dim);
+            display: flex; gap: 5px; flex-wrap: wrap;
         }
-        .rating-star { color: #fbbf24; display: flex; align-items: center; gap: 3px; }
+        .genre-tag {
+            background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;
+        }
 
-        /* لودر فخم */
-        .shimmer {
-            width: 50px; height: 50px; border: 3px solid var(--glass);
-            border-top-color: var(--primary); border-radius: 50%;
-            animation: spin 1s linear infinite; margin: 50px auto;
+        .manga-info-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .rating-box { color: #fbbf24; font-weight: 800; font-size: 12px; display: flex; align-items: center; gap: 3px; }
+
+        .shimmer { text-align: center; padding: 50px; color: var(--primary); font-weight: bold; }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo-area">
-            <h1>🏰 مـكـتـبـة الـمـمـلـكـة</h1>
-        </div>
-        <div class="search-container">
-            <input type="text" id="searchInput" placeholder="ابحث عن مانجا، مانهوا..." onkeyup="filterContent()">
-        </div>
-        <div class="categories" id="genreBar">
-            <div class="cat-chip active" onclick="filterGenre('الكل')">الكل</div>
-            </div>
+        <input type="text" id="searchInput" class="search-bar" placeholder="ابحث عن عملك المفضل..." onkeyup="filterItems()">
     </header>
 
-    <div id="loader" class="shimmer"></div>
+    <div id="loader" class="shimmer">جاري تجهيز المكتبة... 🏰</div>
     <div id="mangaGrid" class="grid"></div>
 
     <script>
         let allMangas = [];
         let botUsername = "";
-        let activeGenre = "الكل";
 
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
-        window.Telegram.WebApp.setHeaderColor('#0b0b0f');
 
         async function init() {
             try {
-                const response = await fetch('data.json?v=' + new Date().getTime());
+                const response = await fetch('data.json?v=' + Date.now());
                 const data = await response.json();
                 allMangas = data.mangas;
                 botUsername = data.bot_username;
-                
                 document.getElementById('loader').style.display = 'none';
-                extractGenres();
-                renderMangas(allMangas);
-            } catch (err) {
-                document.getElementById('loader').innerHTML = "<p style='text-align:center'>حدث خطأ في الاتصال ⚠️</p>";
+                render(allMangas);
+            } catch (e) {
+                document.getElementById('loader').innerText = "فشل التحميل ❌";
             }
         }
 
-        function extractGenres() {
-            const genres = new Set();
-            allMangas.forEach(m => m.genre.split(',').forEach(g => genres.add(g.trim())));
-            const bar = document.getElementById('genreBar');
-            genres.forEach(g => {
-                const chip = document.createElement('div');
-                chip.className = 'cat-chip';
-                chip.innerText = g;
-                chip.onclick = () => filterGenre(g, chip);
-                bar.appendChild(chip);
-            });
-        }
-
-        function filterGenre(genre, element) {
-            activeGenre = genre;
-            document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
-            if(element) element.classList.add('active');
-            else document.querySelector('.cat-chip').classList.add('active');
-            filterContent();
-        }
-
-        function renderMangas(mangas) {
+        function render(items) {
             const grid = document.getElementById('mangaGrid');
             grid.innerHTML = '';
             
-            mangas.forEach(m => {
+            items.forEach(m => {
                 const isReleasing = m.status.includes('مستمر');
-                const timestamp = new Date().getTime();
-                
+                // تنظيف التصنيفات: نأخذ أول 2 فقط ونمسح أي رموز غريبة
+                const cleanGenres = m.genre.split(/[,|/•]+/).map(g => g.trim()).filter(g => g.length > 1).slice(0, 2);
+
                 const card = document.createElement('div');
-                card.className = 'card';
+                card.className = 'manga-card';
                 card.onclick = () => window.Telegram.WebApp.openTelegramLink(`https://t.me/${botUsername}?start=m${m.id}`);
 
                 card.innerHTML = `
-                    <div class="cover-box">
-                        <div class="initial-bg">${m.title.charAt(0)}</div>
-                        <span class="status-badge ${isReleasing ? 'releasing' : 'completed'}">
+                    <div class="poster-wrapper">
+                        <span class="status-dot ${isReleasing ? 'dot-releasing' : 'dot-completed'}">
                             ${isReleasing ? 'مستمر' : 'مكتمل'}
                         </span>
-                        ${m.image_url ? `<img src="${m.image_url}?v=${timestamp}" class="cover-img" loading="lazy" onerror="this.style.opacity='0'">` : ''}
+                        <img src="${m.image_url}?v=${Date.now()}" class="poster-img" loading="lazy" onerror="this.src='https://via.placeholder.com/200x300?text=No+Cover'">
                     </div>
-                    <div class="card-info">
-                        <h3 class="manga-title">${m.title}</h3>
-                        <div class="manga-meta">
-                            <span class="rating-star">⭐ ${m.rating}</span>
-                            <span>${m.genre.split(',')[0]}</span>
+                    <div class="card-content">
+                        <h3 class="manga-name">${m.title}</h3>
+                        <div class="genre-tags">
+                            ${cleanGenres.map(g => `<span class="genre-tag">${g}</span>`).join('')}
+                        </div>
+                        <div class="manga-info-footer">
+                            <span class="rating-box">⭐ ${m.rating}</span>
+                            <span style="font-size:10px; color:var(--text-dim)">#${m.id}</span>
                         </div>
                     </div>
                 `;
@@ -233,14 +165,10 @@
             });
         }
 
-        function filterContent() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = allMangas.filter(m => {
-                const matchesSearch = m.title.toLowerCase().includes(query) || m.genre.toLowerCase().includes(query);
-                const matchesGenre = activeGenre === "الكل" || m.genre.includes(activeGenre);
-                return matchesSearch && matchesGenre;
-            });
-            renderMangas(filtered);
+        function filterItems() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allMangas.filter(m => m.title.toLowerCase().includes(q) || m.genre.toLowerCase().includes(q));
+            render(filtered);
         }
 
         init();
