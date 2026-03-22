@@ -2,16 +2,6 @@
   "bot_username": "tsefgdgdfbot",
   "mangas": [
     {
-      "id": 101,
-      "title": "Star Legend",
-      "genre": "شريط طولي • أكشن • مغامرات • فانتازيا • رومانسي • خيال علمي",
-      "rating": "5.3",
-      "status": "مكتمل",
-      "description": "لقد ولد بعيب مميت حرمه من قوته الداخلية. من أجل جذب انتباه والده، قرر أن يضع نفسه على الطريق المضني لتنمية القوة الخارجية. ومع ذلك، فإن الحجر الغامض الذي تحول من نيزك غير مصيره تمامًا...",
-      "chapters_count": 0,
-      "image_url": "https://raw.githubusercontent.com/kanoahmed467/my-bot/main/covers/101.jpg"
-    },
-    {
       "id": 100,
       "title": "In This Life, I Will Be The Lord",
       "genre": "شريط طولي • دراما • فانتازيا • رومانسي",
