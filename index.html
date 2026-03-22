@@ -13,17 +13,17 @@
 <style>
 /* 🎨 الألوان المأخوذة من صفحة الإحصائيات */
 :root {
-    --bg-main: #0f141e;      /* لون الخلفية الرئيسي */
-    --bg-card: #1a2235;      /* لون بطاقات المانجا */
-    --bg-header: #1e1b24;    /* لون الهيدر والبحث */
-    --border-color: #2d3748; /* لون الحدود */
+    --bg-main: #0f141e;      
+    --bg-card: #1a2235;      
+    --bg-header: #1e1b24;    
+    --border-color: #2d3748; 
     
-    --primary: #a855f7;      /* البنفسجي الأنيق */
+    --primary: #a855f7;      
     --primary-glow: rgba(168, 85, 247, 0.3);
     
-    --green: #10b981;        /* الأخضر للمستمر */
-    --blue: #3b82f6;         /* الأزرق للمكتمل */
-    --yellow: #eab308;       /* الأصفر للتقييم */
+    --green: #10b981;        
+    --blue: #3b82f6;         
+    --yellow: #eab308;       
     
     --text-main: #ffffff;
     --text-muted: #94a3b8;
@@ -40,7 +40,7 @@ body {
 }
 
 /* =========================================
-   🔍 الهيدر والبحث (بأسلوب الإحصائيات)
+   🔍 الهيدر والبحث
 ========================================= */
 header {
     position: sticky;
@@ -96,7 +96,6 @@ header {
 .clear-btn.show { opacity: 1; transform: scale(1); pointer-events: auto; }
 .clear-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-main); }
 
-/* نتائج البحث المنسدلة */
 .search-results {
     position: absolute; width: calc(100% - 30px); left: 15px; top: 70px;
     background: var(--bg-header);
@@ -147,11 +146,11 @@ header {
 }
 
 /* =========================================
-   📚 شبكة العرض والبطاقات
+   📚 شبكة العرض والبطاقات (بدون تصنيفات)
 ========================================= */
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); /* تصغير عرض الكارت قليلاً ليصبح متناسقاً */
     gap: 15px; padding: 0 15px 20px 15px;
 }
 
@@ -182,7 +181,6 @@ header {
 }
 .card:hover .poster img { transform: scale(1.08); }
 
-/* شارة الحالة */
 .status {
     position: absolute; top: 8px; right: 8px;
     padding: 4px 8px; border-radius: 6px;
@@ -193,29 +191,29 @@ header {
 .live { background: rgba(16, 185, 129, 0.2); color: var(--green); border-color: rgba(16, 185, 129, 0.3); }
 .done { background: rgba(59, 130, 246, 0.2); color: var(--blue); border-color: rgba(59, 130, 246, 0.3); }
 
-/* محتوى البطاقة السفلي */
-.content { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+/* تنسيق المحتوى ليكون أنيق ومختصر */
+.content { 
+    padding: 12px 10px; 
+    flex-grow: 1; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between; 
+    gap: 8px;
+}
 
 .title {
     font-size: 13px; font-weight: 700; line-height: 1.4;
-    color: var(--text-main); margin-bottom: 8px;
+    color: var(--text-main);
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 
-.genres { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
-.tag {
-    background: rgba(255, 255, 255, 0.05); color: var(--text-label);
-    padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;
-}
-
 .meta-footer { display: flex; justify-content: space-between; align-items: center; }
-.stars { font-size: 11px; color: var(--yellow); font-weight: 700; display: flex; align-items: center; gap: 3px; }
+.stars { font-size: 12px; color: var(--yellow); font-weight: 700; display: flex; align-items: center; gap: 4px; }
 
-/* رسالة التحميل */
 .loader { text-align: center; padding: 50px 20px; color: var(--text-muted); font-weight: 600; }
 
 /* =========================================
-   📱 شريط التنقل السفلي (Bottom Nav)
+   📱 شريط التنقل السفلي
 ========================================= */
 .bottom-nav {
     position: fixed; bottom: 0; left: 0; width: 100%;
@@ -223,7 +221,7 @@ header {
     border-top: 1px solid var(--border-color);
     display: flex; justify-content: space-around; align-items: center;
     padding: 10px 0; z-index: 1000;
-    padding-bottom: env(safe-area-inset-bottom, 10px); /* للآيفون */
+    padding-bottom: env(safe-area-inset-bottom, 10px);
 }
 
 .nav-item {
@@ -235,13 +233,12 @@ header {
 .nav-item i { font-size: 18px; }
 .nav-item.active { color: var(--primary); }
 .nav-item:hover { color: var(--text-main); }
-
 </style>
 </head>
 
 <body>
 
-<!-- شريط البحث العلوي -->
+<!-- شريط البحث -->
 <header>
     <div class="search-box">
         <i class="icon fa-solid fa-magnifying-glass"></i>
@@ -258,11 +255,11 @@ header {
     <button onclick="filter('مكتمل', this)"><span style="color:var(--blue)">✔</span> مكتمل</button>
 </div>
 
-<!-- المحتوى -->
+<!-- العرض -->
 <div id="loader" class="loader"><i class="fas fa-spinner fa-spin"></i> جاري جلب البيانات...</div>
 <div id="grid" class="grid"></div>
 
-<!-- 📱 شريط التنقل السفلي للذهاب لصفحة الإحصائيات -->
+<!-- شريط التنقل -->
 <nav class="bottom-nav">
     <a href="#" class="nav-item active">
         <i class="fa-solid fa-house"></i>
@@ -277,7 +274,6 @@ header {
 <script>
 let dataAll=[];
 
-// تهيئة تليجرام
 if(window.Telegram && Telegram.WebApp) {
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
@@ -296,17 +292,17 @@ async function init(){
     }
 }
 
-// دالة لجلب أول تصنيفين فقط بشكل نظيف
+// دالة لمعالجة التصنيفات لنتائج البحث المنسدلة فقط
 function cleanGenres(g){
     if(!g) return [];
-    return g.replace(/[^\w\s,\u0600-\u06FF]/g,'') // يسمح بالعربي
+    return g.replace(/[^\w\s,\u0600-\u06FF]/g,'')
     .split(',')
     .map(x=>x.trim())
     .filter(x=>x.length > 2)
     .slice(0, 2);
 }
 
-// دالة رسم البطاقات
+// دالة رسم البطاقات (بدون تصنيفات)
 function render(arr){
     let grid = document.getElementById('grid');
     grid.innerHTML = '';
@@ -317,8 +313,6 @@ function render(arr){
 
         let card = document.createElement('div');
         card.className = 'card';
-        
-        // عند الضغط يذهب لصفحة التفاصيل
         card.onclick = () => { window.location.href = `details.html?id=${m.id}`; };
 
         card.innerHTML = `
@@ -330,9 +324,6 @@ function render(arr){
         </div>
         <div class="content">
             <div class="title">${m.title}</div>
-            <div class="genres">
-                ${cleanGenres(m.genre).map(g => `<span class="tag">${g}</span>`).join('')}
-            </div>
             <div class="meta-footer">
                 <div class="stars"><i class="fa-solid fa-star"></i> ${rating}</div>
             </div>
@@ -342,7 +333,6 @@ function render(arr){
     });
 }
 
-// خوارزمية البحث الذكي (كما هي من كودك)
 function smartSearch(query){
     query = query.toLowerCase();
     let seen = new Set();
@@ -371,7 +361,6 @@ function smartSearch(query){
     });
 }
 
-// فلترة الأزرار (الكل، مستمر، مكتمل)
 function filter(type, btn){
     document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -380,7 +369,6 @@ function filter(type, btn){
     render(dataAll.filter(m => m.status && m.status.includes(type)));
 }
 
-// منطق صندوق البحث
 const input = document.getElementById('searchInput');
 const resultsBox = document.getElementById('searchResults');
 const clearBtn = document.querySelector('.clear-btn');
@@ -388,21 +376,18 @@ const clearBtn = document.querySelector('.clear-btn');
 input.addEventListener('input', () => {
     let q = input.value.trim().toLowerCase();
 
-    if(q){
-        clearBtn.classList.add('show');
-    } else {
-        clearBtn.classList.remove('show');
-    }
+    if(q) clearBtn.classList.add('show');
+    else clearBtn.classList.remove('show');
 
     if(!q){
         resultsBox.style.display = 'none';
-        render(dataAll); // إعادة عرض الكل إذا تم مسح البحث
+        render(dataAll);
         return;
     }
 
     let filtered = smartSearch(q);
-    render(filtered); // تحديث الشبكة بالنتائج
-    showResults(filtered, q); // تحديث القائمة المنسدلة
+    render(filtered); 
+    showResults(filtered, q); 
 });
 
 function showResults(arr, q){
@@ -413,7 +398,6 @@ function showResults(arr, q){
     }
 
     resultsBox.innerHTML = arr.slice(0, 5).map(m => {
-        // تمييز النص المطابق
         let title = m.title.replace(new RegExp(q, 'gi'), match => `<span class="highlight">${match}</span>`);
         let rating = m.rating ? parseFloat(m.rating).toFixed(1) : "0.0";
 
@@ -440,18 +424,16 @@ function clearSearch(){
     input.value = '';
     resultsBox.style.display = 'none';
     clearBtn.classList.remove('show');
-    render(dataAll); // العودة للكل
+    render(dataAll); 
     input.focus();
 }
 
-// إغلاق القائمة المنسدلة عند الضغط في أي مكان خارجها
 document.addEventListener('click', (e) => {
     if(!e.target.closest('header')){
         resultsBox.style.display = 'none';
     }
 });
 
-// تشغيل جلب البيانات
 init();
 </script>
 
