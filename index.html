@@ -39,66 +39,118 @@
             gap: 15px; padding: 15px;
         }
 
-        /* الكارت الجديد */
-        .manga-card {
-            background: var(--surface); border-radius: 14px; overflow: hidden;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 1px solid rgba(255,255,255,0.03); position: relative;
-        }
-        .manga-card:active { transform: scale(0.95); }
+        /* الكارت */
+.manga-card {
+    background: linear-gradient(145deg, #12121a, #0c0c12);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: 0.3s;
+    position: relative;
+    border: 1px solid rgba(255,255,255,0.05);
+}
 
-        .poster-wrapper {
-            position: relative; width: 100%; aspect-ratio: 2 / 3.2; background: #1a1a24;
-        }
-        .poster-img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+.manga-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
 
-        /* أنيميشن النبض للعلامات */
-        .status-dot {
-            position: absolute; top: 10px; right: 10px;
-            padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 800;
-            color: white; z-index: 10; display: flex; align-items: center; gap: 5px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        
-        /* تأثير النبض للمستمر */
-        .dot-releasing { background: var(--accent-green); animation: pulse-green 2s infinite; }
-        @keyframes pulse-green {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
+/* صورة */
+.poster-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2 / 3;
+}
 
-        /* تأثير النبض للمكتمل */
-        .dot-completed { background: var(--accent-red); animation: pulse-red 2s infinite; }
-        @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
+.poster-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 
-        .card-content { padding: 10px; }
-        .manga-name {
-            font-size: 14px; font-weight: 700; margin: 0; line-height: 1.3;
-            height: 38px; display: -webkit-box; -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical; overflow: hidden;
-        }
+/* Gradient فوق الصورة */
+.poster-wrapper::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+}
 
-        /* تنسيق التصنيفات النظيف */
-        .genre-tags {
-            margin-top: 8px; font-size: 11px; color: var(--text-dim);
-            display: flex; gap: 5px; flex-wrap: wrap;
-        }
-        .genre-tag {
-            background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;
-        }
+/* 🔥 أيقونة الحالة */
+.status-dot {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    z-index: 10;
+}
 
-        .manga-info-footer {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;
-        }
-        .rating-box { color: #fbbf24; font-weight: 800; font-size: 12px; display: flex; align-items: center; gap: 3px; }
+/* مستمر */
+.dot-releasing {
+    background: #10b981;
+    animation: pulse-green 1.5s infinite;
+}
 
-        .shimmer { text-align: center; padding: 50px; color: var(--primary); font-weight: bold; }
+/* مكتمل */
+.dot-completed {
+    background: #ef4444;
+    animation: pulse-red 1.5s infinite;
+}
+
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(16,185,129,0); }
+    100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+}
+
+@keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(239,68,68,0); }
+    100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+}
+
+/* محتوى */
+.card-content {
+    padding: 10px;
+}
+
+.manga-name {
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.4;
+    height: 36px;
+    overflow: hidden;
+}
+
+/* 🔥 تصنيفات شيك */
+.genre-tags {
+    margin-top: 6px;
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.genre-tag {
+    background: rgba(139, 92, 246, 0.15);
+    color: #c4b5fd;
+    padding: 3px 7px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+/* الفوتر */
+.manga-info-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 11px;
+}
     </style>
 </head>
 <body>
@@ -137,7 +189,12 @@
             items.forEach(m => {
                 const isReleasing = m.status.includes('مستمر');
                 // تنظيف التصنيفات: نأخذ أول 2 فقط ونمسح أي رموز غريبة
-                const cleanGenres = m.genre.split(/[,|/•]+/).map(g => g.trim()).filter(g => g.length > 1).slice(0, 2);
+                const cleanGenres = m.genre
+    .replace(/[^\w\s,]/g, '') // يشيل الرموز الغريبة
+    .split(',')
+    .map(g => g.trim())
+    .filter(g => g.length > 2)
+    .slice(0, 2);
 
                 const card = document.createElement('div');
                 card.className = 'manga-card';
@@ -145,9 +202,9 @@
 
                 card.innerHTML = `
                     <div class="poster-wrapper">
-                        <span class="status-dot ${isReleasing ? 'dot-releasing' : 'dot-completed'}">
-                            ${isReleasing ? 'مستمر' : 'مكتمل'}
-                        </span>
+                       <span class="status-dot ${isReleasing ? 'dot-releasing' : 'dot-completed'}">
+    ${isReleasing ? '▶' : '✔'}
+</span>
                         <img src="${m.image_url}?v=${Date.now()}" class="poster-img" loading="lazy" onerror="this.src='https://via.placeholder.com/200x300?text=No+Cover'">
                     </div>
                     <div class="card-content">
