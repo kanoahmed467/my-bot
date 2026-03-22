@@ -318,9 +318,9 @@ function render(arr){
         let card=document.createElement('div');
         card.className='card';
 
-        card.onclick=()=>{
-            Telegram.WebApp.openTelegramLink(`https://t.me/${bot}?start=m${m.id}`);
-        };
+        card.onclick = () => {
+    window.location.href = `details.html?id=${m.id}`;
+};
 
         card.innerHTML=`
         <div class="poster">
