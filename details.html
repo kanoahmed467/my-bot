@@ -250,9 +250,9 @@
             <h1 id="title" class="manga-title">جاري التحميل...</h1>
             
             <div class="quick-stats">
-                <span><i class="fas fa-eye"></i> +120K مشاهدة</span>
-                <span><i class="fas fa-list"></i> <span id="chapters-count">0</span> فصل</span>
-            </div>
+    <span id="views-count"><i class="fas fa-eye"></i> 0 مشاهدة</span>
+    <span><i class="fas fa-list"></i> <span id="chapters-count">0</span> فصل</span>
+</div>
 
             <div class="interactive-rating">
                 <span class="rating-text" id="rating-display">0.0</span>
@@ -289,18 +289,27 @@
 let dataAll = [];
 
 // توليد فصول وهمية عشان نبين "الفخامة"
-function generateMockChapters(mangaId) {
+// دالة عرض الفصول الحقيقية
+function renderChapters(manga) {
     const chaptersContainer = document.getElementById('chapters-list');
-    const randomChaptersCount = Math.floor(Math.random() * 20) + 10; // من 10 لـ 30 فصل
-    document.getElementById('chapters-count').innerText = randomChaptersCount;
     
+    // هنجيب عدد الفصول من الداتا الحقيقية، ولو مش موجود هنخليه 0
+    const realChaptersCount = manga.chapters_count || 0; 
+    document.getElementById('chapters-count').innerText = realChaptersCount;
+    
+    if (realChaptersCount === 0) {
+        chaptersContainer.innerHTML = '<p style="text-align:center; color: var(--text-muted); padding: 20px;">لا توجد فصول متاحة حالياً.</p>';
+        return;
+    }
+
     let html = '';
-    for(let i = randomChaptersCount; i >= 1; i--) {
+    // اللوب ده هيعمل كروت على قد العدد الحقيقي
+    for(let i = realChaptersCount; i >= 1; i--) {
         html += `
-            <div class="chapter-card" onclick="openChapter(${mangaId}, ${i})">
+            <div class="chapter-card" onclick="openChapter(${manga.id}, ${i})">
                 <div>
                     <div class="chap-num">الفصل ${i}</div>
-                    <div class="chap-date">منذ ${Math.floor(Math.random() * 10) + 1} أيام</div>
+                    <div class="chap-date">متوفر الآن</div>
                 </div>
                 <div class="play-icon"><i class="fas fa-play"></i></div>
             </div>
@@ -388,10 +397,17 @@ async function init(){
         }
 
         // تعبئة البيانات
+        // تعبئة البيانات
         document.getElementById('bg').src = m.image_url;
         document.getElementById('poster').src = m.image_url;
         document.getElementById('title').innerText = m.title;
         document.getElementById('desc').innerText = m.description || "لا يوجد وصف حالياً.";
+        
+        // الأرقام الحقيقية (مشاهدات)
+        let views = m.views || 0;
+        // لو الرقم كبير نخليه بصيغة K مثلا (اختياري للفخامة)
+        let formattedViews = views >= 1000 ? (views/1000).toFixed(1) + 'K' : views;
+        document.getElementById('views-count').innerHTML = `<i class="fas fa-eye"></i> ${formattedViews} مشاهدة`;
 
         // التصنيفات
         if(m.genre) {
@@ -399,9 +415,9 @@ async function init(){
                 m.genre.split(',').map(g => `<span class="tag">${g.trim()}</span>`).join('');
         }
 
-        // تجهيز التقييم التفاعلي والفصول
-        setupInteractiveRating(m.rating || "8.5");
-        generateMockChapters(m.id);
+        // تجهيز التقييم التفاعلي والفصول الحقيقية
+        setupInteractiveRating(m.rating || "0");
+        renderChapters(m); // هنا شغلنا الدالة الحقيقية بدل الوهمية
 
         // زر القراءة المباشر
         document.getElementById('readBtn').onclick = () => {
