@@ -8,7 +8,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
 :root {
     --bg:#08080c;
@@ -327,15 +327,43 @@ header{
     caret-color:#8b5cf6;
 }
 
-/* زر المسح */
 .clear-btn{
-    font-size:13px;
+    width:26px;
+    height:26px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
     cursor:pointer;
-    color:#888;
-    display:none;
+
+    color:#aaa;
+    opacity:0;
+    transform:scale(0.7) rotate(90deg);
+
+    transition:0.3s ease;
 }
+
+/* يظهر لما تكتب */
+.clear-btn.show{
+    opacity:1;
+    transform:scale(1) rotate(0);
+}
+
+/* hover */
 .clear-btn:hover{
+    background:rgba(255,255,255,0.08);
     color:#fff;
+    transform:scale(1.1) rotate(90deg);
+}
+
+/* حركة الأيقونة نفسها */
+.clear-btn i{
+    transition:0.3s;
+}
+
+/* لما تضغط */
+.clear-btn:active i{
+    transform:scale(0.7) rotate(180deg);
 }
 
 /* Dropdown */
@@ -431,7 +459,9 @@ header{
 
         <input id="searchInput" type="text" placeholder="ابحث عن مانجا...">
 
-        <span class="clear-btn" onclick="clearSearch()">✖</span>
+        <span class="clear-btn" onclick="clearSearch()">
+    <i class="fa-solid fa-xmark"></i>
+</span>
     </div>
 
     <div id="searchResults" class="search-results"></div>
@@ -526,23 +556,43 @@ function render(arr){
 }
 
 function smartSearch(query){
+    query = query.toLowerCase();
+
+    let seen = new Set();
+
     return dataAll.map(m=>{
         let title = m.title.toLowerCase();
         let score = 0;
 
-        if(title.startsWith(query)) score += 100; // أهم حاجة
-        if(title.includes(query)) score += 50;
+        // 🎯 تطابق كامل
+        if(title === query) score += 200;
 
-        // أقصر اسم = أفضل
-        score += 20 - title.length / 10;
+        // 🎯 يبدأ بالكلمة
+        if(title.startsWith(query)) score += 120;
 
-        // تقييم عالي = أفضل
-        score += m.rating || 0;
+        // 🎯 كلمة مستقلة (مش جزء من كلمة)
+        if(title.split(' ').includes(query)) score += 100;
+
+        // 🎯 يحتوي عليها
+        if(title.includes(query)) score += 40;
+
+        // 🎯 تقليل النتائج البعيدة
+        let distance = Math.abs(title.length - query.length);
+        score -= distance;
+
+        // ⭐ التقييم
+        score += (m.rating || 0) * 2;
 
         return {...m, score};
     })
-    .filter(m => m.score > 0)
-    .sort((a,b)=>b.score - a.score);
+    .filter(m => m.score > 30) // فلترة القمامة
+    .sort((a,b)=>b.score - a.score)
+    .filter(m=>{
+        // ❌ منع التكرار (لو نفس الاسم)
+        if(seen.has(m.title)) return false;
+        seen.add(m.title);
+        return true;
+    });
 }
 
 function filter(type){
@@ -562,7 +612,11 @@ input.addEventListener('input', () => {
     let q = input.value.toLowerCase();
 
     // زر المسح
-    clearBtn.style.display = q ? 'block' : 'none';
+    if(q){
+    clearBtn.classList.add('show');
+}else{
+    clearBtn.classList.remove('show');
+}
 
     if(!q){
         resultsBox.style.display = 'none';
@@ -583,7 +637,7 @@ function showResults(arr, q){
         return;
     }
 
-    resultsBox.innerHTML = arr.slice(0,6).map(m=>{
+    resultsBox.innerHTML = arr.slice(0,5).map(m=>{
         let title = m.title.replace(
             new RegExp(q, 'gi'),
             match => `<span class="highlight">${match}</span>`
