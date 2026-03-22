@@ -290,127 +290,36 @@
 <script>
 let dataAll = [];
 
-// توليد فصول وهمية عشان نبين "الفخامة"
-// دالة عرض الفصول الحقيقية
-// دالة عرض الفصول (هنخليها تعرض "قريباً" أو تخفي القسم لو مفيش فصول)
+// 1. دالة عرض قائمة الفصول في الأسفل
 function renderChapters(manga) {
     const chaptersContainer = document.getElementById('chapters-list');
     const chaptersSection = document.querySelector('.chapters-section');
     
-    // لو مبعتنش عدد فصول من البوت، هنخفي القسم عشان الفخامة متضربش
-    if (!manga.chapters_count) {
+    if (!manga.chapters_count || manga.chapters_count == 0) {
         chaptersSection.classList.add('hidden'); 
         return;
     }
 
+    chaptersSection.classList.remove('hidden');
     let html = '';
     for(let i = manga.chapters_count; i >= 1; i--) {
         html += `
             <div class="chapter-card" onclick="openChapter(${manga.id}, ${i})">
-                <div><div class="chap-num">الفصل ${i}</div><div class="chap-date">متوفر</div></div>
+                <div><div class="chap-num">الفصل ${i}</div><div class="chap-date">متوفر الآن</div></div>
                 <div class="play-icon"><i class="fas fa-play"></i></div>
             </div>`;
     }
     chaptersContainer.innerHTML = html;
 }
 
-async function init(){
-    try {
-        const res = await fetch('data.json');
-        const data = await res.json();
-        const m = data.mangas.find(x => x.id == (new URLSearchParams(location.search).get('id') || data.mangas[0].id));
-
-        if(!m) return;
-
-        // تعبئة البيانات
-        document.getElementById('title').innerText = m.title;
-        document.getElementById('desc').innerText = m.description;
-        document.getElementById('poster').src = m.image_url;
-        document.getElementById('bg').src = m.image_url;
-
-        // إظهار عدد الفصول في الـ Quick Stats (لو القسم موجود عندك)
-        const statsElement = document.getElementById('chapters-count-info');
-        if(statsElement) {
-            statsElement.innerHTML = `<i class="fas fa-book-open"></i> ${m.chapters_count} فصل`;
-        }
-
-        // تشغيل دالة رسم الفصول
-        renderChapters(m); 
-        
-        // ... باقي الكود (التصنيفات والتقييم)
-    } catch (e) { console.log(e); }
-}
-// نظام التقييم التفاعلي
-function setupInteractiveRating(initialRating) {
-    const container = document.getElementById('star-container');
-    const display = document.getElementById('rating-display');
-    display.innerText = initialRating;
-
-    let html = '';
-    for(let i = 5; i >= 1; i--) {
-        // لو التقييم الأساسي أعلى من الرقم ده، خلي النجمة منورة
-        const isActive = (initialRating / 2) >= i ? 'active' : ''; 
-        html += `<i class="fas fa-star ${isActive}" data-value="${i}" onclick="rateManga(${i})"></i>`;
-    }
-    container.innerHTML = html;
-}
-
-function rateManga(val) {
-    const stars = document.querySelectorAll('.stars i');
-    const newRating = (val * 2).toFixed(1); // نحولها من 5 لـ 10
-    document.getElementById('rating-display').innerText = newRating;
-    
-    stars.forEach(star => {
-        if(star.dataset.value <= val) {
-            star.classList.add('active');
-            star.style.color = 'var(--accent)';
-        } else {
-            star.classList.remove('active');
-            star.style.color = '#333';
-        }
-    });
-    alert(`تم إرسال تقييمك: ${newRating} بنجاح! شكراً لك.`);
-}
-
-// زر المفضلة
-function toggleFav(btn) {
-    const icon = btn.querySelector('i');
-    if(icon.classList.contains('far')) {
-        icon.classList.replace('far', 'fas');
-        btn.style.color = '#ef4444';
-        btn.style.borderColor = '#ef4444';
-    } else {
-        icon.classList.replace('fas', 'far');
-        btn.style.color = 'white';
-        btn.style.borderColor = 'var(--border)';
-    }
-}
-
-// زر المشاركة
-function share() {
-    if (navigator.share) {
-        navigator.share({
-            title: document.title,
-            url: window.location.href
-        });
-    } else {
-        alert("تم نسخ الرابط!");
-    }
-}
-
-// فتح الفصل
-function openChapter(mangaId, chapterNum) {
-    // تقدر تعدل الرابط هنا بناءً على البوت بتاعك
-    alert(`جاري توجيهك لقرائة الفصل ${chapterNum}`);
-}
-
+// 2. دالة تشغيل الصفحة وجلب البيانات
 async function init(){
     try {
         const res = await fetch('data.json');
         const data = await res.json();
         dataAll = data.mangas;
 
-        const id = new URLSearchParams(location.search).get('id') || dataAll[0]?.id; // لو مفيش id يجيب أول واحد للتجربة
+        const id = new URLSearchParams(location.search).get('id') || dataAll[0]?.id; 
         const m = dataAll.find(x => x.id == id);
 
         if(!m) {
@@ -418,39 +327,85 @@ async function init(){
             return;
         }
 
-        // تعبئة البيانات
-        // تعبئة البيانات
+        // --- تحديث الداتا في الصفحة ---
         document.getElementById('bg').src = m.image_url;
         document.getElementById('poster').src = m.image_url;
         document.getElementById('title').innerText = m.title;
         document.getElementById('desc').innerText = m.description || "لا يوجد وصف حالياً.";
         
-        // الأرقام الحقيقية (مشاهدات)
+        // تحديث الحالة (مستمر / مكتمل)
+        const statusBadge = document.querySelector('.status-badge');
+        statusBadge.innerHTML = `<i class="fas fa-bolt"></i> ${m.status || 'مستمر'}`;
+
+        // 🔥 السطر اللي كان ناقص: تحديث رقم الفصول اللي فوق (البنفسجي)
+        document.getElementById('chapters-count').innerText = m.chapters_count || 0;
+
+        // تحديث المشاهدات (لو موجودة)
         let views = m.views || 0;
-        // لو الرقم كبير نخليه بصيغة K مثلا (اختياري للفخامة)
         let formattedViews = views >= 1000 ? (views/1000).toFixed(1) + 'K' : views;
         document.getElementById('views-count').innerHTML = `<i class="fas fa-eye"></i> ${formattedViews} مشاهدة`;
 
         // التصنيفات
         if(m.genre) {
+            let genreList = m.genre.includes('•') ? m.genre.split('•') : m.genre.split(',');
             document.getElementById('genres').innerHTML =
-                m.genre.split(',').map(g => `<span class="tag">${g.trim()}</span>`).join('');
+                genreList.map(g => `<span class="tag">${g.trim()}</span>`).join('');
         }
 
-        // تجهيز التقييم التفاعلي والفصول الحقيقية
+        // التقييم والفصول
         setupInteractiveRating(m.rating || "0");
-        renderChapters(m); // هنا شغلنا الدالة الحقيقية بدل الوهمية
+        renderChapters(m); 
 
-        // زر القراءة المباشر
+        // رابط البوت
         document.getElementById('readBtn').onclick = () => {
             window.location.href = `https://t.me/${data.bot_username}?start=m${m.id}`;
         };
 
     } catch (error) {
-        console.error("خطأ:", error);
+        console.error("خطأ في التحميل:", error);
     }
 }
 
+// باقي الدوال (التقييم، المفضلة، المشاركة)
+function setupInteractiveRating(initialRating) {
+    const container = document.getElementById('star-container');
+    const display = document.getElementById('rating-display');
+    display.innerText = initialRating;
+    let html = '';
+    for(let i = 5; i >= 1; i--) {
+        const isActive = (initialRating / 2) >= i ? 'active' : ''; 
+        html += `<i class="fas fa-star ${isActive}" data-value="${i}" onclick="rateManga(${i})"></i>`;
+    }
+    container.innerHTML = html;
+}
+
+function rateManga(val) {
+    const newRating = (val * 2).toFixed(1);
+    document.getElementById('rating-display').innerText = newRating;
+    alert(`شكراً لتقييمك: ${newRating}`);
+}
+
+function toggleFav(btn) {
+    const icon = btn.querySelector('i');
+    icon.classList.toggle('far');
+    icon.classList.toggle('fas');
+    btn.style.color = icon.classList.contains('fas') ? '#ef4444' : 'white';
+}
+
+function share() {
+    if (navigator.share) {
+        navigator.share({ title: document.title, url: window.location.href });
+    } else {
+        alert("تم نسخ الرابط!");
+    }
+}
+
+function openChapter(mangaId, chapterNum) {
+    alert(`جاري فتح الفصل ${chapterNum}`);
+    // هنا تقدر تحط رابط توجيه للبوت للفصل ده بالذات لو تحب
+}
+
+// تشغيل كل شيء
 init();
 </script>
 
