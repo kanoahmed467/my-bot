@@ -357,13 +357,6 @@ header{
     to{opacity:1; transform:translateY(0)}
 }
 /* كل نتيجة */
-.result-item{
-    padding:10px;
-    font-size:13px;
-    cursor:pointer;
-    border-bottom:1px solid rgba(255,255,255,0.05);
-    transition:0.2s;
-}
 
 .result-item:hover{
     background:rgba(139,92,246,0.2);
@@ -373,6 +366,54 @@ header{
 .highlight{
     color:#8b5cf6;
     font-weight:bold;
+}
+
+/* نتيجة متطورة */
+.result-item{
+    display:flex;
+    gap:10px;
+    padding:8px;
+    cursor:pointer;
+    transition:0.2s;
+    align-items:center;
+}
+
+.result-item:hover{
+    background:rgba(139,92,246,0.15);
+}
+
+/* صورة */
+.result-img{
+    width:40px;
+    height:55px;
+    object-fit:cover;
+    border-radius:6px;
+}
+
+/* محتوى */
+.result-content{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    flex:1;
+}
+
+/* عنوان */
+.result-title{
+    font-size:13px;
+    font-weight:700;
+}
+
+/* معلومات */
+.result-meta{
+    font-size:10px;
+    color:#aaa;
+}
+
+/* تقييم */
+.result-rating{
+    font-size:10px;
+    color:#fbbf24;
 }
 
 </style>
@@ -394,7 +435,6 @@ header{
     </div>
 
     <div id="searchResults" class="search-results"></div>
-</div>
 </div>
 </header>
 
@@ -485,12 +525,24 @@ function render(arr){
     });
 }
 
-function search(q){
-    q=q.toLowerCase();
-    render(dataAll.filter(m=>
-        m.title.toLowerCase().includes(q) ||
-        m.genre.toLowerCase().includes(q)
-    ));
+function smartSearch(query){
+    return dataAll.map(m=>{
+        let title = m.title.toLowerCase();
+        let score = 0;
+
+        if(title.startsWith(query)) score += 100; // أهم حاجة
+        if(title.includes(query)) score += 50;
+
+        // أقصر اسم = أفضل
+        score += 20 - title.length / 10;
+
+        // تقييم عالي = أفضل
+        score += m.rating || 0;
+
+        return {...m, score};
+    })
+    .filter(m => m.score > 0)
+    .sort((a,b)=>b.score - a.score);
 }
 
 function filter(type){
@@ -518,9 +570,7 @@ input.addEventListener('input', () => {
         return;
     }
 
-    let filtered = dataAll.filter(m =>
-        m.title.toLowerCase().includes(q)
-    );
+    let filtered = smartSearch(q);
 
     render(filtered);
     showResults(filtered, q);
@@ -533,7 +583,7 @@ function showResults(arr, q){
         return;
     }
 
-    resultsBox.innerHTML = arr.slice(0,5).map(m=>{
+    resultsBox.innerHTML = arr.slice(0,6).map(m=>{
         let title = m.title.replace(
             new RegExp(q, 'gi'),
             match => `<span class="highlight">${match}</span>`
@@ -541,7 +591,21 @@ function showResults(arr, q){
 
         return `
         <div class="result-item" onclick="goTo(${m.id})">
-            ${title}
+
+            <img src="${m.image_url}" class="result-img">
+
+            <div class="result-content">
+                <div class="result-title">${title}</div>
+
+                <div class="result-meta">
+                    ${cleanGenres(m.genre).join(' • ')}
+                </div>
+
+                <div class="result-rating">
+                    ⭐ ${m.rating}
+                </div>
+            </div>
+
         </div>
         `;
     }).join('');
@@ -559,6 +623,12 @@ function clearSearch(){
     clearBtn.style.display = 'none';
     render(dataAll);
 }
+
+document.addEventListener('click', (e) => {
+    if(!e.target.closest('.search-wrap')){
+        resultsBox.style.display = 'none';
+    }
+});
 </script>
 
 </body>
