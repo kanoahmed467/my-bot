@@ -1,301 +1,270 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تفاصيل العمل | Ultimate VIP</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل العمل | إحصائيات تفاعلية</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- الخطوط والأيقونات ومكتبة الرسم البياني -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<style>
-    /* المتغيرات الأساسية للتصميم الداكن الفخم */
-    :root {
-        --bg-main: #07070a;
-        --bg-card: #13131a;
-        --primary: #6d28d9;
-        --primary-glow: rgba(109, 40, 217, 0.5);
-        --accent: #f59e0b;
-        --text-main: #ffffff;
-        --text-muted: #8b8b99;
-        --glass: rgba(255, 255, 255, 0.03);
-        --border: rgba(255, 255, 255, 0.08);
+    <style>
+        /* دمج ستايل صفحة الإحصائيات (الألوان الداكنة والكروت) */
+        :root {
+            --bg-main: #0f141e;      /* لون الخلفية الرئيسي من صفحة الإحصائيات */
+            --bg-card: #1e1b24;      /* لون الكروت الأساسي */
+            --bg-card-alt: #1a202c;  /* لون الكروت البديل */
+            --border-color: #2d2433; /* لون الحدود */
+            --border-alt: #2d3748;   
+            
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;   /* لون النصوص الثانوية */
+            
+            --c-red: #f43f5e;
+            --c-blue: #3b82f6;
+            --c-green: #10b981;
+            --c-purple: #a855f7;
+            --c-orange: #f97316;
+            --c-pink: #ec4899;
+        }
 
-        /* ألوان الحالات والإحصائيات */
-        --c-red: #f43f5e;
-        --c-blue: #3b82f6;
-        --c-green: #10b981;
-        --c-purple: #a855f7;
-        --c-orange: #f97316;
-    }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-main); overflow-x: hidden; }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        /* --- الهيدر والبانر --- */
+        .top-nav {
+            position: fixed; top: 0; width: 100%; padding: 20px; display: flex;
+            justify-content: space-between; z-index: 100;
+            background: linear-gradient(to bottom, rgba(15, 20, 30, 0.9), transparent);
+        }
+        .icon-btn {
+            width: 40px; height: 40px; border-radius: 50%; background: var(--bg-card);
+            border: 1px solid var(--border-color); color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; cursor: pointer; transition: 0.3s;
+        }
+        .icon-btn:hover { border-color: var(--c-purple); color: var(--c-purple); }
 
-    body { background-color: var(--bg-main); color: var(--text-main); overflow-x: hidden; }
+        .hero-banner { position: relative; height: 45vh; width: 100%; }
+        .hero-banner img { width: 100%; height: 100%; object-fit: cover; filter: blur(5px) brightness(0.4); }
+        .hero-banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, var(--bg-main) 0%, transparent 100%); }
 
-    /* هيدر وأزرار علوية */
-    .top-nav {
-        position: fixed; top: 0; width: 100%; padding: 20px; display: flex;
-        justify-content: space-between; z-index: 100;
-        background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
-    }
-    .icon-btn {
-        width: 40px; height: 40px; border-radius: 50%; background: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(10px); border: 1px solid var(--border); color: white;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 18px; cursor: pointer; transition: 0.3s;
-    }
-    .icon-btn:hover { background: var(--primary); transform: scale(1.1); }
+        .content-wrapper { position: relative; z-index: 10; margin-top: -120px; padding: 0 20px 40px; max-width: 900px; margin-inline: auto; }
 
-    /* البانر الخلفي */
-    .hero-banner { position: relative; height: 50vh; width: 100%; }
-    .hero-banner img { width: 100%; height: 100%; object-fit: cover; filter: blur(8px) brightness(0.3); }
-    .hero-banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, var(--bg-main) 0%, transparent 100%); }
+        /* --- بيانات العمل العلوية --- */
+        .meta-header { display: flex; gap: 20px; align-items: flex-end; margin-bottom: 25px; }
+        .poster-container { width: 140px; border-radius: 12px; overflow: hidden; border: 2px solid var(--border-alt); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .poster-container img { width: 100%; display: block; }
+        .meta-info { flex-grow: 1; }
+        .manga-title { font-size: 28px; font-weight: 800; margin-bottom: 5px; }
+        
+        /* التقييم العام */
+        .overall-rating { display: inline-flex; align-items: center; gap: 8px; background: var(--bg-card); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 10px; }
+        .overall-rating i { color: var(--c-orange); }
+        .overall-rating span { font-weight: 800; font-size: 16px; }
 
-    /* المحتوى */
-    .content-wrapper { position: relative; z-index: 10; margin-top: -150px; padding: 0 20px 40px; max-width: 900px; margin-inline: auto; }
+        .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; }
+        .tag { background: var(--bg-card-alt); border: 1px solid var(--border-alt); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--text-muted); }
 
-    /* الكارت العلوي */
-    .meta-header { display: flex; gap: 25px; align-items: flex-end; margin-bottom: 30px; }
-    .poster-container { flex-shrink: 0; width: 160px; border-radius: 12px; overflow: hidden; border: 2px solid var(--border); box-shadow: 0 15px 35px rgba(0,0,0,0.8), 0 0 20px var(--primary-glow); }
-    .poster-container img { width: 100%; display: block; }
-    .meta-info { flex-grow: 1; padding-bottom: 10px; }
-    
-    .status-badge {
-        display: inline-block; background: rgba(16, 185, 129, 0.2); color: #10b981;
-        padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 800; margin-bottom: 10px; border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-    .manga-title { font-size: 32px; font-weight: 900; line-height: 1.2; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        /* أزرار الإجراءات */
+        .action-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 30px; }
+        .btn { padding: 14px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; transition: 0.3s; }
+        .btn-read { background-color: var(--c-purple); color: white; }
+        .btn-read:hover { background-color: #9333ea; }
+        .btn-fav { background: var(--bg-card); border: 1px solid var(--border-color); color: white; }
+        .btn-fav.active { background: rgba(244, 63, 94, 0.1); border-color: var(--c-red); color: var(--c-red); }
 
-    .quick-stats { display: flex; gap: 20px; margin-top: 15px; color: var(--text-muted); font-size: 14px; font-weight: 600; }
-    .quick-stats i { color: var(--primary); margin-left: 5px; }
+        /* --- التبويبات (نفس ستايل الإحصائيات) --- */
+        .tabs-header { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 25px; }
+        .tab-btn { flex: 1; background: none; border: none; color: var(--text-muted); padding: 15px 5px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.3s; border-bottom: 2px solid transparent; }
+        .tab-btn.active { color: white; border-bottom-color: var(--c-purple); }
+        
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* التقييم العام (رقمي فقط هنا) */
-    .overall-rating {
-        margin-top: 15px; display: inline-flex; align-items: center; gap: 8px;
-        background: var(--bg-card); padding: 8px 15px; border-radius: 12px; border: 1px solid var(--border);
-    }
-    .overall-rating i { color: var(--accent); font-size: 18px; text-shadow: 0 0 10px var(--accent); }
-    .overall-rating span { font-weight: 900; font-size: 18px; color: white; }
-    .overall-rating small { color: var(--text-muted); font-size: 12px; font-weight: 600; }
+        .section-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; color: white; }
+        
+        /* التفاصيل والفصول */
+        .desc-text { color: var(--text-muted); line-height: 1.8; font-size: 14px; background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); }
+        .chapter-card { background: var(--bg-card-alt); border: 1px solid var(--border-alt); padding: 12px 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
+        .chapter-card.read { border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.05); }
+        .chapter-card.read .chap-num { color: var(--c-green); text-decoration: line-through; }
 
-    /* التصنيفات */
-    .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 25px; }
-    .tag { background: var(--glass); border: 1px solid var(--border); padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; color: #ddd; }
+        /* --- تصميم الإحصائيات (بناءً على الكود الخاص بك والصور) --- */
+        .stats-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        
+        /* 1. أزرار التفاعل (التقييم وحالة القراءة) */
+        .interactive-section { background: var(--bg-card-alt); border: 1px solid var(--border-alt); border-radius: 12px; padding: 15px; margin-bottom: 20px; }
+        .reading-status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+        .status-card { border-radius: 8px; padding: 10px 5px; display: flex; flex-direction: column; align-items: center; background-color: var(--bg-main); border: 1px solid var(--border-color); cursor: pointer; transition: 0.2s; }
+        .status-card.active { transform: scale(1.05); }
+        .status-label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-top: 5px; }
+        
+        /* ألوان الحالات */
+        .status-card[data-status="planned"].active { border-color: var(--c-red); background: rgba(244, 63, 94, 0.1); } .status-card[data-status="planned"].active .status-label { color: var(--c-red); }
+        .status-card[data-status="reading"].active { border-color: var(--c-green); background: rgba(16, 185, 129, 0.1); } .status-card[data-status="reading"].active .status-label { color: var(--c-green); }
+        .status-card[data-status="completed"].active { border-color: var(--c-purple); background: rgba(168, 85, 247, 0.1); } .status-card[data-status="completed"].active .status-label { color: var(--c-purple); }
+        .status-card[data-status="dropped"].active { border-color: var(--c-pink); background: rgba(236, 72, 153, 0.1); } .status-card[data-status="dropped"].active .status-label { color: var(--c-pink); }
 
-    /* أزرار التحكم */
-    .action-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin: 30px 0; }
-    .btn { padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; border: none; color: white; transition: 0.3s; }
-    .btn-read { background: var(--primary); box-shadow: 0 8px 25px var(--primary-glow); }
-    .btn-read:hover { background: #5b21b6; transform: translateY(-3px); }
-    .btn-fav { background: var(--glass); border: 1px solid var(--border); }
-    .btn-fav.active { background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: #ef4444; }
+        .rating-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .rating-label { font-size: 13px; font-weight: 700; color: var(--text-main); }
+        .stars-group { display: flex; flex-direction: row-reverse; gap: 4px; }
+        .stars-group i { color: #333; font-size: 18px; cursor: pointer; transition: 0.2s; }
+        .stars-group i.active, .stars-group i:hover, .stars-group i:hover ~ i { color: var(--c-orange); }
 
-    /* التبويبات */
-    .tabs-header { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 25px; }
-    .tab-btn { flex: 1; background: none; border: none; color: var(--text-muted); padding: 15px 10px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; border-bottom: 2px solid transparent; outline: none; }
-    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); color: white; }
-    .tab-content { display: none; animation: fadeIn 0.4s ease; }
-    .tab-content.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* 2. الجرافات (محتوى الصور) */
+        .chart-wrapper { position: relative; width: 100%; }
+        
+        /* الدونات والليجند */
+        .doughnut-layout { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+        .doughnut-container { width: 50%; height: 180px; position: relative; }
+        .custom-legend { width: 50%; display: flex; flex-direction: column; gap: 10px; }
+        .legend-item { display: flex; align-items: center; justify-content: flex-start; font-size: 12px; font-weight: 700; color: var(--text-main); gap: 8px; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 2px; }
 
-    .section-title { font-size: 20px; font-weight: 900; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-    .section-title::before { content: ''; width: 4px; height: 20px; background: var(--primary); border-radius: 4px; }
-    .desc-text { color: var(--text-muted); line-height: 1.8; font-size: 15px; font-weight: 600; background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border); }
-
-    /* الفصول التفاعلية */
-    .chapters-list { display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 5px; }
-    .chapters-list::-webkit-scrollbar { width: 6px; }
-    .chapters-list::-webkit-scrollbar-track { background: var(--bg-main); }
-    .chapters-list::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
-    .chapter-card { background: var(--glass); border: 1px solid var(--border); padding: 15px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; cursor: pointer; }
-    .chapter-card:hover { background: rgba(109, 40, 217, 0.1); border-color: var(--primary); }
-    .chap-num { font-weight: 800; font-size: 16px; color: white; transition: 0.3s; }
-    .play-icon { width: 35px; height: 35px; border-radius: 50%; background: var(--glass); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: white; transition: 0.3s; }
-    
-    /* حالة الفصل المقروء */
-    .chapter-card.read { background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.3); }
-    .chapter-card.read .chap-num { color: var(--c-green); text-decoration: line-through; }
-    .chapter-card.read .play-icon { background: var(--c-green); color: #000; border-color: var(--c-green); }
-
-    /* ---- تبويب الإحصائيات (التصميم المدمج) ---- */
-    
-    /* 1. التقييم المفصل */
-    .detailed-rating-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
-    .rating-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .rating-row:last-child { margin-bottom: 0; }
-    .rating-label { font-size: 15px; font-weight: 700; color: white; width: 80px; }
-    .stars-group { display: flex; flex-direction: row-reverse; gap: 5px; }
-    .stars-group i { color: #333; font-size: 22px; cursor: pointer; transition: 0.2s; }
-    .stars-group i:hover, .stars-group i:hover ~ i { color: var(--accent); transform: scale(1.1); }
-    .stars-group i.active { color: var(--accent); text-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
-
-    /* 2. الأرقام العليا */
-    .top-stats-card { display: flex; justify-content: space-between; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 10px; margin-bottom: 20px; }
-    .stat-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .divider { width: 1px; background-color: var(--border); }
-    .stat-value { font-size: 24px; font-weight: 900; margin-bottom: 5px; }
-    .stat-label { font-size: 12px; color: var(--text-muted); font-weight: 700; }
-
-    /* 3. كروت حالة القراءة (أزرار تفاعلية) */
-    .reading-status-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
-    .status-card { border-radius: 12px; padding: 15px; display: flex; flex-direction: column; align-items: center; background-color: var(--glass); border: 1px solid var(--border); cursor: pointer; transition: 0.3s; }
-    .status-card:hover { transform: translateY(-3px); }
-    .status-icon { font-size: 24px; margin-bottom: 8px; }
-    .status-label { font-size: 14px; font-weight: 800; color: white; }
-    
-    /* الألوان والحالات النشطة */
-    .status-card[data-status="planned"] { border-color: rgba(168, 85, 247, 0.2); }
-    .status-card[data-status="planned"] .status-icon { color: var(--c-purple); }
-    .status-card[data-status="planned"].active { background: rgba(168, 85, 247, 0.15); border-color: var(--c-purple); box-shadow: 0 0 15px rgba(168, 85, 247, 0.2); }
-
-    .status-card[data-status="paused"] { border-color: rgba(249, 115, 22, 0.2); }
-    .status-card[data-status="paused"] .status-icon { color: var(--c-orange); }
-    .status-card[data-status="paused"].active { background: rgba(249, 115, 22, 0.15); border-color: var(--c-orange); box-shadow: 0 0 15px rgba(249, 115, 22, 0.2); }
-
-    .status-card[data-status="completed"] { border-color: rgba(59, 130, 246, 0.2); }
-    .status-card[data-status="completed"] .status-icon { color: var(--c-blue); }
-    .status-card[data-status="completed"].active { background: rgba(59, 130, 246, 0.15); border-color: var(--c-blue); box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
-
-    .status-card[data-status="reading"] { border-color: rgba(16, 185, 129, 0.2); }
-    .status-card[data-status="reading"] .status-icon { color: var(--c-green); }
-    .status-card[data-status="reading"].active { background: rgba(16, 185, 129, 0.15); border-color: var(--c-green); box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
-
-    @media (max-width: 600px) {
-        .meta-header { flex-direction: column; align-items: center; text-align: center; }
-        .quick-stats { justify-content: center; }
-        .tags-container { justify-content: center; }
-        .reading-status-grid { grid-template-columns: 1fr 1fr; }
-    }
-</style>
+        @media (max-width: 600px) {
+            .meta-header { flex-direction: column; align-items: center; text-align: center; }
+            .doughnut-layout { flex-direction: column; }
+            .doughnut-container { width: 100%; height: 200px; }
+            .custom-legend { width: 100%; align-items: center; }
+            .reading-status-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
 </head>
 <body>
 
 <nav class="top-nav">
-    <div class="icon-btn" onclick="window.history.back()"><i class="fas fa-arrow-right"></i></div>
-    <div class="icon-btn" onclick="share()"><i class="fas fa-share-alt"></i></div>
+    <div class="icon-btn"><i class="fas fa-arrow-right"></i></div>
+    <div class="icon-btn"><i class="fas fa-share-alt"></i></div>
 </nav>
 
 <div class="hero-banner">
-    <img id="bg" src="https://i.pinimg.com/736x/82/33/7f/82337f7c469275171731ba332f7a94cb.jpg" alt="Background">
+    <img src="https://i.pinimg.com/736x/82/33/7f/82337f7c469275171731ba332f7a94cb.jpg" alt="Background">
 </div>
 
 <div class="content-wrapper">
     
+    <!-- بيانات العمل -->
     <div class="meta-header">
         <div class="poster-container">
-            <img id="poster" src="https://i.pinimg.com/736x/82/33/7f/82337f7c469275171731ba332f7a94cb.jpg" alt="Poster">
+            <img src="https://i.pinimg.com/736x/82/33/7f/82337f7c469275171731ba332f7a94cb.jpg" alt="Poster">
         </div>
         <div class="meta-info">
-            <div class="status-badge"><i class="fas fa-bolt"></i> <span id="manga-status-text">مستمر</span></div>
-            <h1 id="title" class="manga-title">Solo Leveling</h1>
-            
-            <div class="quick-stats">
-                <span id="views-count"><i class="fas fa-eye"></i> 1.2M مشاهدة</span>
-                <span><i class="fas fa-list"></i> <span id="chapters-count-top">200</span> فصل</span>
-            </div>
-
-            <!-- التقييم العام (يتم حسابه تلقائياً) -->
+            <h1 class="manga-title">DIVINE SOUL EMPEROR</h1>
             <div class="overall-rating">
                 <i class="fas fa-star"></i>
-                <span id="global-rating-display">0.0</span>
-                <small>/ 10</small>
+                <span id="global-rating-text">8.0</span> <span style="font-size: 12px; color: var(--text-muted);">/ 10</span>
             </div>
         </div>
     </div>
 
-    <div id="genres" class="tags-container">
-        <span class="tag">أكشن</span><span class="tag">خيال</span><span class="tag">نظام</span>
+    <div class="tags-container">
+        <span class="tag">أكشن</span><span class="tag">خيال</span><span class="tag">فنون قتالية</span>
     </div>
 
     <div class="action-grid">
-        <button class="btn btn-read" id="readBtn">
-            <i class="fas fa-book-open"></i> اقرأ الآن
-        </button>
-        <button class="btn btn-fav" id="favBtn" onclick="toggleFav()">
-            <i class="far fa-heart"></i> حفظ
-        </button>
+        <button class="btn btn-read"><i class="fas fa-book-open"></i> الفصول</button>
+        <button class="btn btn-fav" id="favBtn" onclick="toggleFav()"><i class="fas fa-bookmark"></i> حفظ</button>
     </div>
 
     <!-- التبويبات -->
     <div class="tabs-header">
-        <button class="tab-btn active" onclick="switchTab('tab-details', this)">القصة</button>
+        <button class="tab-btn active" onclick="switchTab('tab-details', this)">التفاصيل</button>
         <button class="tab-btn" onclick="switchTab('tab-chapters', this)">الفصول</button>
-        <button class="tab-btn" onclick="switchTab('tab-my-stats', this)">إحصائياتي وتفاعلي</button>
+        <button class="tab-btn" onclick="switchTab('tab-stats', this)">إحصائيات</button>
     </div>
 
-    <!-- 1. تبويب القصة -->
+    <!-- التفاصيل -->
     <div id="tab-details" class="tab-content active">
-        <h3 class="section-title">القصة</h3>
-        <div class="desc-text" id="desc">في عالم ظهرت فيه بوابات سحرية تربط عالم البشر بعالم الوحوش...</div>
+        <div class="desc-text">شاب يعود بالزمن ليصحح أخطاء الماضي ويصعد لقمة عالم التدريب والفنون القتالية...</div>
     </div>
 
-    <!-- 2. تبويب الفصول -->
+    <!-- الفصول -->
     <div id="tab-chapters" class="tab-content">
-        <h3 class="section-title">قائمة الفصول (اضغط للتحديد كمقروء)</h3>
-        <div class="chapters-list" id="chapters-list">
-            <!-- سيتم توليد الفصول برمجياً -->
+        <div id="chapters-list">
+            <div class="chapter-card" onclick="this.classList.toggle('read')">
+                <span class="chap-num" style="font-weight: 700;">الفصل 1</span>
+                <i class="fas fa-check-circle" style="color: var(--text-muted);"></i>
+            </div>
+            <div class="chapter-card" onclick="this.classList.toggle('read')">
+                <span class="chap-num" style="font-weight: 700;">الفصل 2</span>
+                <i class="fas fa-check-circle" style="color: var(--text-muted);"></i>
+            </div>
         </div>
     </div>
 
-    <!-- 3. تبويب الإحصائيات (الجديد التفاعلي) -->
-    <div id="tab-my-stats" class="tab-content">
+    <!-- الإحصائيات (متطابقة مع الصور وتفاعلية) -->
+    <div id="tab-stats" class="tab-content">
         
-        <!-- ملخص الإحصائيات الشخصية -->
-        <div class="top-stats-card">
-            <div class="stat-item">
-                <span class="stat-value" style="color: var(--c-green);" id="stat-read-chapters">0</span>
-                <span class="stat-label">فصل مقروء</span>
-            </div>
-            <div class="divider"></div>
-            <div class="stat-item">
-                <span class="stat-value" style="color: var(--c-blue);" id="stat-total-chapters">200</span>
-                <span class="stat-label">إجمالي الفصول</span>
-            </div>
-            <div class="divider"></div>
-            <div class="stat-item">
-                <span class="stat-value" style="color: var(--accent);" id="stat-my-score">0.0</span>
-                <span class="stat-label">تقييمي العام</span>
-            </div>
-        </div>
-
-        <!-- أزرار تفاعلية لحالة القراءة -->
-        <h3 class="section-title" style="font-size: 16px;">حدد حالة قراءتك</h3>
-        <div class="reading-status-grid">
-            <div class="status-card" data-status="reading" onclick="setStatus('reading')">
-                <i class="fas fa-book-reader status-icon"></i>
-                <span class="status-label">أقرأها حالياً</span>
-            </div>
-            <div class="status-card" data-status="planned" onclick="setStatus('planned')">
-                <i class="fas fa-bookmark status-icon"></i>
-                <span class="status-label">أرغب بقراءتها</span>
-            </div>
-            <div class="status-card" data-status="completed" onclick="setStatus('completed')">
-                <i class="fas fa-check-circle status-icon"></i>
-                <span class="status-label">تم قراءتها</span>
-            </div>
-            <div class="status-card" data-status="paused" onclick="setStatus('paused')">
-                <i class="fas fa-pause-circle status-icon"></i>
-                <span class="status-label">متوقف مؤقتاً</span>
-            </div>
-        </div>
-
-        <!-- التقييم التفصيلي -->
-        <h3 class="section-title" style="font-size: 16px;">تقييمي التفصيلي للعمل</h3>
-        <div class="detailed-rating-card">
-            <div class="rating-row">
-                <span class="rating-label">القصة</span>
-                <div class="stars-group" id="stars-story">
-                    <!-- سيتم توليده بالجافاسكريبت -->
+        <!-- لوحة تحكم المستخدم (تفاعلية) -->
+        <div class="interactive-section">
+            <h3 class="section-title" style="font-size: 14px; text-align: center; margin-bottom: 15px;">تفاعلك يغير الإحصائيات!</h3>
+            
+            <div class="reading-status-grid">
+                <div class="status-card" data-status="reading" onclick="setUserStatus('reading')">
+                    <i class="fas fa-book-reader" style="color: var(--c-green);"></i>
+                    <span class="status-label">أقرأها</span>
+                </div>
+                <div class="status-card" data-status="planned" onclick="setUserStatus('planned')">
+                    <i class="fas fa-list" style="color: var(--c-red);"></i>
+                    <span class="status-label">أرغب بقراءتها</span>
+                </div>
+                <div class="status-card" data-status="completed" onclick="setUserStatus('completed')">
+                    <i class="fas fa-check" style="color: var(--c-purple);"></i>
+                    <span class="status-label">تم قراءتها</span>
+                </div>
+                <div class="status-card" data-status="dropped" onclick="setUserStatus('dropped')">
+                    <i class="fas fa-times" style="color: var(--c-pink);"></i>
+                    <span class="status-label">لا أرغب</span>
                 </div>
             </div>
+
             <div class="rating-row">
-                <span class="rating-label">الشخصيات</span>
-                <div class="stars-group" id="stars-chars"></div>
+                <span class="rating-label">تقييم القصة:</span>
+                <div class="stars-group" id="rate-story"></div>
             </div>
             <div class="rating-row">
-                <span class="rating-label">الرسم</span>
-                <div class="stars-group" id="stars-art"></div>
+                <span class="rating-label">تقييم الشخصيات:</span>
+                <div class="stars-group" id="rate-chars"></div>
+            </div>
+            <div class="rating-row">
+                <span class="rating-label">تقييم الرسم:</span>
+                <div class="stars-group" id="rate-art"></div>
+            </div>
+        </div>
+
+        <!-- 1. جراف التصويتات (صورة 1) -->
+        <div class="stats-card">
+            <h3 class="section-title" style="text-align: right; font-size: 16px;">تصويتات</h3>
+            <div class="chart-wrapper" style="height: 180px;">
+                <canvas id="votesBarChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 2. جراف الدونات لحالة القراءة (صورة 2) -->
+        <div class="stats-card">
+            <div class="doughnut-layout">
+                <div class="doughnut-container">
+                    <canvas id="statusDoughnutChart"></canvas>
+                </div>
+                <div class="custom-legend">
+                    <div class="legend-item"><span class="legend-dot" style="background:var(--c-blue);"></span> المانجا المفضلة: <span id="val-fav">1152</span></div>
+                    <div class="legend-item"><span class="legend-dot" style="background:var(--c-green);"></span> أقرأها حاليا: <span id="val-reading">276</span></div>
+                    <div class="legend-item"><span class="legend-dot" style="background:var(--c-red);"></span> أرغب بقراءتها: <span id="val-planned">430</span></div>
+                    <div class="legend-item"><span class="legend-dot" style="background:var(--c-purple);"></span> تم قراءتها: <span id="val-completed">45</span></div>
+                    <div class="legend-item"><span class="legend-dot" style="background:var(--c-pink);"></span> لا أرغب بقراءتها: <span id="val-dropped">48</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. جراف الرادار للتقييم المفصل (صورة 3) -->
+        <div class="stats-card">
+            <h3 class="section-title" style="text-align: center; font-size: 14px; margin-bottom: 20px;">متوسط تقييم القصة، الشخصيات، والرسم (كل خانة = 2 نقاط)</h3>
+            <div class="chart-wrapper" style="height: 250px;">
+                <canvas id="radarChart"></canvas>
             </div>
         </div>
 
@@ -304,37 +273,7 @@
 </div>
 
 <script>
-// --- إعدادات أساسية ---
-// محاكاة سريعة لبيانات المانجا الحالية (يمكن استبدالها بـ fetch من data.json)
-const currentManga = {
-    id: "manga_101",
-    title: "Solo Leveling",
-    chapters_count: 50,
-    type: "manhwa"
-};
-
-// --- نظام قاعدة البيانات المحلية (LocalStorage) ---
-let myMangaStats = JSON.parse(localStorage.getItem('myVIPMangaStats')) || {};
-
-// جلب أو إنشاء سجل للمانجا الحالية
-if (!myMangaStats[currentManga.id]) {
-    myMangaStats[currentManga.id] = {
-        isFav: false,
-        status: "none", // reading, planned, completed, paused
-        readChapters:[],
-        rating: { story: 0, chars: 0, art: 0 },
-        type: currentManga.type
-    };
-}
-let currentData = myMangaStats[currentManga.id];
-
-// دالة لحفظ التغييرات وتحديث الواجهة
-function saveAndRefresh() {
-    localStorage.setItem('myVIPMangaStats', JSON.stringify(myMangaStats));
-    updateUI();
-}
-
-// 1. التبديل بين التبويبات
+// تبديل التبويبات
 function switchTab(tabId, btn) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -342,137 +281,189 @@ function switchTab(tabId, btn) {
     btn.classList.add('active');
 }
 
-// 2. تحديث الواجهة بالكامل بناءً على البيانات المحفوظة
-function updateUI() {
-    // تحديث زر المفضلة
-    const favBtn = document.getElementById('favBtn');
-    if (currentData.isFav) {
-        favBtn.classList.add('active');
-        favBtn.innerHTML = '<i class="fas fa-heart"></i> تم الحفظ';
-    } else {
-        favBtn.classList.remove('active');
-        favBtn.innerHTML = '<i class="far fa-heart"></i> حفظ';
-    }
+// ----------------------------------------------------
+// --- منطق البيانات الحقيقية والجرافات (الدمج التفاعلي) ---
+// ----------------------------------------------------
 
-    // تحديث كروت حالة القراءة
-    document.querySelectorAll('.status-card').forEach(card => {
-        card.classList.remove('active');
-        if (card.dataset.status === currentData.status) {
-            card.classList.add('active');
-        }
-    });
+// 1. بيانات السيرفر الوهمية (القاعدة الأساسية)
+let globalData = {
+    votes:[5, 0, 0, 0, 0, 0, 2, 2, 1, 18], // تقييمات من 1 لـ 10
+    status: { fav: 1152, reading: 276, planned: 430, completed: 45, dropped: 48 },
+    radar: { story: 8.11, chars: 7.93, art: 8.04 }
+};
 
-    // تحديث عداد الفصول المقروءة في تبويب الإحصائيات
-    document.getElementById('stat-read-chapters').innerText = currentData.readChapters.length;
-    document.getElementById('stat-total-chapters').innerText = currentManga.chapters_count;
+// 2. بيانات المستخدم (تُحفظ في LocalStorage)
+let userData = JSON.parse(localStorage.getItem('manga_1_user_data')) || {
+    isFav: false, status: null, rating: { story: 0, chars: 0, art: 0, total: 0 }
+};
 
-    // حساب التقييم العام (قصة + شخصيات + رسم) / 3 * 2 (ليكون من 10)
-    let totalStars = currentData.rating.story + currentData.rating.chars + currentData.rating.art;
-    let avgOutOf10 = totalStars > 0 ? ((totalStars / 3) * 2).toFixed(1) : "0.0";
-    
-    document.getElementById('global-rating-display').innerText = avgOutOf10;
-    document.getElementById('stat-my-score').innerText = avgOutOf10;
-
-    // تلوين النجوم بناءً على التقييم المحفوظ
+// تهيئة النجوم
+function renderStars() {
     ['story', 'chars', 'art'].forEach(cat => {
-        const stars = document.querySelectorAll(`#stars-${cat} i`);
-        stars.forEach(star => {
-            if (parseInt(star.dataset.val) <= currentData.rating[cat]) {
-                star.classList.add('active');
-            } else {
-                star.classList.remove('active');
-            }
-        });
-    });
-
-    // تحديث شكل الفصول المقروءة في القائمة
-    document.querySelectorAll('.chapter-card').forEach(card => {
-        let chapNum = parseInt(card.dataset.chapter);
-        if (currentData.readChapters.includes(chapNum)) {
-            card.classList.add('read');
-            card.querySelector('.play-icon').innerHTML = '<i class="fas fa-check"></i>';
-        } else {
-            card.classList.remove('read');
-            card.querySelector('.play-icon').innerHTML = '<i class="fas fa-play"></i>';
-        }
-    });
-}
-
-// 3. بناء قائمة الفصول
-function renderChapters() {
-    const list = document.getElementById('chapters-list');
-    let html = '';
-    for (let i = currentManga.chapters_count; i >= 1; i--) {
-        html += `
-            <div class="chapter-card" data-chapter="${i}" onclick="toggleChapterRead(${i})">
-                <div class="chap-num">الفصل ${i}</div>
-                <div class="play-icon"><i class="fas fa-play"></i></div>
-            </div>
-        `;
-    }
-    list.innerHTML = html;
-}
-
-// 4. بناء نجوم التقييم
-function renderRatingStars() {
-    ['story', 'chars', 'art'].forEach(cat => {
-        const container = document.getElementById(`stars-${cat}`);
+        const container = document.getElementById(`rate-${cat}`);
         let html = '';
         for (let i = 5; i >= 1; i--) {
-            html += `<i class="fas fa-star" data-val="${i}" onclick="rateCategory('${cat}', ${i})"></i>`;
+            let active = userData.rating[cat] >= i ? 'active' : '';
+            html += `<i class="fas fa-star ${active}" onclick="rateCategory('${cat}', ${i})"></i>`;
         }
         container.innerHTML = html;
     });
 }
 
-// --- دوال التفاعل مع المستخدم ---
+// كائنات الجرافات (Chart.js)
+let barChart, doughnutChart, radarChart;
 
-function toggleFav() {
-    currentData.isFav = !currentData.isFav;
-    saveAndRefresh();
+// إعداد الجرافات لأول مرة
+function initCharts() {
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.font.family = "'Cairo', sans-serif";
+    Chart.defaults.font.weight = 'bold';
+
+    // 1. Bar Chart (التصويتات) - نفس الصورة 1
+    const ctxBar = document.getElementById('votesBarChart').getContext('2d');
+    barChart = new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+            labels:['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+            datasets: [{
+                data:[...globalData.votes],
+                backgroundColor: '#f43f5e',
+                barPercentage: 0.5
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { display: false, grid: { display: false } },
+                x: { grid: { display: false }, ticks: { color: '#ffffff' } }
+            }
+        }
+    });
+
+    // 2. Doughnut Chart (حالة القراءة) - نفس الصورة 2
+    const ctxDoughnut = document.getElementById('statusDoughnutChart').getContext('2d');
+    doughnutChart = new Chart(ctxDoughnut, {
+        type: 'doughnut',
+        data: {
+            labels:['مفضلة', 'أقرأها', 'أرغب', 'مكتملة', 'متروكة'],
+            datasets:[{
+                data:[globalData.status.fav, globalData.status.reading, globalData.status.planned, globalData.status.completed, globalData.status.dropped],
+                backgroundColor:['#3b82f6', '#10b981', '#f43f5e', '#a855f7', '#ec4899'],
+                borderWidth: 2, borderColor: '#1e1b24', cutout: '65%'
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+    });
+
+    // 3. Radar Chart (الرادار) - نفس الصورة 3
+    const ctxRadar = document.getElementById('radarChart').getContext('2d');
+    radarChart = new Chart(ctxRadar, {
+        type: 'radar',
+        data: {
+            labels:['القصة', 'الرسم', 'الشخصيات'], // ترتيب الصورة
+            datasets: [{
+                data:[globalData.radar.story, globalData.radar.art, globalData.radar.chars],
+                backgroundColor: 'rgba(249, 115, 22, 0.6)', // تعبئة برتقالي
+                borderColor: '#3b82f6', // إطار أزرق مثل الصورة
+                borderWidth: 2,
+                pointRadius: 0 // إخفاء النقاط لمطابقة الصورة
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                r: {
+                    angleLines: { display: false },
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    pointLabels: { color: '#ffffff', font: { size: 13 } },
+                    ticks: { display: false, min: 0, max: 10 }
+                }
+            }
+        }
+    });
 }
 
-function setStatus(newStatus) {
-    // إذا ضغط على نفس الحالة يتم إلغاؤها
-    if (currentData.status === newStatus) {
-        currentData.status = "none";
-    } else {
-        currentData.status = newStatus;
+// دالة تحديث الأرقام والجرافات بناءً على تفاعل المستخدم
+function updateDashboard() {
+    // 1. تحديث زر المفضلة
+    const favBtn = document.getElementById('favBtn');
+    if (userData.isFav) { favBtn.classList.add('active'); favBtn.innerHTML = '<i class="fas fa-bookmark"></i> محفوظ'; }
+    else { favBtn.classList.remove('active'); favBtn.innerHTML = '<i class="far fa-bookmark"></i> حفظ'; }
+
+    // 2. تحديث أزرار حالة القراءة
+    document.querySelectorAll('.status-card').forEach(card => card.classList.remove('active'));
+    if(userData.status) document.querySelector(`.status-card[data-status="${userData.status}"]`).classList.add('active');
+
+    // 3. حساب البيانات المدمجة (السيرفر + المستخدم)
+    let tempStatus = {...globalData.status};
+    if (userData.isFav) tempStatus.fav++;
+    if (userData.status) tempStatus[userData.status]++;
+
+    let tempVotes = [...globalData.votes];
+    if (userData.rating.total > 0) {
+        // التقييم من 1 لـ 10
+        let userVoteIndex = userData.rating.total - 1;
+        tempVotes[userVoteIndex]++;
     }
-    saveAndRefresh();
-}
 
-function rateCategory(category, value) {
-    currentData.rating[category] = value;
-    saveAndRefresh();
-}
+    let tempRadar = {
+        story: userData.rating.story > 0 ? ((globalData.radar.story * 100) + (userData.rating.story * 2)) / 101 : globalData.radar.story,
+        chars: userData.rating.chars > 0 ? ((globalData.radar.chars * 100) + (userData.rating.chars * 2)) / 101 : globalData.radar.chars,
+        art: userData.rating.art > 0 ? ((globalData.radar.art * 100) + (userData.rating.art * 2)) / 101 : globalData.radar.art,
+    };
 
-function toggleChapterRead(chapterNum) {
-    const index = currentData.readChapters.indexOf(chapterNum);
-    if (index === -1) {
-        currentData.readChapters.push(chapterNum); // إضافة للمقروء
-    } else {
-        currentData.readChapters.splice(index, 1); // إزالة من المقروء
+    // 4. تحديث النصوص (الليجند)
+    document.getElementById('val-fav').innerText = tempStatus.fav;
+    document.getElementById('val-reading').innerText = tempStatus.reading;
+    document.getElementById('val-planned').innerText = tempStatus.planned;
+    document.getElementById('val-completed').innerText = tempStatus.completed;
+    document.getElementById('val-dropped').innerText = tempStatus.dropped;
+
+    // 5. تحديث الجرافات (Live Update)
+    if(doughnutChart) {
+        doughnutChart.data.datasets[0].data =[tempStatus.fav, tempStatus.reading, tempStatus.planned, tempStatus.completed, tempStatus.dropped];
+        doughnutChart.update();
     }
-    saveAndRefresh();
-}
-
-function share() {
-    if (navigator.share) {
-        navigator.share({ title: document.title, url: window.location.href });
-    } else {
-        alert("تم نسخ الرابط الحصري!");
+    if(barChart) {
+        barChart.data.datasets[0].data = tempVotes;
+        barChart.update();
     }
+    if(radarChart) {
+        radarChart.data.datasets[0].data =[tempRadar.story.toFixed(2), tempRadar.art.toFixed(2), tempRadar.chars.toFixed(2)];
+        radarChart.update();
+    }
+
+    // حفظ في المتصفح
+    localStorage.setItem('manga_1_user_data', JSON.stringify(userData));
+    renderStars();
 }
 
-// تشغيل النظام عند تحميل الصفحة
+// التفاعلات (Events)
+function toggleFav() { userData.isFav = !userData.isFav; updateDashboard(); }
+
+function setUserStatus(status) {
+    if(userData.status === status) userData.status = null; else userData.status = status;
+    updateDashboard();
+}
+
+function rateCategory(category, val) {
+    userData.rating[category] = val;
+    // حساب التقييم الكلي من 10 (متوسط الـ 3 أقسام مضروب في 2)
+    let sum = userData.rating.story + userData.rating.chars + userData.rating.art;
+    let partsRated = (userData.rating.story>0?1:0) + (userData.rating.chars>0?1:0) + (userData.rating.art>0?1:0);
+    userData.rating.total = Math.round((sum / partsRated) * 2);
+    
+    updateDashboard();
+}
+
+// التشغيل عند الفتح
 window.onload = () => {
-    document.getElementById('chapters-count-top').innerText = currentManga.chapters_count;
-    renderChapters();
-    renderRatingStars();
-    updateUI(); // يطبق البيانات المحفوظة على الواجهة
+    initCharts();
+    updateDashboard();
 };
-
 </script>
+
 </body>
 </html>
