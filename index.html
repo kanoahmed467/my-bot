@@ -259,46 +259,74 @@ header{
     }
 }
 
-/* 🔥 Search Container */
+/* Wrapper */
+.search-wrap{
+    padding:10px;
+}
+
+/* 🔥 Gradient Border */
 .search-box{
+    position:relative;
     display:flex;
     align-items:center;
-    gap:8px;
-    background:#12121a;
-    padding:10px 12px;
-    border-radius:14px;
-    border:1px solid rgba(255,255,255,0.05);
+    gap:10px;
+    padding:12px 14px;
+    border-radius:16px;
+    background:rgba(18,18,26,0.6);
+    backdrop-filter:blur(15px);
+    overflow:hidden;
+}
+
+/* border glow */
+.search-box::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:16px;
+    padding:1px;
+    background:linear-gradient(120deg,#8b5cf6,#6366f1,#8b5cf6);
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;
+            mask-composite:exclude;
+    opacity:0.6;
     transition:0.3s;
-    position:relative;
 }
 
-/* Glow */
-.search-box:focus-within{
-    border-color:var(--primary);
-    box-shadow:0 0 15px rgba(139,92,246,0.4);
-    transform:scale(1.02);
+/* focus effect */
+.search-box:focus-within::before{
+    opacity:1;
+    filter:blur(2px);
 }
 
-/* Icon */
-.search-box .icon{
-    font-size:14px;
+/* icon */
+.icon{
+    width:18px;
+    height:18px;
     color:#aaa;
 }
 
-/* Input */
+/* input */
 .search-box input{
     flex:1;
-    background:transparent;
+    background:none;
     border:none;
     outline:none;
     color:#fff;
     font-family:'Cairo';
-    font-size:13px;
+    font-size:14px;
 }
 
-/* Placeholder */
+/* placeholder */
 .search-box input::placeholder{
     color:#777;
+}
+
+/* glow on focus */
+.search-box:focus-within{
+    box-shadow:0 0 25px rgba(139,92,246,0.3);
+    transform:scale(1.02);
 }
 
 </style>
@@ -307,9 +335,13 @@ header{
 <body>
 
 <header>
-<div class="search-box">
-    <span class="icon">🔍</span>
-    <input type="text" placeholder="ابحث عن مانجا..." onkeyup="search(this.value)">
+<div class="search-wrap">
+    <div class="search-box">
+        <svg class="icon" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 1 0 14 15.5l.27.28v.79L20 21.5 21.5 20l-6-6zM10 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
+        </svg>
+        <input type="text" placeholder="ابحث عن عمل..." onkeyup="search(this.value)">
+    </div>
 </div>
 </header>
 
