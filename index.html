@@ -80,10 +80,28 @@ header{
     background:var(--card);
     border-radius:14px;
     overflow:hidden;
-    transition:.3s;
+    transition:0.3s;
+    position:relative;
+}
+
+.card{
+    animation:fadeUp 0.4s ease;
+}
+
+@keyframes fadeUp{
+    from{
+        opacity:0;
+        transform:translateY(20px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
 }
 .card:hover{
-    transform:translateY(-5px);
+    transform:scale(1.08);
+    z-index:20;
+    box-shadow:0 20px 40px rgba(0,0,0,0.7);
 }
 
 /* IMAGE */
@@ -93,24 +111,44 @@ header{
 }
 
 .poster img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
+    transition:0.4s;
+}
+
+.card:hover .poster img{
+    transform:scale(1.1);
+}
+
+
+.card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:14px;
+    opacity:0;
+    transition:0.3s;
+    box-shadow:0 0 25px var(--primary);
+}
+
+.card:hover::before{
+    opacity:1;
 }
 
 /* overlay */
 .overlay{
     position:absolute;
     inset:0;
-    background:linear-gradient(to top,rgba(0,0,0,.9),transparent);
+    background:linear-gradient(to top,rgba(0,0,0,0.95),transparent 60%);
     opacity:0;
-    transition:.3s;
+    transition:0.3s;
     display:flex;
-    align-items:flex-end;
-    padding:8px;
+    flex-direction:column;
+    justify-content:flex-end;
+    padding:10px;
 }
-.card:hover .overlay{opacity:1}
 
+.card:hover .overlay{
+    opacity:1;
+}
 .overlay h3{
     font-size:12px;
 }
@@ -157,10 +195,19 @@ header{
 .title{
     font-size:12px;
     font-weight:800;
-    height:34px;
+    white-space:nowrap;
     overflow:hidden;
+    text-overflow:ellipsis;
 }
 
+.title:hover{
+    white-space:normal;
+    background:#000;
+    position:absolute;
+    z-index:10;
+    padding:5px;
+    border-radius:6px;
+}
 /* genres */
 .genres{
     display:flex;
@@ -257,11 +304,12 @@ function render(arr){
                 ${live?'▶':'✔'}
             </div>
 
-            <img src="${m.image_url}">
+            <img src="${m.image_url}" decoding="async">
 
             <div class="overlay">
-                <h3>${m.title}</h3>
-            </div>
+    <div style="font-size:12px;font-weight:800">${m.title}</div>
+    <div style="font-size:10px;color:#aaa">${cleanGenres(m.genre).join(' • ')}</div>
+</div>
         </div>
 
         <div class="content">
