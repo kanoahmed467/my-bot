@@ -2,664 +2,429 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Kingdom Library Elite</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <style>
+/* 🎨 الألوان المأخوذة من صفحة الإحصائيات */
 :root {
-    --bg:#08080c;
-    --card:#12121a;
-    --primary:#8b5cf6;
-    --green:#10b981;
-    --red:#ef4444;
-    --text:#fff;
-    --dim:#94a3b8;
+    --bg-main: #0f141e;      /* لون الخلفية الرئيسي */
+    --bg-card: #1a2235;      /* لون بطاقات المانجا */
+    --bg-header: #1e1b24;    /* لون الهيدر والبحث */
+    --border-color: #2d3748; /* لون الحدود */
+    
+    --primary: #a855f7;      /* البنفسجي الأنيق */
+    --primary-glow: rgba(168, 85, 247, 0.3);
+    
+    --green: #10b981;        /* الأخضر للمستمر */
+    --blue: #3b82f6;         /* الأزرق للمكتمل */
+    --yellow: #eab308;       /* الأصفر للتقييم */
+    
+    --text-main: #ffffff;
+    --text-muted: #94a3b8;
+    --text-label: #cbd5e1;
 }
 
-*{box-sizing:border-box;margin:0;padding:0}
-body{
-    font-family:'Cairo',sans-serif;
-    background:var(--bg);
-    color:var(--text);
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Cairo', sans-serif;
+    background: var(--bg-main);
+    color: var(--text-main);
+    padding-bottom: 70px; /* مساحة لشريط التنقل السفلي */
 }
 
-/* HEADER */
-header{
-    position:sticky;
-    top:0;
-    z-index:1000;
-    padding:10px;
-    backdrop-filter:blur(10px);
-    background:rgba(0,0,0,0.7);
+/* =========================================
+   🔍 الهيدر والبحث (بأسلوب الإحصائيات)
+========================================= */
+header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    padding: 15px;
+    background: rgba(15, 20, 30, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
 }
 
-.search{
-    width:100%;
-    padding:10px;
-    border:none;
-    border-radius:10px;
-    background:#12121a;
-    color:#fff;
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: var(--bg-header);
+    border: 1px solid var(--border-color);
+    transition: 0.3s ease;
 }
 
-/* FILTER */
-.filters{
-    display:flex;
-    gap:8px;
-    padding:10px;
-    overflow:auto;
+.search-box:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 15px var(--primary-glow);
 }
 
-.filters button{
-    border:none;
-    padding:6px 12px;
-    border-radius:8px;
-    background:#1a1a24;
-    color:#fff;
-    cursor:pointer;
-    transition:.2s;
-}
-.filters button:hover{
-    background:var(--primary);
-}
+.icon { color: var(--text-muted); font-size: 16px; transition: 0.3s ease; }
+.search-box:focus-within .icon { color: var(--primary); }
 
-/* GRID */
-.grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
-    gap:12px;
-    padding:12px;
-    overflow:visible;
+.search-box input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-main);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
 }
 
-/* CARD */
-.card{
-    background:var(--card);
-    border-radius:14px;
-    overflow:hidden;
-    transition:0.3s;
-    position:relative;
-    animation:fadeUp 0.4s ease;
+.search-box input::placeholder { color: var(--text-muted); font-weight: 400; }
+
+.clear-btn {
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; cursor: pointer;
+    color: var(--text-muted);
+    opacity: 0; transform: scale(0.7); pointer-events: none;
+    transition: 0.3s ease;
+}
+.clear-btn.show { opacity: 1; transform: scale(1); pointer-events: auto; }
+.clear-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-main); }
+
+/* نتائج البحث المنسدلة */
+.search-results {
+    position: absolute; width: calc(100% - 30px); left: 15px; top: 70px;
+    background: var(--bg-header);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    max-height: 250px; overflow-y: auto;
+    display: none; z-index: 1001;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-@keyframes fadeUp{
-    from{
-        opacity:0;
-        transform:translateY(20px);
-    }
-    to{
-        opacity:1;
-        transform:translateY(0);
-    }
+.search-results::-webkit-scrollbar { width: 6px; }
+.search-results::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+
+.result-item {
+    display: flex; gap: 12px; padding: 10px 12px;
+    cursor: pointer; transition: 0.2s; align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.result-item:hover { background: rgba(168, 85, 247, 0.1); }
+.result-img { width: 45px; height: 60px; object-fit: cover; border-radius: 8px; }
+.result-title { font-size: 13px; font-weight: 700; color: var(--text-main); }
+.highlight { color: var(--primary); font-weight: 800; }
+.result-meta { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+/* =========================================
+   🎛️ الفلاتر
+========================================= */
+.filters {
+    display: flex; gap: 10px; padding: 15px; overflow-x: auto;
+}
+.filters::-webkit-scrollbar { display: none; }
+
+.filters button {
+    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: var(--bg-card);
+    color: var(--text-label);
+    font-family: 'Cairo', sans-serif; font-weight: 600; font-size: 13px;
+    cursor: pointer; transition: 0.3s;
+    white-space: nowrap;
+}
+.filters button:hover { border-color: var(--primary); }
+.filters button.active {
+    background: rgba(168, 85, 247, 0.15);
+    border-color: var(--primary);
+    color: var(--primary);
 }
 
-.card:hover{
-    transform:scale(1.08);
-    z-index:50; /* مهم */
+/* =========================================
+   📚 شبكة العرض والبطاقات
+========================================= */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 15px; padding: 0 15px 20px 15px;
 }
 
-
-.grid:hover .card:not(:hover){
-    filter: blur(2px) brightness(0.7);
-    transition:0.3s;
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: 0.3s ease;
+    cursor: pointer;
+    display: flex; flex-direction: column;
 }
 
-.filters button.active{
-    background:var(--primary);
+.card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5), 0 0 15px var(--primary-glow);
 }
 
-/* IMAGE */
 .poster {
-    width: 100%;
-    aspect-ratio: 2/3;
-    overflow: hidden; /* مهم */
+    width: 100%; aspect-ratio: 2/3;
+    position: relative; overflow: hidden;
 }
 
 .poster img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition:0.4s;
-
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.4s ease;
 }
+.card:hover .poster img { transform: scale(1.08); }
 
-.card:hover .poster img{
-    transform:scale(1.1);
+/* شارة الحالة */
+.status {
+    position: absolute; top: 8px; right: 8px;
+    padding: 4px 8px; border-radius: 6px;
+    font-size: 10px; font-weight: 700;
+    backdrop-filter: blur(5px);
+    z-index: 2; border: 1px solid rgba(255,255,255,0.1);
 }
+.live { background: rgba(16, 185, 129, 0.2); color: var(--green); border-color: rgba(16, 185, 129, 0.3); }
+.done { background: rgba(59, 130, 246, 0.2); color: var(--blue); border-color: rgba(59, 130, 246, 0.3); }
 
-
-.card::before{
-    content:"";
-    position:absolute;
-    inset:0;
-    border-radius:14px;
-    opacity:0;
-    transition:0.3s;
-    box-shadow:0 0 25px var(--primary);
-}
-
-.card:hover::before{
-    opacity:1;
-}
-
-
-
-.overlay{
-    position:absolute;
-    inset:0;
-    background:linear-gradient(to top, rgba(0,0,0,0.95), transparent 60%);
-    opacity:0;
-    transition:0.3s;
-    display:flex;
-    flex-direction:column;
-    justify-content:flex-end;
-    padding:8px;
-}
-
-.card:hover .overlay{
-    opacity:1;
-}
-
-.overlay h3{
-    font-size:12px;
-}
-
-/* status */
-.status{
-    position:absolute;
-    top:8px;
-    right:8px;
-    width:26px;
-    height:26px;
-    border-radius:50%;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-size:12px;
-}
-
-.live{
-    background:var(--green);
-    animation:pulseG 1.5s infinite;
-}
-.done{
-    background:var(--red);
-    animation:pulseR 1.5s infinite;
-}
-
-@keyframes pulseG{
-0%{box-shadow:0 0 0 0 rgba(16,185,129,.7)}
-70%{box-shadow:0 0 0 10px transparent}
-100%{box-shadow:0 0 0 0 transparent}
-}
-@keyframes pulseR{
-0%{box-shadow:0 0 0 0 rgba(239,68,68,.7)}
-70%{box-shadow:0 0 0 10px transparent}
-100%{box-shadow:0 0 0 0 transparent}
-}
-
-/* content */
-.content{
-    padding:8px;
-}
+/* محتوى البطاقة السفلي */
+.content { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
 
 .title {
-    font-size: 12px;
-    font-weight: 800;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-size: 13px; font-weight: 700; line-height: 1.4;
+    color: var(--text-main); margin-bottom: 8px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 
-.title:hover{
-    white-space:normal;
-    background:#000;
-    position:absolute;
-    z-index:10;
-    padding:5px;
-    border-radius:6px;
-}
-/* genres */
-.genres{
-    display:flex;
-    flex-wrap:wrap;
-    gap:4px;
-    margin-top:5px;
-}
-.tag{
-    background:rgba(139,92,246,.2);
-    padding:2px 6px;
-    border-radius:6px;
-    font-size:9px;
+.genres { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.tag {
+    background: rgba(255, 255, 255, 0.05); color: var(--text-label);
+    padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;
 }
 
-/* rating */
-.stars{
-    margin-top:6px;
-    font-size:11px;
-    color:#fbbf24;
+.meta-footer { display: flex; justify-content: space-between; align-items: center; }
+.stars { font-size: 11px; color: var(--yellow); font-weight: 700; display: flex; align-items: center; gap: 3px; }
+
+/* رسالة التحميل */
+.loader { text-align: center; padding: 50px 20px; color: var(--text-muted); font-weight: 600; }
+
+/* =========================================
+   📱 شريط التنقل السفلي (Bottom Nav)
+========================================= */
+.bottom-nav {
+    position: fixed; bottom: 0; left: 0; width: 100%;
+    background: var(--bg-header);
+    border-top: 1px solid var(--border-color);
+    display: flex; justify-content: space-around; align-items: center;
+    padding: 10px 0; z-index: 1000;
+    padding-bottom: env(safe-area-inset-bottom, 10px); /* للآيفون */
 }
 
-/* loader */
-.loader{
-    text-align:center;
-    padding:40px;
-    color:var(--primary);
+.nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    color: var(--text-muted); text-decoration: none; font-size: 11px; font-weight: 600;
+    transition: 0.3s; width: 25%;
 }
 
-@media (hover: none) {
-    .overlay {
-        opacity: 1;
-        background: linear-gradient(to top, rgba(0,0,0,0.9), transparent 70%);
-    }
-}
-
-/* Wrapper */
-.search-wrap{
-    padding:10px;
-}
-
-/* 🔥 Search Box */
-.search-box{
-    position:relative;
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:12px 14px;
-    border-radius:16px;
-
-    /* الشكل */
-    background:rgba(18,18,26,0.7);
-    backdrop-filter:blur(12px);
-
-    /* بوردر احترافي بدون مشاكل */
-    border:1px solid rgba(139,92,246,0.25);
-
-    /* حركة */
-    transition:0.3s ease;
-}
-
-/* 🔥 Glow عند الفوكس */
-.search-box:focus-within{
-    border-color:#8b5cf6;
-    box-shadow:
-        0 0 0 1px rgba(139,92,246,0.4),
-        0 0 20px rgba(139,92,246,0.35);
-    transform:scale(1.02);
-}
-
-/* 🔍 Icon */
-.icon{
-    width:18px;
-    height:18px;
-    color:#aaa;
-    transition:0.3s;
-}
-
-/* لما تكتب */
-.search-box:focus-within .icon{
-    color:#8b5cf6;
-}
-
-/* ✏️ Input */
-.search-box input{
-    flex:1;
-    background:none;
-    border:none;
-    outline:none;
-    color:#fff;
-    font-family:'Cairo';
-    font-size:14px;
-}
-
-/* Placeholder */
-.search-box input::placeholder{
-    color:#777;
-}
-
-/* 🧠 حركة خفيفة للكتابة */
-.search-box input:focus{
-    caret-color:#8b5cf6;
-}
-
-.clear-btn{
-    width:26px;
-    height:26px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:50%;
-    cursor:pointer;
-
-    color:#aaa;
-    opacity:0;
-    transform:scale(0.7) rotate(90deg);
-
-    transition:0.3s ease;
-}
-
-/* يظهر لما تكتب */
-.clear-btn.show{
-    opacity:1;
-    transform:scale(1) rotate(0);
-}
-
-/* hover */
-.clear-btn:hover{
-    background:rgba(255,255,255,0.08);
-    color:#fff;
-    transform:scale(1.1) rotate(90deg);
-}
-
-/* حركة الأيقونة نفسها */
-.clear-btn i{
-    transition:0.3s;
-}
-
-/* لما تضغط */
-.clear-btn:active i{
-    transform:scale(0.7) rotate(180deg);
-}
-
-/* Dropdown */
-.search-results{
-    margin-top:5px;
-    background:#12121a;
-    border-radius:12px;
-    overflow:hidden;
-    max-height:250px;
-    overflow-y:auto;
-    display:none;
-    border:1px solid rgba(255,255,255,0.05);
-    animation:fadeIn 0.2s ease;
-}
-
-
-@keyframes fadeIn{
-    from{opacity:0; transform:translateY(-10px)}
-    to{opacity:1; transform:translateY(0)}
-}
-/* كل نتيجة */
-
-.result-item:hover{
-    background:rgba(139,92,246,0.2);
-}
-
-/* highlight */
-.highlight{
-    color:#8b5cf6;
-    font-weight:bold;
-}
-
-/* نتيجة متطورة */
-.result-item{
-    display:flex;
-    gap:10px;
-    padding:8px;
-    cursor:pointer;
-    transition:0.2s;
-    align-items:center;
-}
-
-.result-item:hover{
-    background:rgba(139,92,246,0.15);
-}
-
-/* صورة */
-.result-img{
-    width:40px;
-    height:55px;
-    object-fit:cover;
-    border-radius:6px;
-}
-
-/* محتوى */
-.result-content{
-    display:flex;
-    flex-direction:column;
-    gap:2px;
-    flex:1;
-}
-
-/* عنوان */
-.result-title{
-    font-size:13px;
-    font-weight:700;
-}
-
-/* معلومات */
-.result-meta{
-    font-size:10px;
-    color:#aaa;
-}
-
-/* تقييم */
-.result-rating{
-    font-size:10px;
-    color:#fbbf24;
-}
+.nav-item i { font-size: 18px; }
+.nav-item.active { color: var(--primary); }
+.nav-item:hover { color: var(--text-main); }
 
 </style>
 </head>
 
 <body>
 
+<!-- شريط البحث العلوي -->
 <header>
-<div class="search-wrap">
     <div class="search-box">
-        <svg class="icon" viewBox="0 0 24 24">
-            <path fill="currentColor"
-            d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 1 0 14 15.5l.27.28v.79L20 21.5 21.5 20l-6-6zM10 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
-        </svg>
-
-        <input id="searchInput" type="text" placeholder="ابحث عن مانجا...">
-
-        <span class="clear-btn" onclick="clearSearch()">
-    <i class="fa-solid fa-xmark"></i>
-</span>
+        <i class="icon fa-solid fa-magnifying-glass"></i>
+        <input id="searchInput" type="text" placeholder="ابحث عن مانجا، مانهوا...">
+        <span class="clear-btn" onclick="clearSearch()"><i class="fa-solid fa-xmark"></i></span>
     </div>
-
     <div id="searchResults" class="search-results"></div>
-</div>
 </header>
 
+<!-- الفلاتر -->
 <div class="filters">
-<button onclick="filter('all')">الكل</button>
-<button onclick="filter('مستمر')">🔥 مستمر</button>
-<button onclick="filter('مكتمل')">✔ مكتمل</button>
+    <button class="active" onclick="filter('all', this)">الكل</button>
+    <button onclick="filter('مستمر', this)"><span style="color:var(--green)">●</span> مستمر</button>
+    <button onclick="filter('مكتمل', this)"><span style="color:var(--blue)">✔</span> مكتمل</button>
 </div>
 
-<div id="loader" class="loader">جاري التحميل... 🏰</div>
+<!-- المحتوى -->
+<div id="loader" class="loader"><i class="fas fa-spinner fa-spin"></i> جاري جلب البيانات...</div>
 <div id="grid" class="grid"></div>
+
+<!-- 📱 شريط التنقل السفلي للذهاب لصفحة الإحصائيات -->
+<nav class="bottom-nav">
+    <a href="#" class="nav-item active">
+        <i class="fa-solid fa-house"></i>
+        <span>الرئيسية</span>
+    </a>
+    <a href="statistics.html" class="nav-item">
+        <i class="fa-solid fa-chart-simple"></i>
+        <span>إحصائياتي</span>
+    </a>
+</nav>
 
 <script>
 let dataAll=[];
 
-Telegram.WebApp.ready();
-Telegram.WebApp.expand();
+// تهيئة تليجرام
+if(window.Telegram && Telegram.WebApp) {
+    Telegram.WebApp.ready();
+    Telegram.WebApp.expand();
+}
 
 async function init(){
-    const res=await fetch('data.json?v='+Date.now());
-    const data=await res.json();
-    dataAll=data.mangas;
-    bot=data.bot_username;
+    try {
+        const res = await fetch('data.json?v='+Date.now());
+        const data = await res.json();
+        dataAll = data.mangas;
 
-    document.getElementById('loader').style.display='none';
-    render(dataAll);
+        document.getElementById('loader').style.display='none';
+        render(dataAll);
+    } catch(e) {
+        document.getElementById('loader').innerHTML = 'حدث خطأ في تحميل البيانات.';
+    }
 }
 
-function stars(r){
-    let full=Math.floor(r/2);
-    let s='';
-    for(let i=0;i<full;i++) s+='★';
-    return s;
-}
-
+// دالة لجلب أول تصنيفين فقط بشكل نظيف
 function cleanGenres(g){
-    return g.replace(/[^\w\s,]/g,'')
+    if(!g) return [];
+    return g.replace(/[^\w\s,\u0600-\u06FF]/g,'') // يسمح بالعربي
     .split(',')
     .map(x=>x.trim())
-    .filter(x=>x.length>2)
-    .slice(0,2);
+    .filter(x=>x.length > 2)
+    .slice(0, 2);
 }
 
+// دالة رسم البطاقات
 function render(arr){
-    let grid=document.getElementById('grid');
-    grid.innerHTML='';
+    let grid = document.getElementById('grid');
+    grid.innerHTML = '';
 
-    arr.forEach(m=>{
-        let live=m.status.includes('مستمر');
+    arr.forEach(m => {
+        let live = m.status && m.status.includes('مستمر');
+        let rating = m.rating ? parseFloat(m.rating).toFixed(1) : "0.0";
 
-        let card=document.createElement('div');
-        card.className='card';
+        let card = document.createElement('div');
+        card.className = 'card';
+        
+        // عند الضغط يذهب لصفحة التفاصيل
+        card.onclick = () => { window.location.href = `details.html?id=${m.id}`; };
 
-        card.onclick = () => {
-    window.location.href = `details.html?id=${m.id}`;
-};
-
-        card.innerHTML=`
+        card.innerHTML = `
         <div class="poster">
-            <div class="status ${live?'live':'done'}">
-                ${live?'▶':'✔'}
+            <div class="status ${live ? 'live' : 'done'}">
+                ${live ? 'مستمر' : 'مكتمل'}
             </div>
-
-            <img src="${m.image_url}" decoding="async">
-
-   <div class="overlay">
-    <div style="font-size:11px;font-weight:800;line-height:1.3;max-height:32px;overflow:hidden">
-        ${m.title}
-    </div>
-    <div style="font-size:9px;color:#aaa">
-        ${cleanGenres(m.genre).join(' • ')}
-    </div>
-</div>
+            <img src="${m.image_url}" loading="lazy" alt="poster">
         </div>
-
         <div class="content">
             <div class="title">${m.title}</div>
-
             <div class="genres">
-                ${cleanGenres(m.genre).map(g=>`<span class="tag">${g}</span>`).join('')}
+                ${cleanGenres(m.genre).map(g => `<span class="tag">${g}</span>`).join('')}
             </div>
-
-            <div class="stars">${stars(m.rating)}</div>
+            <div class="meta-footer">
+                <div class="stars"><i class="fa-solid fa-star"></i> ${rating}</div>
+            </div>
         </div>
         `;
-
         grid.appendChild(card);
     });
 }
 
+// خوارزمية البحث الذكي (كما هي من كودك)
 function smartSearch(query){
     query = query.toLowerCase();
-
     let seen = new Set();
 
-    return dataAll.map(m=>{
+    return dataAll.map(m => {
         let title = m.title.toLowerCase();
         let score = 0;
 
-        // 🎯 تطابق كامل
         if(title === query) score += 200;
-
-        // 🎯 يبدأ بالكلمة
         if(title.startsWith(query)) score += 120;
-
-        // 🎯 كلمة مستقلة (مش جزء من كلمة)
         if(title.split(' ').includes(query)) score += 100;
-
-        // 🎯 يحتوي عليها
         if(title.includes(query)) score += 40;
 
-        // 🎯 تقليل النتائج البعيدة
         let distance = Math.abs(title.length - query.length);
         score -= distance;
-
-        // ⭐ التقييم
         score += (m.rating || 0) * 2;
 
         return {...m, score};
     })
-    .filter(m => m.score > 30) // فلترة القمامة
-    .sort((a,b)=>b.score - a.score)
-    .filter(m=>{
-        // ❌ منع التكرار (لو نفس الاسم)
+    .filter(m => m.score > 10) 
+    .sort((a,b) => b.score - a.score)
+    .filter(m => {
         if(seen.has(m.title)) return false;
         seen.add(m.title);
         return true;
     });
 }
 
-function filter(type){
-    document.querySelectorAll('.filters button').forEach(b=>b.classList.remove('active'));
-    event.target.classList.add('active');
+// فلترة الأزرار (الكل، مستمر، مكتمل)
+function filter(type, btn){
+    document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
 
-    if(type==='all') return render(dataAll);
-    render(dataAll.filter(m=>m.status.includes(type)));
+    if(type === 'all') return render(dataAll);
+    render(dataAll.filter(m => m.status && m.status.includes(type)));
 }
-init();
 
+// منطق صندوق البحث
 const input = document.getElementById('searchInput');
 const resultsBox = document.getElementById('searchResults');
 const clearBtn = document.querySelector('.clear-btn');
 
 input.addEventListener('input', () => {
-    let q = input.value.toLowerCase();
+    let q = input.value.trim().toLowerCase();
 
-    // زر المسح
     if(q){
-    clearBtn.classList.add('show');
-}else{
-    clearBtn.classList.remove('show');
-}
+        clearBtn.classList.add('show');
+    } else {
+        clearBtn.classList.remove('show');
+    }
 
     if(!q){
         resultsBox.style.display = 'none';
-        render(dataAll);
+        render(dataAll); // إعادة عرض الكل إذا تم مسح البحث
         return;
     }
 
     let filtered = smartSearch(q);
-
-    render(filtered);
-    showResults(filtered, q);
+    render(filtered); // تحديث الشبكة بالنتائج
+    showResults(filtered, q); // تحديث القائمة المنسدلة
 });
 
 function showResults(arr, q){
     if(arr.length === 0){
-        resultsBox.innerHTML = `<div class="result-item">مفيش نتائج</div>`;
+        resultsBox.innerHTML = `<div class="result-item" style="color:var(--text-muted); justify-content:center;">لا توجد نتائج تطابق بحثك</div>`;
         resultsBox.style.display = 'block';
         return;
     }
 
-    resultsBox.innerHTML = arr.slice(0,5).map(m=>{
-        let title = m.title.replace(
-            new RegExp(q, 'gi'),
-            match => `<span class="highlight">${match}</span>`
-        );
+    resultsBox.innerHTML = arr.slice(0, 5).map(m => {
+        // تمييز النص المطابق
+        let title = m.title.replace(new RegExp(q, 'gi'), match => `<span class="highlight">${match}</span>`);
+        let rating = m.rating ? parseFloat(m.rating).toFixed(1) : "0.0";
 
         return `
         <div class="result-item" onclick="goTo(${m.id})">
-
-            <img src="${m.image_url}" class="result-img">
-
-            <div class="result-content">
+            <img src="${m.image_url}" class="result-img" alt="img">
+            <div style="flex:1;">
                 <div class="result-title">${title}</div>
-
-                <div class="result-meta">
-                    ${cleanGenres(m.genre).join(' • ')}
-                </div>
-
-                <div class="result-rating">
-                    ⭐ ${m.rating}
-                </div>
+                <div class="result-meta">${cleanGenres(m.genre).join(' • ')}</div>
             </div>
-
+            <div style="font-size:11px; color:var(--yellow); font-weight:700;"><i class="fa-solid fa-star"></i> ${rating}</div>
         </div>
         `;
     }).join('');
@@ -674,15 +439,20 @@ function goTo(id){
 function clearSearch(){
     input.value = '';
     resultsBox.style.display = 'none';
-    clearBtn.style.display = 'none';
-    render(dataAll);
+    clearBtn.classList.remove('show');
+    render(dataAll); // العودة للكل
+    input.focus();
 }
 
+// إغلاق القائمة المنسدلة عند الضغط في أي مكان خارجها
 document.addEventListener('click', (e) => {
-    if(!e.target.closest('.search-wrap')){
+    if(!e.target.closest('header')){
         resultsBox.style.display = 'none';
     }
 });
+
+// تشغيل جلب البيانات
+init();
 </script>
 
 </body>
