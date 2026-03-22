@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إحصائياتي</title>
+    
+    <!-- كود التصميم (CSS) -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+
+        body.stats-body {
+            background-color: #0f141e; /* لون الخلفية الداكن */
+            color: #ffffff;
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .stats-container {
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            padding-bottom: 80px; /* مساحة للبار السفلي إن وجد */
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 20px 0 10px 0;
+        }
+
+        /* بطاقة الإحصائيات العلوية */
+        .top-stats-card {
+            background-color: #1e1b24;
+            border: 1px solid #2d2433;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .divider {
+            width: 1px;
+            background-color: #333;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #a0a0a0;
+        }
+
+        /* ألوان النصوص المخصصة */
+        .red-text { color: #f43f5e; }
+        .purple-text { color: #a855f7; }
+        .orange-text { color: #f97316; }
+        .blue-text { color: #3b82f6; }
+        .green-text { color: #10b981; }
+
+        /* شبكة حالة القراءة */
+        .reading-status-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .status-card {
+            border-radius: 10px;
+            padding: 15px 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #1a202c;
+            border: 1px solid #2d3748;
+        }
+
+        .status-card.purple-card { border-color: rgba(168, 85, 247, 0.3); background-color: rgba(168, 85, 247, 0.05); }
+        .status-card.orange-card { border-color: rgba(249, 115, 22, 0.3); background-color: rgba(249, 115, 22, 0.05); }
+        .status-card.blue-card { border-color: rgba(59, 130, 246, 0.3); background-color: rgba(59, 130, 246, 0.05); }
+        .status-card.green-card { border-color: rgba(16, 185, 129, 0.3); background-color: rgba(16, 185, 129, 0.05); }
+
+        .status-value {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .status-label {
+            font-size: 11px;
+            color: #cbd5e1;
+        }
+
+        /* بطاقة حسب النوع */
+        .type-stats-card {
+            background-color: #1a2235;
+            border-radius: 12px;
+            padding: 15px 20px;
+        }
+
+        .type-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .type-name {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #e2e8f0;
+            font-weight: 600;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+
+        .red-dot { background-color: #f43f5e; }
+        .blue-dot { background-color: #3b82f6; }
+        .yellow-dot { background-color: #eab308; }
+
+        .type-value {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        /* حالة لا توجد بيانات */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        .chart-icon {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            margin-bottom: 15px;
+            height: 30px;
+        }
+
+        .chart-icon .bar {
+            background-color: #4b5563;
+            width: 4px;
+            border-radius: 2px;
+        }
+
+        .chart-icon .bar-1 { height: 15px; }
+        .chart-icon .bar-2 { height: 30px; }
+        .chart-icon .bar-3 { height: 20px; }
+
+        .empty-state h3 {
+            font-size: 16px;
+            margin: 0 0 5px 0;
+            color: #f1f5f9;
+        }
+
+        .empty-state p {
+            font-size: 12px;
+            color: #64748b;
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="stats-body">
+
+    <!-- هيكل الصفحة (HTML) -->
+    <div class="stats-container">
+        <h1 class="page-title">إحصائياتي</h1>
+
+        <!-- قسم الإحصائيات العامة -->
+        <div class="top-stats-card">
+            <div class="stat-item">
+                <span class="stat-value red-text" id="avg-rating">—</span>
+                <span class="stat-label">متوسط التقييم</span>
+            </div>
+            <div class="divider"></div>
+            <div class="stat-item">
+                <span class="stat-value red-text" id="chapters-read">0</span>
+                <span class="stat-label">فصل مقروء</span>
+            </div>
+            <div class="divider"></div>
+            <div class="stat-item">
+                <span class="stat-value red-text" id="total-titles">0</span>
+                <span class="stat-label">إجمالي العناوين</span>
+            </div>
+        </div>
+
+        <!-- قسم حالة القراءة -->
+        <h2 class="section-title">حالة القراءة</h2>
+        <div class="reading-status-grid">
+            <div class="status-card purple-card">
+                <span class="status-value purple-text" id="status-planned">0</span>
+                <span class="status-label">مخطط</span>
+            </div>
+            <div class="status-card orange-card">
+                <span class="status-value orange-text" id="status-paused">0</span>
+                <span class="status-label">متوقف</span>
+            </div>
+            <div class="status-card blue-card">
+                <span class="status-value blue-text" id="status-completed">0</span>
+                <span class="status-label">مكتمل</span>
+            </div>
+            <div class="status-card green-card">
+                <span class="status-value green-text" id="status-reading">0</span>
+                <span class="status-label">قيد القراءة</span>
+            </div>
+        </div>
+
+        <!-- قسم حسب النوع -->
+        <h2 class="section-title">حسب النوع</h2>
+        <div class="type-stats-card">
+            <div class="type-item">
+                <div class="type-name"><span class="dot red-dot"></span> مانجا</div>
+                <div class="type-value" id="type-manga">0</div>
+            </div>
+            <div class="type-item">
+                <div class="type-name"><span class="dot blue-dot"></span> مانهوا</div>
+                <div class="type-value" id="type-manhwa">0</div>
+            </div>
+            <div class="type-item">
+                <div class="type-name"><span class="dot yellow-dot"></span> مانهوا صينية</div>
+                <div class="type-value" id="type-manhua">0</div>
+            </div>
+        </div>
+
+        <!-- حالة عدم وجود بيانات -->
+        <div class="empty-state" id="empty-state-section">
+            <div class="chart-icon">
+                <div class="bar bar-1"></div>
+                <div class="bar bar-2"></div>
+                <div class="bar bar-3"></div>
+            </div>
+            <h3>لا توجد بيانات بعد</h3>
+            <p>أضف عناوين إلى مكتبتك لرؤية الإحصائيات</p>
+        </div>
+
+    </div>
+
+    <!-- كود البرمجة (JavaScript) -->
+    <script>
+   document.addEventListener("DOMContentLoaded", function() {
+    
+    // 1. استدعاء البيانات الحقيقية من متصفح المستخدم (والتي تم حفظها من صفحة التفاصيل)
+    const savedData = JSON.parse(localStorage.getItem('myMangaStats')) || {};
+
+    // 2. كائن لجمع الإحصائيات النهائية
+    const stats = {
+        totalTitles: 0,
+        chaptersRead: 0,
+        totalRatingScore: 0, // لجمع التقييمات وحساب المتوسط
+        ratedMangasCount: 0, // عدد المانجات التي تم تقييمها
+        status: { planned: 0, paused: 0, completed: 0, reading: 0 },
+        types: { manga: 0, manhwa: 0, manhua: 0 }
+    };
+
+    // 3. حلقة للمرور على كل المانجات المحفوظة وحساب الإحصائيات
+    for (const mangaId in savedData) {
+        const manga = savedData[mangaId];
+        
+        // تجاهل المانجا إذا لم يكن لها حالة قراءة ولم يقرأ منها شيئاً ولم يقيمها
+        if (manga.status === 'none' && manga.readChapters.length === 0 && manga.rating === 0) continue;
+
+        stats.totalTitles++; // زيادة عدد العناوين
+        stats.chaptersRead += manga.readChapters.length; // جمع عدد الفصول المقروءة
+
+        // جمع التقييمات
+        if (manga.rating > 0) {
+            stats.totalRatingScore += manga.rating;
+            stats.ratedMangasCount++;
+        }
+
+        // حساب الحالات
+        if (manga.status === 'planned') stats.status.planned++;
+        else if (manga.status === 'paused') stats.status.paused++;
+        else if (manga.status === 'completed') stats.status.completed++;
+        else if (manga.status === 'reading') stats.status.reading++;
+
+        // حساب الأنواع
+        if (manga.type === 'manga') stats.types.manga++;
+        else if (manga.type === 'manhwa') stats.types.manhwa++;
+        else if (manga.type === 'manhua') stats.types.manhua++;
+    }
+
+    // حساب متوسط التقييم
+    let finalAvgRating = "—";
+    if (stats.ratedMangasCount > 0) {
+        finalAvgRating = (stats.totalRatingScore / stats.ratedMangasCount).toFixed(1);
+    }
+
+    // 4. تحديث واجهة المستخدم (وضع الأرقام في HTML)
+    document.getElementById("total-titles").textContent = stats.totalTitles;
+    document.getElementById("chapters-read").textContent = stats.chaptersRead;
+    document.getElementById("avg-rating").textContent = finalAvgRating;
+
+    document.getElementById("status-planned").textContent = stats.status.planned;
+    document.getElementById("status-paused").textContent = stats.status.paused;
+    document.getElementById("status-completed").textContent = stats.status.completed;
+    document.getElementById("status-reading").textContent = stats.status.reading;
+
+    document.getElementById("type-manga").textContent = stats.types.manga;
+    document.getElementById("type-manhwa").textContent = stats.types.manhwa;
+    document.getElementById("type-manhua").textContent = stats.types.manhua;
+
+    // إخفاء أو إظهار رسالة "لا توجد بيانات"
+    const emptyStateSection = document.getElementById("empty-state-section");
+    if (stats.totalTitles === 0) {
+        emptyStateSection.style.display = "flex";
+    } else {
+        emptyStateSection.style.display = "none";
+    }
+});
+    </script>
+</body>
+</html>
