@@ -322,29 +322,24 @@ async function init(){
 
         if(!m) return;
 
-        document.getElementById('bg').src = m.image_url;
-        document.getElementById('poster').src = m.image_url;
+        // تعبئة البيانات
         document.getElementById('title').innerText = m.title;
         document.getElementById('desc').innerText = m.description;
+        document.getElementById('poster').src = m.image_url;
+        document.getElementById('bg').src = m.image_url;
 
-        // إخفاء إحصائيات المشاهدات والفصول لأنها مش موجودة في الداتا بيز
-        document.querySelector('.quick-stats').classList.add('hidden');
-
-        // التصنيفات
-        if(m.genre) {
-            let parts = m.genre.includes('•') ? m.genre.split('•') : m.genre.split(',');
-            document.getElementById('genres').innerHTML = parts.map(g => `<span class="tag">${g.trim()}</span>`).join('');
+        // إظهار عدد الفصول في الـ Quick Stats (لو القسم موجود عندك)
+        const statsElement = document.getElementById('chapters-count-info');
+        if(statsElement) {
+            statsElement.innerHTML = `<i class="fas fa-book-open"></i> ${m.chapters_count} فصل`;
         }
 
-        setupInteractiveRating(parseFloat(m.rating) || 0);
-        renderChapters(m);
-
-        document.getElementById('readBtn').onclick = () => {
-            window.location.href = `https://t.me/${data.bot_username}?start=m${m.id}`;
-        };
+        // تشغيل دالة رسم الفصول
+        renderChapters(m); 
+        
+        // ... باقي الكود (التصنيفات والتقييم)
     } catch (e) { console.log(e); }
 }
-
 // نظام التقييم التفاعلي
 function setupInteractiveRating(initialRating) {
     const container = document.getElementById('star-container');
