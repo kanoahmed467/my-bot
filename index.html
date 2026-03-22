@@ -19,13 +19,39 @@
         
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; padding: 20px; }
         
-        .card { background: var(--card); border-radius: 16px; overflow: hidden; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); }
+        .card { background: var(--card); border-radius: 16px; overflow: hidden; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); transition: transform 0.2s; }
         .card:active { transform: scale(0.95); }
         
-        .cover-wrapper { width: 100%; aspect-ratio: 2/3; display: flex; align-items: center; justify-content: center; position: relative; }
-        .cover-initial { font-size: 50px; font-weight: 900; color: rgba(255,255,255,0.8); }
+        .cover-wrapper { 
+            width: 100%; 
+            aspect-ratio: 2/3; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            position: relative; 
+            overflow: hidden; 
+        }
         
-        .badge { position: absolute; top: 8px; right: 8px; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); }
+        .cover-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 2; 
+            transition: opacity 0.3s;
+        }
+
+        .cover-initial { 
+            position: relative;
+            z-index: 1; 
+            font-size: 50px; 
+            font-weight: 900; 
+            color: rgba(255,255,255,0.3); 
+        }
+        
+        .badge { position: absolute; top: 8px; right: 8px; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 3; }
         .status-releasing { color: #34d399; }
         .status-finished { color: #f87171; }
         
@@ -49,7 +75,7 @@
     <div id="mangaGrid" class="grid"></div>
 
     <script>
-        let allMangas =[];
+        let allMangas = [];
         let botUsername = "";
 
         window.Telegram.WebApp.ready();
@@ -57,14 +83,14 @@
         window.Telegram.WebApp.setHeaderColor('#0f0f13');
 
         function getGradient(id) {
-            const hues =[260, 320, 200, 150, 10, 45, 190];
+            const hues = [260, 320, 200, 150, 10, 45, 190];
             const h = hues[id % hues.length];
             return `linear-gradient(135deg, hsl(${h}, 80%, 20%), hsl(${h + 40}, 80%, 10%))`;
         }
 
         async function init() {
             try {
-                // 👈 هنا الصفحة بتقرأ ملف الداتا اللي البوت هيرفعه على جيت هاب!
+                // تخطي كاش ملف الـ JSON
                 const response = await fetch('data.json?t=' + new Date().getTime());
                 const data = await response.json();
                 allMangas = data.mangas;
@@ -73,7 +99,8 @@
                 document.getElementById('loader').style.display = 'none';
                 renderMangas(allMangas);
             } catch (err) {
-                document.getElementById('loader').innerText = "❌ لم يتم تحديث الفهرس بعد.";
+                console.error(err);
+                document.getElementById('loader').innerText = "❌ لم يتم تحديث الفهرس بعد أو توجد مشكلة في الاتصال.";
             }
         }
 
@@ -82,13 +109,19 @@
             grid.innerHTML = '';
             
             mangas.forEach(m => {
-                const statusClass = m.status.includes('مستمر') ? 'status-releasing' : 'status-finished';
-                const firstLetter = m.title.charAt(0);
+                const statusClass = (m.status && m.status.includes('مستمر')) ? 'status-releasing' : 'status-finished';
+                const firstLetter = m.title ? m.title.charAt(0) : '?';
                 const gradient = getGradient(m.id);
+                
+                // 🛠️ التعديل هنا: إضافة توقيت زمني لرابط الصورة لتخطي كاش سيرفرات جيت هاب
+                const timestamp = new Date().getTime();
+                
+                // 🛠️ تغيير onerror ليقوم بإخفاء الصورة تماماً (display: none) لو لم تنجح في التحميل
+                const coverImgHtml = m.image_url ? 
+                    `<img src="${m.image_url}?v=${timestamp}" class="cover-img" alt="${m.title}" onerror="this.style.display='none'; console.warn('لم يتم العثور على صورة للعمل رقم ${m.id}');">` : '';
 
                 const card = document.createElement('div');
                 card.className = 'card';
-                // 👈 الضربة القاضية: فتح المانجا في البوت فوراً
                 card.onclick = () => {
                     const deepLink = `https://t.me/${botUsername}?start=m${m.id}`;
                     window.Telegram.WebApp.openTelegramLink(deepLink);
@@ -97,12 +130,13 @@
                 card.innerHTML = `
                     <div class="cover-wrapper" style="background: ${gradient};">
                         <div class="cover-initial">${firstLetter}</div>
-                        <span class="badge ${statusClass}">${m.status}</span>
+                        ${coverImgHtml}
+                        <span class="badge ${statusClass}">${m.status || 'غير محدد'}</span>
                     </div>
                     <div class="info">
                         <h3 class="title">${m.title}</h3>
-                        <div class="genres">${m.genre}</div>
-                        <div class="rating" style="font-size:11px; color:#fbbf24; margin-top:5px; font-weight:bold;">⭐ ${m.rating}</div>
+                        <div class="genres">${m.genre || ''}</div>
+                        <div class="rating" style="font-size:11px; color:#fbbf24; margin-top:5px; font-weight:bold;">⭐ ${m.rating || 'N/A'}</div>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -111,7 +145,10 @@
 
         function filterMangas() {
             const query = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = allMangas.filter(m => m.title.toLowerCase().includes(query) || m.genre.includes(query));
+            const filtered = allMangas.filter(m => 
+                (m.title && m.title.toLowerCase().includes(query)) || 
+                (m.genre && m.genre.toLowerCase().includes(query))
+            );
             renderMangas(filtered);
         }
 
