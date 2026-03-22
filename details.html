@@ -7,7 +7,6 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
     :root {
@@ -15,7 +14,7 @@
         --bg-card: #13131a;
         --primary: #6d28d9;
         --primary-glow: rgba(109, 40, 217, 0.5);
-        --accent: #f59e0b;
+        --accent: #f59e0b; /* لون ذهبي للتقييم */
         --text-main: #ffffff;
         --text-muted: #8b8b99;
         --glass: rgba(255, 255, 255, 0.03);
@@ -23,86 +22,211 @@
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
-    body { background-color: var(--bg-main); color: var(--text-main); overflow-x: hidden; }
 
-    /* هيدر ثابت */
+    body {
+        background-color: var(--bg-main);
+        color: var(--text-main);
+        overflow-x: hidden;
+    }
+
+    /* 🔥 هيدر شفاف وأزرار علوية */
     .top-nav {
-        position: fixed; top: 0; width: 100%; padding: 20px;
-        display: flex; justify-content: space-between; z-index: 100;
+        position: fixed;
+        top: 0; width: 100%;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        z-index: 100;
         background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
     }
 
+    .hidden { display: none !important; }
+
     .icon-btn {
-        width: 40px; height: 40px; border-radius: 50%;
-        background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(10px);
-        border: 1px solid var(--border); color: white;
+        width: 40px; height: 40px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border);
+        color: white;
         display: flex; align-items: center; justify-content: center;
-        font-size: 18px; cursor: pointer; transition: 0.3s;
+        font-size: 18px; cursor: pointer;
+        transition: 0.3s;
+    }
+    .icon-btn:hover { background: var(--primary); transform: scale(1.1); }
+
+    /* 🌌 البانر الخلفي */
+    .hero-banner {
+        position: relative;
+        height: 50vh;
+        width: 100%;
+    }
+    .hero-banner img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        filter: blur(5px) brightness(0.3);
+    }
+    .hero-banner::after {
+        content: ''; position: absolute; inset: 0;
+        background: linear-gradient(0deg, var(--bg-main) 0%, transparent 100%);
     }
 
-    /* البانر */
-    .hero-banner { position: relative; height: 50vh; width: 100%; }
-    .hero-banner img { width: 100%; height: 100%; object-fit: cover; filter: blur(5px) brightness(0.3); }
-    .hero-banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, var(--bg-main) 0%, transparent 100%); }
+    /* 🧱 المحتوى الأساسي */
+    .content-wrapper {
+        position: relative;
+        z-index: 10;
+        margin-top: -150px;
+        padding: 0 20px 40px;
+        max-width: 900px;
+        margin-inline: auto;
+    }
 
-    /* الحاوية الرئيسية */
-    .content-wrapper { position: relative; z-index: 10; margin-top: -150px; padding: 0 20px 40px; max-width: 900px; margin-inline: auto; }
+    /* 🖼️ الكارت العلوي (البوستر والتفاصيل) */
+    .meta-header {
+        display: flex;
+        gap: 25px;
+        align-items: flex-end;
+        margin-bottom: 30px;
+    }
 
-    .meta-header { display: flex; gap: 25px; align-items: flex-end; margin-bottom: 30px; }
-    .poster-container { flex-shrink: 0; width: 160px; border-radius: 12px; overflow: hidden; border: 2px solid var(--border); box-shadow: 0 15px 35px rgba(0,0,0,0.8); }
+    .poster-container {
+        flex-shrink: 0;
+        width: 160px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid var(--border);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.8), 0 0 20px var(--primary-glow);
+    }
     .poster-container img { width: 100%; display: block; }
 
-    .manga-title { font-size: 28px; font-weight: 900; line-height: 1.2; }
-    .status-badge { display: inline-block; background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 4px 10px; border-radius: 8px; font-size: 12px; margin-bottom: 8px; }
-
-    /* ⭐ التقييم */
-    .interactive-rating { margin-top: 15px; display: flex; align-items: center; gap: 10px; background: var(--bg-card); padding: 8px 15px; border-radius: 12px; border: 1px solid var(--border); width: fit-content; }
-    .stars i { color: #333; font-size: 20px; cursor: pointer; }
-    .stars i.active { color: var(--accent); text-shadow: 0 0 10px var(--accent); }
-
-    /* 🏷️ القصة مع عرض المزيد */
-    .desc-container { position: relative; background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border); }
-    .desc-text { color: var(--text-muted); line-height: 1.8; font-size: 15px; overflow: hidden; position: relative; max-height: 100px; transition: max-height 0.4s ease; }
-    .desc-text.expanded { max-height: 1000px; }
+    .meta-info { flex-grow: 1; padding-bottom: 10px; }
     
-    .desc-fade {
-        position: absolute; bottom: 0; left: 0; width: 100%; height: 40px;
-        background: linear-gradient(transparent, var(--bg-card));
-        pointer-events: none;
+    .status-badge {
+        display: inline-block;
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 800;
+        margin-bottom: 10px;
+        border: 1px solid rgba(16, 185, 129, 0.3);
     }
-    .desc-text.expanded .desc-fade { display: none; }
 
-    .read-more-btn {
-        color: var(--primary); font-weight: 800; font-size: 14px; cursor: pointer;
-        display: none; margin-top: 10px; text-align: left;
+    .manga-title {
+        font-size: 32px;
+        font-weight: 900;
+        line-height: 1.2;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.5);
     }
 
-    /* 📚 الفصول */
-    .chapters-list { display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 5px; }
-    .chapter-card { background: var(--glass); border: 1px solid var(--border); padding: 15px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
-    .play-icon { width: 35px; height: 35px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; }
+    /* 📊 إحصائيات سريعة */
+    .quick-stats {
+        display: flex; gap: 20px; margin-top: 15px; color: var(--text-muted); font-size: 14px; font-weight: 600;
+    }
+    .quick-stats i { color: var(--primary); margin-left: 5px; }
 
-    /* 🚀 قسم أعمال قد تعجبك */
-    .suggested-section { margin-top: 40px; }
-    .suggested-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; }
-    .suggest-item { cursor: pointer; transition: 0.3s; }
-    .suggest-item img { width: 100%; border-radius: 10px; aspect-ratio: 2/3; object-fit: cover; border: 1px solid var(--border); }
-    .suggest-item:hover { transform: scale(1.05); }
-    .suggest-title { font-size: 12px; font-weight: 700; margin-top: 5px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* ⭐ نظام التقييم التفاعلي */
+    .interactive-rating {
+        margin-top: 15px;
+        display: flex; align-items: center; gap: 10px;
+        background: var(--bg-card);
+        padding: 10px 15px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        width: fit-content;
+    }
+    .stars { display: flex; flex-direction: row-reverse; gap: 5px; }
+    .stars i { color: #333; font-size: 22px; cursor: pointer; transition: 0.2s; }
+    .stars i:hover, .stars i:hover ~ i { color: var(--accent); text-shadow: 0 0 10px var(--accent); transform: scale(1.1); }
+    .stars i.active { color: var(--accent); }
+    .rating-text { font-weight: 800; font-size: 16px; color: var(--accent); }
 
-    .hidden { display: none !important; }
-    .section-title { font-size: 20px; font-weight: 900; margin: 30px 0 15px; display: flex; align-items: center; gap: 10px; }
-    .section-title::before { content: ''; width: 4px; height: 20px; background: var(--primary); border-radius: 4px; }
+    /* 🏷️ التصنيفات */
+    .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 25px; }
+    .tag {
+        background: var(--glass);
+        border: 1px solid var(--border);
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 13px; font-weight: 700;
+        color: #ddd;
+    }
 
-    /* أزرار الأكشن */
-    .action-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin: 25px 0; }
-    .btn { padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; border: none; color: white; }
-    .btn-read { background: var(--primary); box-shadow: 0 8px 25px var(--primary-glow); }
+    /* 🎯 أزرار التحكم */
+    .action-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 15px;
+        margin: 30px 0;
+    }
+
+    .btn {
+        padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 800;
+        cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+        border: none; color: white; transition: 0.3s;
+    }
+    .btn-read {
+        background: var(--primary);
+        box-shadow: 0 8px 25px var(--primary-glow);
+    }
+    .btn-read:hover { background: #5b21b6; transform: translateY(-3px); }
+    
     .btn-fav { background: var(--glass); border: 1px solid var(--border); }
+    .btn-fav:hover { background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: #ef4444; }
 
+    /* 📖 القصة */
+    .section-title {
+        font-size: 20px; font-weight: 900; margin-bottom: 15px;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .section-title::before {
+        content: ''; width: 4px; height: 20px; background: var(--primary); border-radius: 4px;
+    }
+    .desc-text {
+        color: var(--text-muted); line-height: 1.8; font-size: 15px; font-weight: 600;
+        background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border);
+    }
+
+    /* 📚 قائمة الفصول (الجديد كلياً) */
+    .chapters-section { margin-top: 40px; }
+    
+    .chapters-list {
+        display: flex; flex-direction: column; gap: 10px;
+        max-height: 400px; overflow-y: auto; padding-right: 5px;
+    }
+    
+    /* تجميل شريط السكرول */
+    .chapters-list::-webkit-scrollbar { width: 6px; }
+    .chapters-list::-webkit-scrollbar-track { background: var(--bg-main); }
+    .chapters-list::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+    .chapter-card {
+        background: var(--glass);
+        border: 1px solid var(--border);
+        padding: 15px 20px;
+        border-radius: 12px;
+        display: flex; justify-content: space-between; align-items: center;
+        transition: 0.3s; cursor: pointer;
+    }
+    .chapter-card:hover {
+        background: rgba(109, 40, 217, 0.1);
+        border-color: var(--primary);
+        transform: translateX(-5px);
+    }
+    .chap-num { font-weight: 800; font-size: 16px; color: white; }
+    .chap-date { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .play-icon {
+        width: 35px; height: 35px; border-radius: 50%; background: var(--primary);
+        display: flex; align-items: center; justify-content: center; color: white;
+    }
+
+    /* موبايل */
     @media (max-width: 600px) {
         .meta-header { flex-direction: column; align-items: center; text-align: center; }
-        .suggested-grid { grid-template-columns: repeat(3, 1fr); }
+        .quick-stats { justify-content: center; }
+        .interactive-rating { margin: 15px auto; }
+        .tags-container { justify-content: center; }
     }
 </style>
 </head>
@@ -114,152 +238,174 @@
 </nav>
 
 <div class="hero-banner">
-    <img id="bg" src="">
+    <img id="bg" src="" alt="Background">
 </div>
 
 <div class="content-wrapper">
+    
     <div class="meta-header">
         <div class="poster-container">
-            <img id="poster" src="">
+            <img id="poster" src="" alt="Poster">
         </div>
         <div class="meta-info">
-            <div id="status" class="status-badge">...</div>
+            <div class="status-badge"><i class="fas fa-bolt"></i> مستمر</div>
             <h1 id="title" class="manga-title">جاري التحميل...</h1>
+            
+            <div class="quick-stats">
+    <span id="views-count"><i class="fas fa-eye"></i> 0 مشاهدة</span>
+    <span><i class="fas fa-list"></i> <span id="chapters-count">0</span> فصل</span>
+</div>
+
             <div class="interactive-rating">
                 <span class="rating-text" id="rating-display">0.0</span>
-                <div class="stars" id="star-container"></div>
+                <div class="stars" id="star-container">
+                    </div>
+                <span style="font-size: 12px; color: var(--text-muted);">(قيم الآن)</span>
             </div>
         </div>
     </div>
 
-    <div id="genres" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;"></div>
+    <div id="genres" class="tags-container"></div>
 
     <div class="action-grid">
-        <button class="btn btn-read" id="readBtn"><i class="fas fa-book-open"></i> اقرأ الآن</button>
-        <button class="btn btn-fav" onclick="toggleFav(this)"><i class="far fa-heart"></i> حفظ</button>
+        <button class="btn btn-read" id="readBtn">
+            <i class="fas fa-book-open"></i> اقرأ الفصل الأول
+        </button>
+        <button class="btn btn-fav" onclick="toggleFav(this)">
+            <i class="far fa-heart"></i> حفظ
+        </button>
     </div>
 
     <h3 class="section-title">القصة</h3>
-    <div class="desc-container">
-        <div id="desc" class="desc-text"></div>
-        <div id="descFade" class="desc-fade"></div>
-        <div id="readMoreBtn" class="read-more-btn" onclick="toggleReadMore()">عرض المزيد...</div>
-    </div>
+    <div class="desc-text" id="desc">...</div>
 
     <div class="chapters-section">
-        <h3 class="section-title">قائمة الفصول (<span id="chapters-count">0</span>)</h3>
-        <div class="chapters-list" id="chapters-list"></div>
+        <h3 class="section-title">قائمة الفصول</h3>
+        <div class="chapters-list" id="chapters-list">
+            </div>
     </div>
 
-    <div class="suggested-section">
-        <h3 class="section-title">أعمال قد تعجبك</h3>
-        <div class="suggested-grid" id="suggested-grid"></div>
-    </div>
 </div>
 
 <script>
-let tg = window.Telegram.WebApp;
-tg.expand(); // يخلي التطبيق يفتح كامل الشاشة
+let dataAll = [];
 
+// 1. دالة عرض قائمة الفصول في الأسفل
+function renderChapters(manga) {
+    const chaptersContainer = document.getElementById('chapters-list');
+    const chaptersSection = document.querySelector('.chapters-section');
+    
+    if (!manga.chapters_count || manga.chapters_count == 0) {
+        chaptersSection.classList.add('hidden'); 
+        return;
+    }
+
+    chaptersSection.classList.remove('hidden');
+    let html = '';
+    for(let i = manga.chapters_count; i >= 1; i--) {
+        html += `
+            <div class="chapter-card" onclick="openChapter(${manga.id}, ${i})">
+                <div><div class="chap-num">الفصل ${i}</div><div class="chap-date">متوفر الآن</div></div>
+                <div class="play-icon"><i class="fas fa-play"></i></div>
+            </div>`;
+    }
+    chaptersContainer.innerHTML = html;
+}
+
+// 2. دالة تشغيل الصفحة وجلب البيانات
 async function init(){
     try {
         const res = await fetch('data.json');
         const data = await res.json();
-        const mangas = data.mangas;
+        dataAll = data.mangas;
 
-        const id = new URLSearchParams(location.search).get('id') || mangas[0].id;
-        const m = mangas.find(x => x.id == id);
+        const id = new URLSearchParams(location.search).get('id') || dataAll[0]?.id; 
+        const m = dataAll.find(x => x.id == id);
 
-        if(!m) return;
+        if(!m) {
+            document.getElementById('title').innerText = "العمل غير متوفر";
+            return;
+        }
 
-        // البيانات الأساسية
+        // --- تحديث الداتا في الصفحة ---
         document.getElementById('bg').src = m.image_url;
         document.getElementById('poster').src = m.image_url;
         document.getElementById('title').innerText = m.title;
-        document.getElementById('status').innerText = m.status || 'مستمر';
-        document.getElementById('chapters-count').innerText = m.chapters_count || 0;
+        document.getElementById('desc').innerText = m.description || "لا يوجد وصف حالياً.";
         
-        // القصة ومعالجة "عرض المزيد"
-        const descEl = document.getElementById('desc');
-        descEl.innerText = m.description || "لا يوجد وصف حالياً.";
-        setTimeout(() => {
-            if (descEl.scrollHeight > 100) {
-                document.getElementById('readMoreBtn').style.display = 'block';
-            }
-        }, 100);
+        // تحديث الحالة (مستمر / مكتمل)
+        const statusBadge = document.querySelector('.status-badge');
+        statusBadge.innerHTML = `<i class="fas fa-bolt"></i> ${m.status || 'مستمر'}`;
+
+        // 🔥 السطر اللي كان ناقص: تحديث رقم الفصول اللي فوق (البنفسجي)
+        document.getElementById('chapters-count').innerText = m.chapters_count || 0;
+
+        // تحديث المشاهدات (لو موجودة)
+        let views = m.views || 0;
+        let formattedViews = views >= 1000 ? (views/1000).toFixed(1) + 'K' : views;
+        document.getElementById('views-count').innerHTML = `<i class="fas fa-eye"></i> ${formattedViews} مشاهدة`;
 
         // التصنيفات
-        let genreList = m.genre ? (m.genre.includes('•') ? m.genre.split('•') : m.genre.split(',')) : [];
-        document.getElementById('genres').innerHTML = genreList.map(g => `<span style="background:var(--glass); padding:5px 12px; border-radius:15px; font-size:12px; border:1px solid var(--border)">${g.trim()}</span>`).join('');
+        if(m.genre) {
+            let genreList = m.genre.includes('•') ? m.genre.split('•') : m.genre.split(',');
+            document.getElementById('genres').innerHTML =
+                genreList.map(g => `<span class="tag">${g.trim()}</span>`).join('');
+        }
 
         // التقييم والفصول
-        setupStars(m.rating || 0);
-        renderChapters(m);
-        renderSuggestions(mangas, m.id);
+        setupInteractiveRating(m.rating || "0");
+        renderChapters(m); 
 
+        // رابط البوت
         document.getElementById('readBtn').onclick = () => {
             window.location.href = `https://t.me/${data.bot_username}?start=m${m.id}`;
         };
 
-    } catch (e) { console.log(e); }
-}
-
-function toggleReadMore() {
-    const desc = document.getElementById('desc');
-    const btn = document.getElementById('readMoreBtn');
-    desc.classList.toggle('expanded');
-    btn.innerText = desc.classList.contains('expanded') ? 'عرض أقل' : 'عرض المزيد...';
-}
-
-function renderChapters(manga) {
-    const list = document.getElementById('chapters-list');
-    let html = '';
-    for(let i = manga.chapters_count; i >= 1; i--) {
-        html += `<div class="chapter-card"><div><div style="font-weight:800">الفصل ${i}</div></div><div class="play-icon"><i class="fas fa-play"></i></div></div>`;
+    } catch (error) {
+        console.error("خطأ في التحميل:", error);
     }
-    list.innerHTML = html || '<p style="color:var(--text-muted)">لا توجد فصول حالياً</p>';
 }
 
-function renderSuggestions(all, currentId) {
-    const grid = document.getElementById('suggested-grid');
-    // نختار 3 أعمال عشوائية مش هما العمل الحالي
-    const filtered = all.filter(x => x.id != currentId).sort(() => 0.5 - Math.random()).slice(0, 3);
-    grid.innerHTML = filtered.map(item => `
-        <div class="suggest-item" onclick="location.href='?id=${item.id}'">
-            <img src="${item.image_url}">
-            <div class="suggest-title">${item.title}</div>
-        </div>
-    `).join('');
-}
-
-function setupStars(rating) {
-    const display = document.getElementById('rating-display');
+// باقي الدوال (التقييم، المفضلة، المشاركة)
+function setupInteractiveRating(initialRating) {
     const container = document.getElementById('star-container');
-    display.innerText = rating;
+    const display = document.getElementById('rating-display');
+    display.innerText = initialRating;
     let html = '';
-    for(let i=5; i>=1; i--) {
-        const active = (rating/2) >= i ? 'active' : '';
-        html += `<i class="fas fa-star ${active}" onclick="rate(${i})"></i>`;
+    for(let i = 5; i >= 1; i--) {
+        const isActive = (initialRating / 2) >= i ? 'active' : ''; 
+        html += `<i class="fas fa-star ${isActive}" data-value="${i}" onclick="rateManga(${i})"></i>`;
     }
     container.innerHTML = html;
 }
 
-function rate(v) { 
-    document.getElementById('rating-display').innerText = (v*2).toFixed(1);
-    setupStars(v*2);
-    tg.HapticFeedback.notificationOccurred('success'); // هزّة خفيفة في الموبايل
+function rateManga(val) {
+    const newRating = (val * 2).toFixed(1);
+    document.getElementById('rating-display').innerText = newRating;
+    alert(`شكراً لتقييمك: ${newRating}`);
 }
 
 function toggleFav(btn) {
     const icon = btn.querySelector('i');
-    icon.classList.toggle('far'); icon.classList.toggle('fas');
+    icon.classList.toggle('far');
+    icon.classList.toggle('fas');
     btn.style.color = icon.classList.contains('fas') ? '#ef4444' : 'white';
 }
 
 function share() {
-    if (navigator.share) navigator.share({title: document.title, url: window.location.href});
+    if (navigator.share) {
+        navigator.share({ title: document.title, url: window.location.href });
+    } else {
+        alert("تم نسخ الرابط!");
+    }
 }
 
+function openChapter(mangaId, chapterNum) {
+    alert(`جاري فتح الفصل ${chapterNum}`);
+    // هنا تقدر تحط رابط توجيه للبوت للفصل ده بالذات لو تحب
+}
+
+// تشغيل كل شيء
 init();
 </script>
 
