@@ -458,54 +458,173 @@ header {
     .scroll-btn { display: none; }
 }
 
+/* =========================================
+   👤 قسم حسابي (Profile)
+========================================= */
+.profile-header {
+    text-align: center;
+    padding: 40px 15px 20px;
+    background: linear-gradient(180deg, rgba(168, 85, 247, 0.1) 0%, transparent 100%);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.avatar-container {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    margin: 0 auto;
+}
+
+.avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary);
+    box-shadow: 0 0 15px var(--primary-glow);
+}
+
+.edit-avatar {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    background: var(--primary);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    border: 3px solid var(--bg-main);
+    transition: 0.3s;
+}
+
+.edit-avatar:hover {
+    transform: scale(1.1);
+    background: #fff;
+    color: var(--primary);
+}
+
+.user-name {
+    font-size: 20px;
+    font-weight: 800;
+    margin-top: 15px;
+    color: var(--text-main);
+}
+
+.user-id {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-top: 8px;
+    letter-spacing: 1px;
+}
+
+.section-title-account {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 20px 15px;
+    padding-bottom: 10px;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* تعديل عرض أزرار الـ Nav بعد ما بقوا 3 */
+.bottom-nav .nav-item {
+    width: 33.33%;
+}
+
+
 </style>
 </head>
 
 <body>
+<!-- ================== شاشة الرئيسية ================== -->
+<div id="home-page">
+    <!-- شريط البحث العلوي -->
+    <header>
+        <div class="search-box">
+            <i class="icon fa-solid fa-magnifying-glass"></i>
+            <input id="searchInput" type="text" placeholder="ابحث عن مانجا، مانهوا...">
+            <span class="clear-btn" onclick="clearSearch()"><i class="fa-solid fa-xmark"></i></span>
+        </div>
+        <div id="searchResults" class="search-results"></div>
+    </header>
 
-<!-- شريط البحث العلوي -->
-<header>
-    <div class="search-box">
-        <i class="icon fa-solid fa-magnifying-glass"></i>
-        <input id="searchInput" type="text" placeholder="ابحث عن مانجا، مانهوا...">
-        <span class="clear-btn" onclick="clearSearch()"><i class="fa-solid fa-xmark"></i></span>
+    <!-- الفلاتر -->
+    <div class="filters">
+        <button class="active" onclick="filter('all', this)">الكل</button>
+        <button onclick="filter('مستمر', this)"><span style="color:var(--green)">●</span> مستمر</button>
+        <button onclick="filter('مكتمل', this)"><span style="color:var(--blue)">✔</span> مكتمل</button>
     </div>
-    <div id="searchResults" class="search-results"></div>
-</header>
 
+    <!-- آخر التحديثات -->
+    <div class="updates-section">
+        <div class="section-title">
+            <i class="fa-solid fa-bolt-lightning"></i> أحدث التحديثات الرهيبة
+        </div>
+        <div class="updates-wrapper">
+            <button class="scroll-btn left" onclick="scrollUpdates(-200)"><i class="fa-solid fa-chevron-left"></i></button>
+            <div id="updatesGrid" class="updates-scroll"></div>
+            <button class="scroll-btn right" onclick="scrollUpdates(200)"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
 
+    <div class="neon-divider"></div>
 
-<!-- الفلاتر -->
-<div class="filters">
-    <button class="active" onclick="filter('all', this)">الكل</button>
-    <button onclick="filter('مستمر', this)"><span style="color:var(--green)">●</span> مستمر</button>
-    <button onclick="filter('مكتمل', this)"><span style="color:var(--blue)">✔</span> مكتمل</button>
+    <!-- المحتوى -->
+    <div id="loader" class="loader"><i class="fas fa-spinner fa-spin"></i> جاري جلب البيانات...</div>
+    <div id="grid" class="grid"></div>
 </div>
 
-<!-- 🔥 آخر التحديثات -->
-<div class="updates-section">
-    <div class="section-title">
-        <i class="fa-solid fa-bolt-lightning"></i> أحدث التحديثات الرهيبة
+<!-- ================== شاشة حسابي ================== -->
+<div id="account-page" style="display: none;">
+    <div class="profile-header">
+        <div class="avatar-container">
+            <!-- الصورة الافتراضية، لو المستخدم رفع صورة هتتغير -->
+            <img id="userAvatar" src="https://via.placeholder.com/100" class="avatar" alt="User">
+            
+            <!-- زر تغيير الصورة -->
+            <label for="avatarUpload" class="edit-avatar">
+                <i class="fa-solid fa-camera"></i>
+            </label>
+            <input type="file" id="avatarUpload" accept="image/*" style="display: none;" onchange="uploadAvatar(event)">
+        </div>
+        
+        <div class="user-name" id="userName">جاري التحميل...</div>
+        <div class="user-id">ID: <span id="userId">00000000</span></div>
+    </div>
+
+    <div class="section-title-account">
+        <i class="fa-solid fa-bookmark" style="color: var(--primary);"></i> أعمالي المسجلة
     </div>
     
-    <div class="updates-wrapper">
-        <button class="scroll-btn left" onclick="scrollUpdates(-200)"><i class="fa-solid fa-chevron-left"></i></button>
-        <div id="updatesGrid" class="updates-scroll"></div>
-        <button class="scroll-btn right" onclick="scrollUpdates(200)"><i class="fa-solid fa-chevron-right"></i></button>
+    <!-- شبكة لعرض الأعمال المفضلة (زي الشبكة العادية بالظبط) -->
+    <div id="savedGrid" class="grid">
+        <div style="text-align:center; width:100%; color:var(--text-muted); padding:20px;">
+            لا توجد أعمال مسجلة حتى الآن.
+        </div>
     </div>
 </div>
 
-<div class="neon-divider"></div>
-
-<!-- المحتوى -->
-<div id="loader" class="loader"><i class="fas fa-spinner fa-spin"></i> جاري جلب البيانات...</div>
-<div id="grid" class="grid"></div>
-
-<!-- 📱 شريط التنقل السفلي للذهاب لصفحة الإحصائيات -->
+<!-- ================== شريط التنقل السفلي ================== -->
 <nav class="bottom-nav">
-    <a href="#" class="nav-item active">
+    <a href="#" class="nav-item active" id="nav-home" onclick="switchTab('home')">
         <i class="fa-solid fa-house"></i>
         <span>الرئيسية</span>
+    </a>
+    <a href="#" class="nav-item" id="nav-account" onclick="switchTab('account')">
+        <i class="fa-solid fa-user"></i>
+        <span>حسابي</span>
     </a>
     <a href="statistics.html" class="nav-item">
         <i class="fa-solid fa-chart-simple"></i>
@@ -748,6 +867,141 @@ function renderUpdates() {
 
 // 🚀 تشغيل البداية
 init();
+
+
+// ==========================================
+// 🔄 التنقل بين الرئيسية وحسابي
+// ==========================================
+function switchTab(tab) {
+    // جلب العناصر
+    const homePage = document.getElementById('home-page');
+    const accountPage = document.getElementById('account-page');
+    const navHome = document.getElementById('nav-home');
+    const navAccount = document.getElementById('nav-account');
+
+    // إزالة كلاس active من الـ Nav
+    document.querySelectorAll('.bottom-nav .nav-item').forEach(el => el.classList.remove('active'));
+
+    if (tab === 'home') {
+        homePage.style.display = 'block';
+        accountPage.style.display = 'none';
+        navHome.classList.add('active');
+    } else if (tab === 'account') {
+        homePage.style.display = 'none';
+        accountPage.style.display = 'block';
+        navAccount.classList.add('active');
+        loadUserProfile(); // تحميل بيانات الحساب لما يفتح التاب
+    }
+    
+    // هزة خفيفة للموبايل (لو تليجرام مدعوم)
+    if(window.Telegram && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+        Telegram.WebApp.HapticFeedback.impactOccurred('light');
+    }
+}
+
+// ==========================================
+// 👤 بيانات الحساب وتليجرام
+// ==========================================
+function loadUserProfile() {
+    let name = "مستخدم النخبة"; // اسم افتراضي
+    let tgId = "غير معروف"; // ID افتراضي
+
+    // محاولة جلب البيانات من تليجرام
+    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
+        let tgUser = Telegram.WebApp.initDataUnsafe.user;
+        name = tgUser.first_name + (tgUser.last_name ? " " + tgUser.last_name : "");
+        tgId = tgUser.id;
+    }
+
+    document.getElementById('userName').innerText = name;
+    document.getElementById('userId').innerText = tgId;
+
+    // استرجاع الصورة لو المستخدم كان رافع صورة قبل كدة (من المتصفح LocalStorage)
+    let savedAvatar = localStorage.getItem('userAvatar_KLE');
+    if (savedAvatar) {
+        document.getElementById('userAvatar').src = savedAvatar;
+    } else {
+        // لو مفيش صورة، حط صورة افتراضية شيك
+        document.getElementById('userAvatar').src = 'https://i.ibb.co/q1z6bL8/default-avatar.png'; 
+    }
+
+    // جلب الأعمال المسجلة
+    renderSavedList();
+}
+
+// ==========================================
+// 📸 رفع وتغيير الصورة الشخصية
+// ==========================================
+function uploadAvatar(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64Image = e.target.result;
+            
+            // تحديث الصورة في الصفحة
+            document.getElementById('userAvatar').src = base64Image;
+            
+            // حفظ الصورة في التخزين المحلي عشان متتمسحش لما يقفل
+            localStorage.setItem('userAvatar_KLE', base64Image);
+            
+            if(window.Telegram && Telegram.WebApp) {
+                Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            }
+        };
+        reader.readAsDataURL(file); // تحويل الصورة لكود يمكن حفظه
+    }
+}
+
+// ==========================================
+// 📚 عرض قائمة الأعمال المسجلة (المفضلة)
+// ==========================================
+function renderSavedList() {
+    let savedGrid = document.getElementById('savedGrid');
+    
+    // هنا المفروض بنجيب الـ IDs بتاعة المانجات اللي هو حفظها 
+    // (حالياً هنعمل مصفوفة وهمية للتجربة، بعدين هتربطها بالبوت بتاعك)
+    // مثلاً هو مسيف المانجات اللي الـ ID بتاعها 1 و 3 و 5
+    let userSavedIds = [1, 3, 5]; // << عدل دي لاحقاً عشان تيجي من البوت
+    
+    // بنفلتر كل المانجات ونجيب اللي الآي دي بتاعها موجود في المفضلة
+    let savedMangas = dataAll.filter(m => userSavedIds.includes(parseInt(m.id)));
+
+    if (savedMangas.length === 0) {
+        savedGrid.innerHTML = `<div style="text-align:center; width:100%; color:var(--text-muted); padding:20px;">لا توجد أعمال مسجلة حتى الآن.</div>`;
+        return;
+    }
+
+    savedGrid.innerHTML = '';
+    // رسم الكروت بنفس شكل الرئيسية
+    savedMangas.forEach(m => {
+        let live = m.status && m.status.includes('مستمر');
+        let rating = m.rating ? parseFloat(m.rating).toFixed(1) : "0.0";
+
+        let card = document.createElement('div');
+        card.className = 'card';
+        card.onclick = () => { window.location.href = `details.html?id=${m.id}`; };
+
+        card.innerHTML = `
+        <div class="poster">
+            <div class="status ${live ? 'live' : 'done'}">
+                ${live ? 'مستمر' : 'مكتمل'}
+            </div>
+            <img src="${m.image_url}" loading="lazy" alt="poster">
+        </div>
+        <div class="content">
+            <div class="title">${m.title}</div>
+            <div class="genres">
+                <span class="tag">محفوظ 🔖</span>
+            </div>
+            <div class="meta-footer">
+                <div class="stars"><i class="fa-solid fa-star"></i> ${rating}</div>
+            </div>
+        </div>
+        `;
+        savedGrid.appendChild(card);
+    });
+}
 
 </script>
 
