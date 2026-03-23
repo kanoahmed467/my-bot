@@ -341,6 +341,43 @@ header {
     opacity: 0.5;
 }
 
+.updates-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.scroll-btn {
+    position: absolute;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    z-index: 10;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.scroll-btn:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    box-shadow: 0 0 10px var(--primary-glow);
+}
+
+.scroll-btn.left { left: -10px; }
+.scroll-btn.right { right: -10px; }
+
+/* إخفاء الأزرار في الشاشات الصغيرة جداً لو مش محتاجها، بس هي شكلها شيك */
+@media (max-width: 480px) {
+    .scroll-btn { display: none; }
+}
+
 </style>
 </head>
 
@@ -370,7 +407,13 @@ header {
     <div class="section-title">
         <i class="fa-solid fa-bolt-lightning"></i> أحدث التحديثات الرهيبة
     </div>
-    <div id="updatesGrid"></div> </div>
+    
+    <div class="updates-wrapper">
+        <button class="scroll-btn left" onclick="scrollUpdates(-200)"><i class="fa-solid fa-chevron-left"></i></button>
+        <div id="updatesGrid" class="updates-scroll"></div>
+        <button class="scroll-btn right" onclick="scrollUpdates(200)"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+</div>
 
 <div class="neon-divider"></div>
 
@@ -576,23 +619,31 @@ init();
 // حدد هنا تاريخ "الآن" (وقت التحديث الحالي). 
 // أي عمل تاريخه (updated_at) أكبر من هذا الرقم هيعتبر جديد.
 // ملاحظة: لو البوت بيبعت updated_at كـ timestamp (أرقام)، استخدم أرقام.
-const CUTOFF_TIMESTAMP = Date.now() / 1000; // التاريخ الحالي بالثواني
+// دالة السكرول للأسهم
+function scrollUpdates(distance) {
+    document.getElementById('updatesGrid').scrollBy({
+        left: distance,
+        behavior: 'smooth'
+    });
+}
 
 function renderUpdates() {
-    let container = document.getElementById('updatesGrid'); // تأكد إن الـ ID موجود في HTML
+    let container = document.getElementById('updatesGrid');
     container.innerHTML = '';
-    container.className = 'updates-scroll'; // تحويله لسكرول أفقي
 
-    // ترتيب الأعمال حسب الأحدث
+    // --- 💡 هنا السر 💡 ---
+    // شوف آخر ID عندك في ملف data.json دلوقتي كام؟ وحطه هنا مكان الـ 500
+    // أي مانجا الـ ID بتاعها أكبر من 500 هيظهر عليها "جديد"
+    const LAST_KNOWN_ID = 500; 
+
     let latest = [...dataAll]
         .filter(m => m.updated_at || m.id)
-        .sort((a, b) => (b.updated_at || 0) - (a.updated_at || 0))
+        .sort((a, b) => (b.updated_at || b.id) - (a.updated_at || a.id))
         .slice(0, 10);
 
     latest.forEach(m => {
-        // فحص: هل العمل جديد فعلاً؟ (تمت إضافته بعد الـ Cutoff)
-        // إذا كان البوت لا يرسل تاريخ، يمكنك الاعتماد على ID كبير مثلاً
-        const isNew = m.updated_at > 1711200000; // مثال: أي عمل أحدث من تاريخ اليوم
+        // لو الـ ID بتاع العمل أكبر من اللي حددناه، يبقا جديد
+        const isActuallyNew = parseInt(m.id) > LAST_KNOWN_ID;
 
         let card = document.createElement('div');
         card.className = 'elite-card';
@@ -600,7 +651,7 @@ function renderUpdates() {
 
         card.innerHTML = `
             <div class="elite-poster">
-                ${isNew ? '<span class="badge-new-elite">جديد 🔥</span>' : ''}
+                ${isActuallyNew ? '<span class="badge-new-elite">جديد 🔥</span>' : ''}
                 <img src="${m.image_url}" loading="lazy">
             </div>
             <div class="elite-info">
