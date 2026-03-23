@@ -236,134 +236,110 @@ header {
 .nav-item.active { color: var(--primary); }
 .nav-item:hover { color: var(--text-main); }
 
-/* 🔥 سكشن آخر التحديثات */
+/* =========================================
+   ✨ كروت Elite لآخر التحديثات
+========================================= */
 .updates-section {
-    padding: 0 15px 15px;
+    padding: 20px 15px;
+    background: linear-gradient(180deg, rgba(168, 85, 247, 0.05) 0%, transparent 100%);
 }
 
 .section-title {
-    font-size: 16px;
-    font-weight: 800;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.section-title i {
-    color: var(--primary);
-}
-
-/* Scroll أفقي */
-
-
-.updates-grid::-webkit-scrollbar {
-    display: none;
-}
-
-
-
-.updates-card:hover {
-    transform: scale(1.05);
-    border-color: var(--primary);
-    box-shadow: 0 0 15px var(--primary-glow);
-}
-
-.updates-card img {
-    width: 100%;
-    height: 160px;
-    object-fit: cover;
-}
-
-.updates-title {
-    font-size: 12px;
-    font-weight: 700;
-    padding: 6px;
-    line-height: 1.3;
-}
-
-/* NEW Badge */
-/* NEW Badge */
-/* =========================================
-   🔥 السلايد شو الفخم (آخر التحديثات)
-========================================= */
-.slider-container {
-    position: relative;
-    width: 100%;
-    height: 220px; /* ارتفاع مناسب للموبايل */
-    border-radius: 16px;
-    overflow: hidden;
-    background: #000;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    border: 1px solid var(--border-color);
-}
-
-.slide {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    opacity: 0;
-    transition: opacity 0.8s ease-in-out, transform 4s linear; /* تأثير زووم بطيء مع الظهور */
-    cursor: pointer;
-    transform: scale(1.05);
-}
-
-.slide.active {
-    opacity: 1;
-    z-index: 2;
-    transform: scale(1); /* يرجع لحجمه الطبيعي ببطء */
-}
-
-.slide img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    object-position: top; /* لضمان ظهور وجوه الشخصيات */
-}
-
-.slide-overlay {
-    position: absolute;
-    bottom: 0; left: 0; width: 100%;
-    background: linear-gradient(to top, var(--bg-main) 0%, rgba(15, 20, 30, 0.9) 40%, transparent 100%);
-    padding: 50px 15px 15px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-}
-
-.slide-badge {
-    align-self: flex-start;
-    background: linear-gradient(45deg, var(--primary), #d946ef);
-    color: white;
-    font-size: 10px;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-weight: 800;
-    margin-bottom: 8px;
-    box-shadow: 0 4px 10px var(--primary-glow);
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.slide-title {
     font-size: 18px;
     font-weight: 800;
+    margin-bottom: 15px;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* حاوية الكروت بسكرول أفقي ناعم */
+.updates-scroll {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+.updates-scroll::-webkit-scrollbar { display: none; }
+
+/* كرت الـ Elite */
+.elite-card {
+    min-width: 140px;
+    max-width: 140px;
+    background: var(--bg-card);
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(168, 85, 247, 0.2);
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.elite-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    border-color: var(--primary);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.6), 0 0 15px var(--primary-glow);
+}
+
+.elite-poster {
+    width: 100%;
+    height: 200px;
+    position: relative;
+}
+
+.elite-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* تاج "جديد" الفخم */
+.badge-new-elite {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: linear-gradient(45deg, #f59e0b, #ef4444); /* لون ناري */
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    z-index: 5;
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.elite-info {
+    padding: 8px;
+    background: linear-gradient(to top, var(--bg-card), transparent);
+}
+
+.elite-title {
+    font-size: 12px;
+    font-weight: 700;
     color: #fff;
-    text-shadow: 0 2px 5px rgba(0,0,0,0.8);
     display: -webkit-box;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    line-height: 1.3;
 }
 
-/* الفاصل الأنيق المضيء */
-.elegant-divider {
-    height: 1px;
+/* الفاصل المضيء */
+.neon-divider {
+    height: 2px;
     background: linear-gradient(90deg, transparent, var(--primary), transparent);
-    margin: 10px 20px 25px;
-    opacity: 0.6;
-    box-shadow: 0 0 15px var(--primary);
+    margin: 5px 30px 20px;
+    box-shadow: 0 0 10px var(--primary);
+    opacity: 0.5;
 }
-
 
 </style>
 </head>
@@ -392,13 +368,11 @@ header {
 <!-- 🔥 آخر التحديثات -->
 <div class="updates-section">
     <div class="section-title">
-        <i class="fa-solid fa-crown"></i> أحدث الإضافات
+        <i class="fa-solid fa-bolt-lightning"></i> أحدث التحديثات الرهيبة
     </div>
-    <div id="sliderContainer" class="slider-container">
-        </div>
-</div>
+    <div id="updatesGrid"></div> </div>
 
-<div class="elegant-divider"></div>
+<div class="neon-divider"></div>
 
 <!-- المحتوى -->
 <div id="loader" class="loader"><i class="fas fa-spinner fa-spin"></i> جاري جلب البيانات...</div>
@@ -599,49 +573,47 @@ document.addEventListener('click', (e) => {
 // تشغيل جلب البيانات
 init();
 
-let currentSlide = 0;
-let slideInterval;
+// حدد هنا تاريخ "الآن" (وقت التحديث الحالي). 
+// أي عمل تاريخه (updated_at) أكبر من هذا الرقم هيعتبر جديد.
+// ملاحظة: لو البوت بيبعت updated_at كـ timestamp (أرقام)، استخدم أرقام.
+const CUTOFF_TIMESTAMP = Date.now() / 1000; // التاريخ الحالي بالثواني
 
 function renderUpdates() {
-    let container = document.getElementById('sliderContainer');
+    let container = document.getElementById('updatesGrid'); // تأكد إن الـ ID موجود في HTML
     container.innerHTML = '';
+    container.className = 'updates-scroll'; // تحويله لسكرول أفقي
 
-    // جلب أحدث 5 أعمال فقط للسلايدر عشان ميكونش تقيل
+    // ترتيب الأعمال حسب الأحدث
     let latest = [...dataAll]
-        .filter(m => m.updated_at || m.created_at || m.id) 
-        .sort((a,b) => {
-            let dateA = a.updated_at || a.created_at || a.id || 0;
-            let dateB = b.updated_at || b.created_at || b.id || 0;
-            return dateB - dateA; 
-        })
-        .slice(0, 5); 
+        .filter(m => m.updated_at || m.id)
+        .sort((a, b) => (b.updated_at || 0) - (a.updated_at || 0))
+        .slice(0, 10);
 
-    if(latest.length === 0) {
-        document.querySelector('.updates-section').style.display = 'none';
-        document.querySelector('.elegant-divider').style.display = 'none';
-        return;
-    }
+    latest.forEach(m => {
+        // فحص: هل العمل جديد فعلاً؟ (تمت إضافته بعد الـ Cutoff)
+        // إذا كان البوت لا يرسل تاريخ، يمكنك الاعتماد على ID كبير مثلاً
+        const isNew = m.updated_at > 1711200000; // مثال: أي عمل أحدث من تاريخ اليوم
 
-    // بناء السلايدات
-    latest.forEach((m, index) => {
-        let slide = document.createElement('div');
-        // السلايد الأول هو اللي هيكون نشط في البداية
-        slide.className = `slide ${index === 0 ? 'active' : ''}`;
-        slide.onclick = () => { window.location.href = `details.html?id=${m.id}`; };
+        let card = document.createElement('div');
+        card.className = 'elite-card';
+        card.onclick = () => { window.location.href = `details.html?id=${m.id}`; };
 
-        slide.innerHTML = `
-            <img src="${m.image_url}" alt="cover">
-            <div class="slide-overlay">
-                <span class="slide-badge"><i class="fa-solid fa-sparkles"></i> عمل جديد</span>
-                <div class="slide-title">${m.title}</div>
+        card.innerHTML = `
+            <div class="elite-poster">
+                ${isNew ? '<span class="badge-new-elite">جديد 🔥</span>' : ''}
+                <img src="${m.image_url}" loading="lazy">
+            </div>
+            <div class="elite-info">
+                <div class="elite-title">${m.title}</div>
             </div>
         `;
-        container.appendChild(slide);
+        container.appendChild(card);
     });
-
-    // تشغيل التقليب التلقائي
-    startSlider();
 }
+
+// في دالة render الأساسية (الشبكة اللي تحت)، تأكد من حذف تاج "عمل جديد" 
+// عشان يفضل التميز بس للسكشن اللي فوق، أو خليه بسيط جداً.
+
 
 function startSlider() {
     let slides = document.querySelectorAll('.slide');
