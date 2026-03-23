@@ -281,7 +281,65 @@ header {
     transform: translateY(-8px) scale(1.02);
     border-color: var(--primary);
     box-shadow: 0 10px 20px rgba(0,0,0,0.6), 0 0 15px var(--primary-glow);
+    border-color: transparent;
+    background: linear-gradient(#1a2235, #1a2235) padding-box,
+                linear-gradient(45deg, #a855f7, #6366f1) border-box;
+    border: 1px solid transparent;
 }
+
+@keyframes pulse-purple {
+    0% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(168, 85, 247, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
+}
+
+.elite-poster::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background: linear-gradient(to top, rgba(15, 20, 30, 0.9), transparent);
+}
+
+.card:hover img, .elite-card:hover img {
+    transform: scale(1.1);
+    transition: transform 0.5s ease;
+}
+
+/* تحسين كارت الإيليت */
+.elite-card {
+    border-radius: 16px;
+    background: rgba(26, 34, 53, 0.6);
+    backdrop-filter: blur(5px);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* حركة التاج */
+.badge-new-elite {
+    background: linear-gradient(135deg, #a855f7 0%, #6e2cf2 100%);
+    border: none;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    animation: pulse-purple 2s infinite;
+}
+
+/* تأثير الإضاءة عند الوقوف على الكارت */
+.elite-card:hover {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(168, 85, 247, 0.2);
+    transform: translateY(-10px);
+}
+
+/* تحسين السكرول بار */
+.updates-scroll::-webkit-scrollbar {
+    height: 4px;
+}
+.updates-scroll::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 10px;
+}
+
 
 .elite-poster {
     width: 100%;
@@ -314,12 +372,11 @@ header {
     gap: 6px;
     border: 1px solid rgba(255,255,255,0.3);
     pointer-events: none;
+    animation: rotate-sparkle 2s infinite linear;
+    animation: pulse-purple 2s infinite;
 }
 
 /* حركة بسيطة عشان يلمع */
-.badge-new-elite i {
-    animation: rotate-sparkle 2s infinite linear;
-}
 
 @keyframes rotate-sparkle {
     0% { transform: rotate(0deg) scale(1); }
