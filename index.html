@@ -514,7 +514,12 @@ header {
 </nav>
 
 <script>
-let dataAll=[];
+let dataAll =[];
+
+// 1. تعريف المتغيرات والعناصر أولاً (لتجنب تعطل الكود)
+const input = document.getElementById('searchInput');
+const resultsBox = document.getElementById('searchResults');
+const clearBtn = document.querySelector('.clear-btn');
 
 // تهيئة تليجرام
 if(window.Telegram && Telegram.WebApp) {
@@ -522,26 +527,29 @@ if(window.Telegram && Telegram.WebApp) {
     Telegram.WebApp.expand();
 }
 
+// 2. دالة البداية لجلب البيانات
 async function init(){
     try {
         const res = await fetch('data.json?v='+Date.now());
         const data = await res.json();
         dataAll = data.mangas;
 
-        document.getElementById('loader').style.display='none';
+        // إخفاء رسالة التحميل
+        document.getElementById('loader').style.display = 'none';
         
         render(dataAll); // رسم الكروت الأساسية
-        renderUpdates(); // 🔥 تشغيل دالة آخر التحديثات والأعمال الجديدة
+        renderUpdates(); // رسم التحديثات الجديدة
 
     } catch(e) {
         document.getElementById('loader').innerHTML = 'حدث خطأ في تحميل البيانات.';
+        console.error("Fetch Error: ", e);
     }
 }
 
-// دالة لجلب أول تصنيفين فقط بشكل نظيف
+// دالة تنظيف التصنيفات
 function cleanGenres(g){
-    if(!g) return [];
-    return g.replace(/[^\w\s,\u0600-\u06FF]/g,'') // يسمح بالعربي
+    if(!g) return[];
+    return g.replace(/[^\w\s,\u0600-\u06FF]/g,'')
     .split(',')
     .map(x=>x.trim())
     .filter(x=>x.length > 2)
@@ -560,7 +568,6 @@ function render(arr){
         let card = document.createElement('div');
         card.className = 'card';
         
-        // عند الضغط يذهب لصفحة التفاصيل
         card.onclick = () => { window.location.href = `details.html?id=${m.id}`; };
 
         card.innerHTML = `
@@ -584,9 +591,37 @@ function render(arr){
     });
 }
 
-// خوارزمية البحث الذكي (كما هي من كودك)
-let searchTimeout; // متغير لحفظ التوقيت
+// 🔥 دالة البحث الذكي (كانت محذوفة بالخطأ وتم إرجاعها)
+function smartSearch(query){
+    query = query.toLowerCase();
+    let seen = new Set();
 
+    return dataAll.map(m => {
+        let title = m.title.toLowerCase();
+        let score = 0;
+
+        if(title === query) score += 200;
+        if(title.startsWith(query)) score += 120;
+        if(title.split(' ').includes(query)) score += 100;
+        if(title.includes(query)) score += 40;
+
+        let distance = Math.abs(title.length - query.length);
+        score -= distance;
+        score += (m.rating || 0) * 2;
+
+        return {...m, score};
+    })
+    .filter(m => m.score > 10) 
+    .sort((a,b) => b.score - a.score)
+    .filter(m => {
+        if(seen.has(m.title)) return false;
+        seen.add(m.title);
+        return true;
+    });
+}
+
+// البحث مع التوقيت (Debounce) لعدم التهنيج
+let searchTimeout;
 input.addEventListener('input', () => {
     let q = input.value.trim().toLowerCase();
 
@@ -596,10 +631,8 @@ input.addEventListener('input', () => {
         clearBtn.classList.remove('show');
     }
 
-    // إلغاء البحث السابق إذا كان المستخدم لا يزال يكتب
     clearTimeout(searchTimeout);
 
-    // الانتظار 300 ملي ثانية قبل تنفيذ البحث
     searchTimeout = setTimeout(() => {
         if(!q){
             resultsBox.style.display = 'none';
@@ -613,7 +646,7 @@ input.addEventListener('input', () => {
     }, 300); 
 });
 
-// فلترة الأزرار (الكل، مستمر، مكتمل)
+// الفلاتر
 function filter(type, btn){
     document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -622,31 +655,7 @@ function filter(type, btn){
     render(dataAll.filter(m => m.status && m.status.includes(type)));
 }
 
-// منطق صندوق البحث
-const input = document.getElementById('searchInput');
-const resultsBox = document.getElementById('searchResults');
-const clearBtn = document.querySelector('.clear-btn');
-
-input.addEventListener('input', () => {
-    let q = input.value.trim().toLowerCase();
-
-    if(q){
-        clearBtn.classList.add('show');
-    } else {
-        clearBtn.classList.remove('show');
-    }
-
-    if(!q){
-        resultsBox.style.display = 'none';
-        render(dataAll); // إعادة عرض الكل إذا تم مسح البحث
-        return;
-    }
-
-    let filtered = smartSearch(q);
-    render(filtered); // تحديث الشبكة بالنتائج
-    showResults(filtered, q); // تحديث القائمة المنسدلة
-});
-
+// إظهار النتائج المنسدلة
 function showResults(arr, q){
     if(arr.length === 0){
         resultsBox.innerHTML = `<div class="result-item" style="color:var(--text-muted); justify-content:center;">لا توجد نتائج تطابق بحثك</div>`;
@@ -655,10 +664,10 @@ function showResults(arr, q){
     }
 
     resultsBox.innerHTML = arr.slice(0, 5).map(m => {
-        // تمييز النص المطابق
         let title = m.title.replace(new RegExp(q, 'gi'), match => `<span class="highlight">${match}</span>`);
         let rating = m.rating ? parseFloat(m.rating).toFixed(1) : "0.0";
 
+        // تم إضافة علامات التنصيص لـ id هنا لتجنب المشاكل
         return `
         <div class="result-item" onclick="goTo('${m.id}')">
             <img src="${m.image_url}" class="result-img" alt="img">
@@ -678,28 +687,23 @@ function goTo(id){
     window.location.href = `details.html?id=${id}`;
 }
 
+// مسح البحث
 function clearSearch(){
     input.value = '';
     resultsBox.style.display = 'none';
     clearBtn.classList.remove('show');
-    render(dataAll); // العودة للكل
-    input.focus(); // هذه الخطوة قد تفتح الكيبورد المزعج في الموبايل
+    render(dataAll); 
+    // تم حذف input.focus() المزعج
 }
 
-// إغلاق القائمة المنسدلة عند الضغط في أي مكان خارجها
+// إغلاق قائمة البحث عند الضغط خارجها
 document.addEventListener('click', (e) => {
     if(!e.target.closest('header')){
         resultsBox.style.display = 'none';
     }
 });
 
-// تشغيل جلب البيانات
-init();
-
-// حدد هنا تاريخ "الآن" (وقت التحديث الحالي). 
-// أي عمل تاريخه (updated_at) أكبر من هذا الرقم هيعتبر جديد.
-// ملاحظة: لو البوت بيبعت updated_at كـ timestamp (أرقام)، استخدم أرقام.
-// دالة السكرول للأسهم
+// التمرير بالأسهم للأعمال الجديدة
 function scrollUpdates(distance) {
     document.getElementById('updatesGrid').scrollBy({
         left: distance,
@@ -707,22 +711,18 @@ function scrollUpdates(distance) {
     });
 }
 
+// رسم أعمال قسم (أحدث التحديثات)
 function renderUpdates() {
     let container = document.getElementById('updatesGrid');
     container.innerHTML = '';
 
-    // 💡 التعديل هنا: 
-    // لو عايز التاج يظهر على الأعمال الحالية للتجربة، خلي الرقم ده "صفر" 0
-    // لو عايز الأعمال الحالية ميبقاش عليها تاج، حط هنا رقم ID بتاع آخر عمل عندك
     const LAST_KNOWN_ID = 0; 
 
-    // ترتيب الأعمال حسب الأحدث (ID أو updated_at)
     let latest = [...dataAll]
-        .sort((a, b) => (b.id) - (a.id)) // بنرتب بالأي دي عشان الأحدث يظهر الأول
-        .slice(0, 10); // بناخد أول 10 بس
+        .sort((a, b) => (b.id) - (a.id))
+        .slice(0, 10);
 
     latest.forEach(m => {
-        // فحص هل هو عمل جديد فعلاً؟
         const isActuallyNew = parseInt(m.id) > LAST_KNOWN_ID;
 
         let card = document.createElement('div');
@@ -746,27 +746,8 @@ function renderUpdates() {
     });
 }
 
-// في دالة render الأساسية (الشبكة اللي تحت)، تأكد من حذف تاج "عمل جديد" 
-// عشان يفضل التميز بس للسكشن اللي فوق، أو خليه بسيط جداً.
-
-
-function startSlider() {
-    let slides = document.querySelectorAll('.slide');
-    if(slides.length <= 1) return; // لو عمل واحد مفيش داعي يقلب
-
-    clearInterval(slideInterval); // تنظيف أي إنترڤال قديم
-    
-    slideInterval = setInterval(() => {
-        // إخفاء السلايد الحالي
-        slides[currentSlide].classList.remove('active');
-        
-        // الانتقال للسلايد التالي
-        currentSlide = (currentSlide + 1) % slides.length;
-        
-        // إظهار السلايد الجديد
-        slides[currentSlide].classList.add('active');
-    }, 4000); // يقلب كل 4 ثواني
-}
+// 🚀 تشغيل البداية
+init();
 
 </script>
 
