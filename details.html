@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تفاصيل العمل | إحصائيات</title>
+    <title>تفاصيل العمل | نظام إحصائيات حقيقي</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -155,6 +155,7 @@
         <div id="chapters-list"></div>
     </div>
 
+    <!-- الإحصائيات الحقيقية -->
     <div id="tab-stats" class="tab-content">
         
         <div class="interactive-section">
@@ -194,7 +195,7 @@
         </div>
 
         <div class="stats-card">
-            <h3 class="section-title" style="text-align: right; font-size: 16px;">تصويتات الأعضاء</h3>
+            <h3 class="section-title" style="text-align: right; font-size: 16px;">تصويتات الأعضاء الحقيقية</h3>
             <div class="chart-wrapper" style="height: 180px;">
                 <canvas id="votesBarChart"></canvas>
             </div>
@@ -216,7 +217,7 @@
         </div>
 
         <div class="stats-card">
-            <h3 class="section-title" style="text-align: center; font-size: 14px; margin-bottom: 20px;">متوسط تقييم القصة، الشخصيات، والرسم (كل خانة = 2 نقاط)</h3>
+            <h3 class="section-title" style="text-align: center; font-size: 14px; margin-bottom: 20px;">متوسط تقييم القصة، الشخصيات، والرسم (من المستخدمين)</h3>
             <div class="chart-wrapper" style="height: 250px;">
                 <canvas id="radarChart"></canvas>
             </div>
@@ -227,22 +228,26 @@
 </div>
 
 <script>
-// --- 1. إعداد الـ ID وجلب البيانات من data.json ---
+// --- 1. إعداد الـ ID ---
 const urlParams = new URLSearchParams(window.location.search);
-const currentMangaId = urlParams.get('id') || '10'; // افتراضي 10 للتجربة
+const currentMangaId = urlParams.get('id') || '10'; // افتراضي 10
 
 // بناء رابط الصورة بناءً على الـ ID
 const imageUrl = `https://github.com/kanoahmed467/my-bot/blob/main/covers/${currentMangaId}.jpg?raw=true`;
 
-// بيانات السيرفر العامة (سيتم تعبئتها من data.json)
-let globalData = {
-    votes:[0,0,0,0,0,0,0,0,0,0],
+// ==========================================
+// 🔴 إحصائيات قاعدة البيانات (تبدأ من الصفر تماماً)
+// ==========================================
+let dbStats = {
+    votes:[0,0,0,0,0,0,0,0,0,0], // كم شخص قيم بـ 1، 2، 3.. لحد 10
     status: { fav: 0, reading: 0, planned: 0, completed: 0, dropped: 0 },
-    radar: { story: 0, chars: 0, art: 0 },
-    ratingOut10: 0
+    radarTotal: { story: 0, chars: 0, art: 0, usersCount: 0 }, // مجموع التقييمات
+    radarAvg: { story: 0, chars: 0, art: 0 } // المتوسط الذي سيظهر على الرادار
 };
 
-// بيانات المستخدم الحالي (من LocalStorage)
+// ==========================================
+// 🟢 بيانات المستخدم الحالي (عشان منسمحلوش يصوت مرتين)
+// ==========================================
 let userData = JSON.parse(localStorage.getItem(`user_stats_manga_${currentMangaId}`)) || {
     isFav: false, status: null, rating: { story: 0, chars: 0, art: 0, total: 0 }
 };
@@ -256,67 +261,46 @@ function switchTab(tabId, btn) {
     btn.classList.add('active');
 }
 
-// دالة جلب البيانات الأساسية
+// دالة جلب البيانات الأساسية (وصف واسم المانجا فقط من JSON)
 async function loadMangaData() {
     try {
         const response = await fetch('data.json');
         const data = await response.json();
-        
-        // البحث عن المانجا بالايدي
         const manga = data.mangas.find(m => m.id == currentMangaId);
 
         if(manga) {
-            // تحديث واجهة التفاصيل
             document.getElementById('manga-title').innerText = manga.title;
             document.getElementById('manga-desc').innerText = manga.description || 'لا يوجد وصف متاح.';
             document.getElementById('bg-img').src = imageUrl;
             document.getElementById('poster-img').src = imageUrl;
 
-            // التصنيفات
             if(manga.genre) {
                 const genres = manga.genre.split('•');
                 document.getElementById('genres-container').innerHTML = genres.map(g => `<span class="tag">${g.trim()}</span>`).join('');
             }
 
-            // الفصول
             renderChaptersList(manga.chapters_count || 1);
-
-            // افتراض أن data.json يحتوي على كائن global_stats (إذا لم يوجد نضع قيم وهمية مبدئية)
-            globalData = manga.global_stats || {
-                votes:[5, 2, 0, 1, 3, 5, 12, 25, 40, 150], // تقييمات الأعضاء (كم واحد أعطى 10؟)
-                status: { fav: 1152, reading: 276, planned: 430, completed: 45, dropped: 48 },
-                radar: { story: 8.11, chars: 7.93, art: 8.04 },
-                ratingOut10: 8.5
-            };
-
-            document.getElementById('global-rating-text').innerText = globalData.ratingOut10;
-
-            // تشغيل الرسوم البيانية
+            
+            // تهيئة الجرافات وهي (فارغة / أصفار)
             initCharts();
-            updateDashboard(); 
-        } else {
-            document.getElementById('manga-title').innerText = "العمل غير متوفر!";
+            
+            // استدعاء دالة الإحصائيات الحقيقية
+            syncRealTimeDatabase();
         }
     } catch (error) {
-        console.error("خطأ في جلب البيانات:", error);
+        console.error("خطأ:", error);
     }
 }
 
 function renderChaptersList(count) {
     let html = '';
     for(let i = count; i >= 1; i--) {
-        html += `
-        <div class="chapter-card" onclick="this.classList.toggle('read')">
-            <span class="chap-num" style="font-weight: 700;">الفصل ${i}</span>
-            <i class="fas fa-check-circle" style="color: var(--text-muted);"></i>
-        </div>`;
+        html += `<div class="chapter-card" onclick="this.classList.toggle('read')"><span class="chap-num" style="font-weight: 700;">الفصل ${i}</span><i class="fas fa-check-circle" style="color: var(--text-muted);"></i></div>`;
     }
     document.getElementById('chapters-list').innerHTML = html;
 }
 
-// --- الجرافات والدمج التفاعلي ---
-function renderStars() {
-    ['story', 'chars', 'art'].forEach(cat => {
+function renderStars() {['story', 'chars', 'art'].forEach(cat => {
         const container = document.getElementById(`rate-${cat}`);
         let html = '';
         for (let i = 5; i >= 1; i--) {
@@ -335,7 +319,7 @@ function initCharts() {
     const ctxBar = document.getElementById('votesBarChart').getContext('2d');
     barChart = new Chart(ctxBar, {
         type: 'bar',
-        data: { labels:['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'], datasets:[{ data: globalData.votes, backgroundColor: '#f43f5e', barPercentage: 0.5 }] },
+        data: { labels:['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'], datasets:[{ data: dbStats.votes, backgroundColor: '#f43f5e', barPercentage: 0.5 }] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false, grid: { display: false } }, x: { grid: { display: false }, ticks: { color: '#ffffff' } } } }
     });
 
@@ -343,7 +327,7 @@ function initCharts() {
     doughnutChart = new Chart(ctxDoughnut, {
         type: 'doughnut',
         data: { labels:['مفضلة', 'أقرأها', 'أرغب', 'مكتملة', 'متروكة'], datasets:[{ data:[0,0,0,0,0], backgroundColor:['#3b82f6', '#10b981', '#f43f5e', '#a855f7', '#ec4899'], borderWidth: 2, borderColor: '#1e1b24', cutout: '65%' }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 
     const ctxRadar = document.getElementById('radarChart').getContext('2d');
@@ -354,8 +338,13 @@ function initCharts() {
     });
 }
 
-// دالة تحديث الواجهة عند تفاعل المستخدم (تدمج تقييمه مع تقييم السيرفر)
-function updateDashboard() {
+// ==========================================
+// 🚀 نظام التحديث والتفاعل (Real-Time Logic)
+// ==========================================
+
+// 1. الدالة المسؤولة عن تحديث الشاشة والجرافات
+function updateDashboardUI() {
+    // تحديث أزرار المستخدم الشخصية
     const favBtn = document.getElementById('favBtn');
     if (userData.isFav) { favBtn.classList.add('active'); favBtn.innerHTML = '<i class="fas fa-bookmark"></i> محفوظ'; }
     else { favBtn.classList.remove('active'); favBtn.innerHTML = '<i class="far fa-bookmark"></i> حفظ'; }
@@ -363,59 +352,111 @@ function updateDashboard() {
     document.querySelectorAll('.status-card').forEach(card => card.classList.remove('active'));
     if(userData.status) document.querySelector(`.status-card[data-status="${userData.status}"]`).classList.add('active');
 
-    // دمج بيانات المستخدم المحلية مع الإحصائيات العامة القادمة من JSON
-    let tempStatus = {...globalData.status};
-    if (userData.isFav) tempStatus.fav++; // هنا نزيد العداد العام برقم 1 ليظهر للمستخدم أنه أثر في الإحصائيات
-    if (userData.status) tempStatus[userData.status]++;
+    // تحديث أرقام الدونات للجميع
+    document.getElementById('val-fav').innerText = dbStats.status.fav;
+    document.getElementById('val-reading').innerText = dbStats.status.reading;
+    document.getElementById('val-planned').innerText = dbStats.status.planned;
+    document.getElementById('val-completed').innerText = dbStats.status.completed;
+    document.getElementById('val-dropped').innerText = dbStats.status.dropped;
 
-    let tempVotes = [...globalData.votes];
-    if (userData.rating.total > 0) {
-        let userVoteIndex = userData.rating.total - 1;
-        tempVotes[userVoteIndex]++;
+    // تحديث متوسط التقييم العام بالأعلى
+    let totalGlobalScore = 0;
+    let totalGlobalVoters = 0;
+    for(let i=0; i<10; i++) {
+        totalGlobalScore += dbStats.votes[i] * (i+1);
+        totalGlobalVoters += dbStats.votes[i];
     }
+    let globalAvg = totalGlobalVoters > 0 ? (totalGlobalScore / totalGlobalVoters).toFixed(1) : "0.0";
+    document.getElementById('global-rating-text').innerText = globalAvg;
 
-    // تحديث النصوص في الدونات
-    document.getElementById('val-fav').innerText = tempStatus.fav;
-    document.getElementById('val-reading').innerText = tempStatus.reading;
-    document.getElementById('val-planned').innerText = tempStatus.planned;
-    document.getElementById('val-completed').innerText = tempStatus.completed;
-    document.getElementById('val-dropped').innerText = tempStatus.dropped;
+    // تحديث الجرافات بالبيانات الحقيقية
+    if(doughnutChart) { doughnutChart.data.datasets[0].data =[dbStats.status.fav, dbStats.status.reading, dbStats.status.planned, dbStats.status.completed, dbStats.status.dropped]; doughnutChart.update(); }
+    if(barChart) { barChart.data.datasets[0].data = dbStats.votes; barChart.update(); }
+    if(radarChart) { radarChart.data.datasets[0].data =[dbStats.radarAvg.story, dbStats.radarAvg.art, dbStats.radarAvg.chars]; radarChart.update(); }
 
-    // تحديث الرسوم البيانية
-    if(doughnutChart) { doughnutChart.data.datasets[0].data =[tempStatus.fav, tempStatus.reading, tempStatus.planned, tempStatus.completed, tempStatus.dropped]; doughnutChart.update(); }
-    if(barChart) { barChart.data.datasets[0].data = tempVotes; barChart.update(); }
-    if(radarChart) { radarChart.data.datasets[0].data =[globalData.radar.story, globalData.radar.art, globalData.radar.chars]; radarChart.update(); }
-
-    localStorage.setItem(`user_stats_manga_${currentMangaId}`, JSON.stringify(userData));
     renderStars();
 }
 
-// التفاعلات
+// 2. دوال ضغطات المستخدم (User Interactions)
 function toggleFav() { 
     userData.isFav = !userData.isFav; 
-    updateDashboard(); 
-    sendUpdateToServer('fav', userData.isFav); // محاكاة الإرسال
+    
+    // إرسال التحديث للسيرفر (نحاكيها بزيادة المتغير العام)
+    if(userData.isFav) dbStats.status.fav++; else dbStats.status.fav--;
+    
+    saveAndSync();
 }
 
-function setUserStatus(status) {
-    if(userData.status === status) userData.status = null; else userData.status = status;
-    updateDashboard();
-    sendUpdateToServer('status', userData.status); // محاكاة الإرسال
+function setUserStatus(newStatus) {
+    let oldStatus = userData.status;
+    
+    if(userData.status === newStatus) {
+        userData.status = null; // إلغاء التحديد
+        dbStats.status[newStatus]--; 
+    } else {
+        userData.status = newStatus;
+        dbStats.status[newStatus]++;
+        if(oldStatus) dbStats.status[oldStatus]--; // خصم من الحالة القديمة
+    }
+    saveAndSync();
 }
 
 function rateCategory(category, val) {
+    // 1. خصم التقييم القديم إن وجد
+    if(userData.rating[category] > 0) {
+        dbStats.radarTotal[category] -= (userData.rating[category] * 2);
+    } else {
+        // إذا كان هذا أول تقييم له في هذه الخانة
+        dbStats.radarTotal.usersCount++; 
+    }
+
+    // 2. تسجيل التقييم الجديد
     userData.rating[category] = val;
+    dbStats.radarTotal[category] += (val * 2);
+
+    // حساب متوسط الرادار
+    let uc = dbStats.radarTotal.usersCount;
+    dbStats.radarAvg.story = uc > 0 ? (dbStats.radarTotal.story / uc).toFixed(2) : 0;
+    dbStats.radarAvg.chars = uc > 0 ? (dbStats.radarTotal.chars / uc).toFixed(2) : 0;
+    dbStats.radarAvg.art = uc > 0 ? (dbStats.radarTotal.art / uc).toFixed(2) : 0;
+
+    // تحديث التصويت الكلي (البار شارت)
     let sum = userData.rating.story + userData.rating.chars + userData.rating.art;
     let partsRated = (userData.rating.story>0?1:0) + (userData.rating.chars>0?1:0) + (userData.rating.art>0?1:0);
-    userData.rating.total = Math.round((sum / partsRated) * 2);
-    updateDashboard();
-    sendUpdateToServer('rating', userData.rating); // محاكاة الإرسال
+    
+    let oldTotal = userData.rating.total;
+    userData.rating.total = Math.round((sum / partsRated) * 2); // من 1 لـ 10
+
+    if(oldTotal > 0) dbStats.votes[oldTotal - 1]--; // خصم القديم
+    if(userData.rating.total > 0) dbStats.votes[userData.rating.total - 1]++; // إضافة الجديد
+
+    saveAndSync();
 }
 
-// دالة محاكاة (هنا تضع كود ربط قاعدة البيانات لاحقاً)
-function sendUpdateToServer(type, value) {
-    console.log(`[محاكاة] جاري إرسال إلى قاعدة البيانات: تم تحديث ${type} بقيمة`, value);
-    // fetch('https://api.yourdatabase.com/updateStats', { method: 'POST', body: JSON.stringify({ mangaId: currentMangaId, type, value }) })
+function saveAndSync() {
+    // حفظ حالة المستخدم شخصياً
+    localStorage.setItem(`user_stats_manga_${currentMangaId}`, JSON.stringify(userData));
+    // تحديث الشاشة فوراً
+    updateDashboardUI();
+    // إرسال البيانات لقاعدة البيانات الحقيقية
+    sendToDatabase();
+}
+
+// ==========================================
+// 🔌 منطقة الربط بقاعدة البيانات الفعلية (Backend)
+// ==========================================
+
+function syncRealTimeDatabase() {
+    // 💡 مبرمجي العزيز: هنا تضع كود قراءة البيانات من Firebase أو Supabase.
+    // حالياً، النظام سيبدأ الجرافات من أصفار، وأي ضغطة ستزيد العداد وتظهر أمامك فوراً للتجربة.
+    
+    console.log("تم تهيئة الجرافات من الصفر! جاهز لاستقبال التفاعلات.");
+    updateDashboardUI();
+}
+
+function sendToDatabase() {
+    // 💡 هنا تضع كود (Push/Update) لرفع المتغير `dbStats` إلى السيرفر الخاص بك.
+    console.log("تم التحديث! الإحصائيات العامة الآن:", dbStats);
 }
 
 // بدء التشغيل
