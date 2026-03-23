@@ -13,17 +13,17 @@
 <style>
 /* 🎨 الألوان المأخوذة من صفحة الإحصائيات */
 :root {
-    --bg-main: #0f141e;      
-    --bg-card: #1a2235;      
-    --bg-header: #1e1b24;    
-    --border-color: #2d3748; 
+    --bg-main: #0f141e;      /* لون الخلفية الرئيسي */
+    --bg-card: #1a2235;      /* لون بطاقات المانجا */
+    --bg-header: #1e1b24;    /* لون الهيدر والبحث */
+    --border-color: #2d3748; /* لون الحدود */
     
-    --primary: #a855f7;      
+    --primary: #a855f7;      /* البنفسجي الأنيق */
     --primary-glow: rgba(168, 85, 247, 0.3);
     
-    --green: #10b981;        
-    --blue: #3b82f6;         
-    --yellow: #eab308;       
+    --green: #10b981;        /* الأخضر للمستمر */
+    --blue: #3b82f6;         /* الأزرق للمكتمل */
+    --yellow: #eab308;       /* الأصفر للتقييم */
     
     --text-main: #ffffff;
     --text-muted: #94a3b8;
@@ -40,7 +40,7 @@ body {
 }
 
 /* =========================================
-   🔍 الهيدر والبحث
+   🔍 الهيدر والبحث (بأسلوب الإحصائيات)
 ========================================= */
 header {
     position: sticky;
@@ -96,6 +96,7 @@ header {
 .clear-btn.show { opacity: 1; transform: scale(1); pointer-events: auto; }
 .clear-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-main); }
 
+/* نتائج البحث المنسدلة */
 .search-results {
     position: absolute; width: calc(100% - 30px); left: 15px; top: 70px;
     background: var(--bg-header);
@@ -146,11 +147,11 @@ header {
 }
 
 /* =========================================
-   📚 شبكة العرض والبطاقات (بدون تصنيفات)
+   📚 شبكة العرض والبطاقات
 ========================================= */
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); /* تصغير عرض الكارت قليلاً ليصبح متناسقاً */
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 15px; padding: 0 15px 20px 15px;
 }
 
@@ -181,6 +182,7 @@ header {
 }
 .card:hover .poster img { transform: scale(1.08); }
 
+/* شارة الحالة */
 .status {
     position: absolute; top: 8px; right: 8px;
     padding: 4px 8px; border-radius: 6px;
@@ -191,29 +193,29 @@ header {
 .live { background: rgba(16, 185, 129, 0.2); color: var(--green); border-color: rgba(16, 185, 129, 0.3); }
 .done { background: rgba(59, 130, 246, 0.2); color: var(--blue); border-color: rgba(59, 130, 246, 0.3); }
 
-/* تنسيق المحتوى ليكون أنيق ومختصر */
-.content { 
-    padding: 12px 10px; 
-    flex-grow: 1; 
-    display: flex; 
-    flex-direction: column; 
-    justify-content: space-between; 
-    gap: 8px;
-}
+/* محتوى البطاقة السفلي */
+.content { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
 
 .title {
     font-size: 13px; font-weight: 700; line-height: 1.4;
-    color: var(--text-main);
+    color: var(--text-main); margin-bottom: 8px;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 
-.meta-footer { display: flex; justify-content: space-between; align-items: center; }
-.stars { font-size: 12px; color: var(--yellow); font-weight: 700; display: flex; align-items: center; gap: 4px; }
+.genres { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.tag {
+    background: rgba(255, 255, 255, 0.05); color: var(--text-label);
+    padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;
+}
 
+.meta-footer { display: flex; justify-content: space-between; align-items: center; }
+.stars { font-size: 11px; color: var(--yellow); font-weight: 700; display: flex; align-items: center; gap: 3px; }
+
+/* رسالة التحميل */
 .loader { text-align: center; padding: 50px 20px; color: var(--text-muted); font-weight: 600; }
 
 /* =========================================
-   📱 شريط التنقل السفلي
+   📱 شريط التنقل السفلي (Bottom Nav)
 ========================================= */
 .bottom-nav {
     position: fixed; bottom: 0; left: 0; width: 100%;
@@ -221,7 +223,7 @@ header {
     border-top: 1px solid var(--border-color);
     display: flex; justify-content: space-around; align-items: center;
     padding: 10px 0; z-index: 1000;
-    padding-bottom: env(safe-area-inset-bottom, 10px);
+    padding-bottom: env(safe-area-inset-bottom, 10px); /* للآيفون */
 }
 
 .nav-item {
@@ -233,12 +235,86 @@ header {
 .nav-item i { font-size: 18px; }
 .nav-item.active { color: var(--primary); }
 .nav-item:hover { color: var(--text-main); }
+
+/* 🔥 سكشن آخر التحديثات */
+.updates-section {
+    padding: 0 15px 15px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-title i {
+    color: var(--primary);
+}
+
+/* Scroll أفقي */
+.updates-grid {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+
+.updates-grid::-webkit-scrollbar {
+    display: none;
+}
+
+/* كروت أصغر */
+.updates-card {
+    min-width: 120px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.updates-card:hover {
+    transform: scale(1.05);
+    border-color: var(--primary);
+    box-shadow: 0 0 15px var(--primary-glow);
+}
+
+.updates-card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+}
+
+.updates-title {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px;
+    line-height: 1.3;
+}
+
+/* NEW Badge */
+.badge-new {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: var(--primary);
+    color: #fff;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    box-shadow: 0 0 10px var(--primary);
+}
+
 </style>
 </head>
 
 <body>
 
-<!-- شريط البحث -->
+<!-- شريط البحث العلوي -->
 <header>
     <div class="search-box">
         <i class="icon fa-solid fa-magnifying-glass"></i>
@@ -248,6 +324,8 @@ header {
     <div id="searchResults" class="search-results"></div>
 </header>
 
+
+
 <!-- الفلاتر -->
 <div class="filters">
     <button class="active" onclick="filter('all', this)">الكل</button>
@@ -255,11 +333,20 @@ header {
     <button onclick="filter('مكتمل', this)"><span style="color:var(--blue)">✔</span> مكتمل</button>
 </div>
 
-<!-- العرض -->
+<!-- 🔥 آخر التحديثات -->
+<div class="updates-section">
+    <div class="section-title">
+        <i class="fa-solid fa-fire"></i> آخر التحديثات
+    </div>
+
+    <div id="updatesGrid" class="updates-grid"></div>
+</div>
+
+<!-- المحتوى -->
 <div id="loader" class="loader"><i class="fas fa-spinner fa-spin"></i> جاري جلب البيانات...</div>
 <div id="grid" class="grid"></div>
 
-<!-- شريط التنقل -->
+<!-- 📱 شريط التنقل السفلي للذهاب لصفحة الإحصائيات -->
 <nav class="bottom-nav">
     <a href="#" class="nav-item active">
         <i class="fa-solid fa-house"></i>
@@ -274,6 +361,7 @@ header {
 <script>
 let dataAll=[];
 
+// تهيئة تليجرام
 if(window.Telegram && Telegram.WebApp) {
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
@@ -292,17 +380,17 @@ async function init(){
     }
 }
 
-// دالة لمعالجة التصنيفات لنتائج البحث المنسدلة فقط
+// دالة لجلب أول تصنيفين فقط بشكل نظيف
 function cleanGenres(g){
     if(!g) return [];
-    return g.replace(/[^\w\s,\u0600-\u06FF]/g,'')
+    return g.replace(/[^\w\s,\u0600-\u06FF]/g,'') // يسمح بالعربي
     .split(',')
     .map(x=>x.trim())
     .filter(x=>x.length > 2)
     .slice(0, 2);
 }
 
-// دالة رسم البطاقات (بدون تصنيفات)
+// دالة رسم البطاقات
 function render(arr){
     let grid = document.getElementById('grid');
     grid.innerHTML = '';
@@ -313,6 +401,8 @@ function render(arr){
 
         let card = document.createElement('div');
         card.className = 'card';
+        
+        // عند الضغط يذهب لصفحة التفاصيل
         card.onclick = () => { window.location.href = `details.html?id=${m.id}`; };
 
         card.innerHTML = `
@@ -324,6 +414,9 @@ function render(arr){
         </div>
         <div class="content">
             <div class="title">${m.title}</div>
+            <div class="genres">
+                ${cleanGenres(m.genre).map(g => `<span class="tag">${g}</span>`).join('')}
+            </div>
             <div class="meta-footer">
                 <div class="stars"><i class="fa-solid fa-star"></i> ${rating}</div>
             </div>
@@ -333,6 +426,7 @@ function render(arr){
     });
 }
 
+// خوارزمية البحث الذكي (كما هي من كودك)
 function smartSearch(query){
     query = query.toLowerCase();
     let seen = new Set();
@@ -361,6 +455,7 @@ function smartSearch(query){
     });
 }
 
+// فلترة الأزرار (الكل، مستمر، مكتمل)
 function filter(type, btn){
     document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -369,6 +464,7 @@ function filter(type, btn){
     render(dataAll.filter(m => m.status && m.status.includes(type)));
 }
 
+// منطق صندوق البحث
 const input = document.getElementById('searchInput');
 const resultsBox = document.getElementById('searchResults');
 const clearBtn = document.querySelector('.clear-btn');
@@ -376,18 +472,21 @@ const clearBtn = document.querySelector('.clear-btn');
 input.addEventListener('input', () => {
     let q = input.value.trim().toLowerCase();
 
-    if(q) clearBtn.classList.add('show');
-    else clearBtn.classList.remove('show');
+    if(q){
+        clearBtn.classList.add('show');
+    } else {
+        clearBtn.classList.remove('show');
+    }
 
     if(!q){
         resultsBox.style.display = 'none';
-        render(dataAll);
+        render(dataAll); // إعادة عرض الكل إذا تم مسح البحث
         return;
     }
 
     let filtered = smartSearch(q);
-    render(filtered); 
-    showResults(filtered, q); 
+    render(filtered); // تحديث الشبكة بالنتائج
+    showResults(filtered, q); // تحديث القائمة المنسدلة
 });
 
 function showResults(arr, q){
@@ -398,6 +497,7 @@ function showResults(arr, q){
     }
 
     resultsBox.innerHTML = arr.slice(0, 5).map(m => {
+        // تمييز النص المطابق
         let title = m.title.replace(new RegExp(q, 'gi'), match => `<span class="highlight">${match}</span>`);
         let rating = m.rating ? parseFloat(m.rating).toFixed(1) : "0.0";
 
@@ -424,17 +524,50 @@ function clearSearch(){
     input.value = '';
     resultsBox.style.display = 'none';
     clearBtn.classList.remove('show');
-    render(dataAll); 
+    render(dataAll); // العودة للكل
     input.focus();
 }
 
+// إغلاق القائمة المنسدلة عند الضغط في أي مكان خارجها
 document.addEventListener('click', (e) => {
     if(!e.target.closest('header')){
         resultsBox.style.display = 'none';
     }
 });
 
+// تشغيل جلب البيانات
 init();
+
+function renderUpdates(){
+    let container = document.getElementById('updatesGrid');
+    container.innerHTML = '';
+
+    // نفلتر الأعمال اللي عندها updated_at فقط
+    let latest = [...dataAll]
+        .filter(m => m.updated_at) // بس الأعمال اللي فيها updated_at
+        .sort((a,b) => b.updated_at - a.updated_at) // الأحدث أولاً
+        .slice(0, 8); // أقصى 8 كروت
+
+    latest.forEach(m => {
+        let card = document.createElement('div');
+        card.className = 'updates-card';
+
+        card.onclick = () => {
+            window.location.href = `details.html?id=${m.id}`;
+        };
+
+        card.innerHTML = `
+        <div style="position:relative;">
+            <img src="${m.image_url}">
+            <div class="badge-new">NEW</div>
+        </div>
+        <div class="updates-title">${m.title}</div>
+        `;
+
+        container.appendChild(card);
+    });
+}
+
 </script>
 
 </body>
