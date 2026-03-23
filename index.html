@@ -297,16 +297,19 @@ header {
 }
 
 /* NEW Badge */
+/* NEW Badge */
 .badge-new {
     position: absolute;
     top: 6px;
     right: 6px;
     background: var(--primary);
     color: #fff;
-    font-size: 9px;
-    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
     border-radius: 6px;
-    box-shadow: 0 0 10px var(--primary);
+    box-shadow: 0 0 10px var(--primary-glow);
+    z-index: 10;
 }
 
 </style>
@@ -374,7 +377,10 @@ async function init(){
         dataAll = data.mangas;
 
         document.getElementById('loader').style.display='none';
-        render(dataAll);
+        
+        render(dataAll); // رسم الكروت الأساسية
+        renderUpdates(); // 🔥 تشغيل دالة آخر التحديثات والأعمال الجديدة
+
     } catch(e) {
         document.getElementById('loader').innerHTML = 'حدث خطأ في تحميل البيانات.';
     }
@@ -542,11 +548,22 @@ function renderUpdates(){
     let container = document.getElementById('updatesGrid');
     container.innerHTML = '';
 
-    // نفلتر الأعمال اللي عندها updated_at فقط
+    // فلترة الأعمال وترتيبها من الأحدث للأقدم
+    // نعتمد على updated_at أو created_at أو حتى id كبديل لمعرفة الأحدث
     let latest = [...dataAll]
-        .filter(m => m.updated_at) // بس الأعمال اللي فيها updated_at
-        .sort((a,b) => b.updated_at - a.updated_at) // الأحدث أولاً
-        .slice(0, 8); // أقصى 8 كروت
+        .filter(m => m.updated_at || m.created_at || m.id) 
+        .sort((a,b) => {
+            let dateA = a.updated_at || a.created_at || a.id || 0;
+            let dateB = b.updated_at || b.created_at || b.id || 0;
+            return dateB - dateA; 
+        })
+        .slice(0, 8); // عرض أحدث 8 أعمال فقط
+
+    // إخفاء القسم بالكامل إذا لم تكن هناك أعمال
+    if(latest.length === 0) {
+        document.querySelector('.updates-section').style.display = 'none';
+        return;
+    }
 
     latest.forEach(m => {
         let card = document.createElement('div');
@@ -558,8 +575,8 @@ function renderUpdates(){
 
         card.innerHTML = `
         <div style="position:relative;">
-            <img src="${m.image_url}">
-            <div class="badge-new">NEW</div>
+            <img src="${m.image_url}" alt="poster">
+            <div class="badge-new">عمل جديد ✨</div>
         </div>
         <div class="updates-title">${m.title}</div>
         `;
