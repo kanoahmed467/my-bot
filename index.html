@@ -36,7 +36,8 @@ body {
     font-family: 'Cairo', sans-serif;
     background: var(--bg-main);
     color: var(--text-main);
-    padding-bottom: 70px; /* مساحة لشريط التنقل السفلي */
+    padding-bottom: 90px; /* مساحة لشريط التنقل السفلي */
+
 }
 
 /* =========================================
@@ -360,7 +361,8 @@ header {
     100% { background-color: #1a2235; }
 }
 
-.poster img[src=""], .poster img:not([src]) {
+.poster, .elite-poster {
+    background-color: #1a2235;
     animation: skeleton-loading 1.5s infinite;
 }
 
@@ -583,33 +585,33 @@ function render(arr){
 }
 
 // خوارزمية البحث الذكي (كما هي من كودك)
-function smartSearch(query){
-    query = query.toLowerCase();
-    let seen = new Set();
+let searchTimeout; // متغير لحفظ التوقيت
 
-    return dataAll.map(m => {
-        let title = m.title.toLowerCase();
-        let score = 0;
+input.addEventListener('input', () => {
+    let q = input.value.trim().toLowerCase();
 
-        if(title === query) score += 200;
-        if(title.startsWith(query)) score += 120;
-        if(title.split(' ').includes(query)) score += 100;
-        if(title.includes(query)) score += 40;
+    if(q) {
+        clearBtn.classList.add('show');
+    } else {
+        clearBtn.classList.remove('show');
+    }
 
-        let distance = Math.abs(title.length - query.length);
-        score -= distance;
-        score += (m.rating || 0) * 2;
+    // إلغاء البحث السابق إذا كان المستخدم لا يزال يكتب
+    clearTimeout(searchTimeout);
 
-        return {...m, score};
-    })
-    .filter(m => m.score > 10) 
-    .sort((a,b) => b.score - a.score)
-    .filter(m => {
-        if(seen.has(m.title)) return false;
-        seen.add(m.title);
-        return true;
-    });
-}
+    // الانتظار 300 ملي ثانية قبل تنفيذ البحث
+    searchTimeout = setTimeout(() => {
+        if(!q){
+            resultsBox.style.display = 'none';
+            render(dataAll);
+            return;
+        }
+
+        let filtered = smartSearch(q);
+        render(filtered);
+        showResults(filtered, q);
+    }, 300); 
+});
 
 // فلترة الأزرار (الكل، مستمر، مكتمل)
 function filter(type, btn){
@@ -658,7 +660,7 @@ function showResults(arr, q){
         let rating = m.rating ? parseFloat(m.rating).toFixed(1) : "0.0";
 
         return `
-        <div class="result-item" onclick="goTo(${m.id})">
+        <div class="result-item" onclick="goTo('${m.id}')">
             <img src="${m.image_url}" class="result-img" alt="img">
             <div style="flex:1;">
                 <div class="result-title">${title}</div>
@@ -681,7 +683,7 @@ function clearSearch(){
     resultsBox.style.display = 'none';
     clearBtn.classList.remove('show');
     render(dataAll); // العودة للكل
-    input.focus();
+    input.focus(); // هذه الخطوة قد تفتح الكيبورد المزعج في الموبايل
 }
 
 // إغلاق القائمة المنسدلة عند الضغط في أي مكان خارجها
