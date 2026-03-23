@@ -599,12 +599,14 @@ document.addEventListener('click', (e) => {
 // تشغيل جلب البيانات
 init();
 
-function renderUpdates(){
-    let container = document.getElementById('updatesGrid');
+let currentSlide = 0;
+let slideInterval;
+
+function renderUpdates() {
+    let container = document.getElementById('sliderContainer');
     container.innerHTML = '';
 
-    // فلترة الأعمال وترتيبها من الأحدث للأقدم
-    // نعتمد على updated_at أو created_at أو حتى id كبديل لمعرفة الأحدث
+    // جلب أحدث 5 أعمال فقط للسلايدر عشان ميكونش تقيل
     let latest = [...dataAll]
         .filter(m => m.updated_at || m.created_at || m.id) 
         .sort((a,b) => {
@@ -612,32 +614,51 @@ function renderUpdates(){
             let dateB = b.updated_at || b.created_at || b.id || 0;
             return dateB - dateA; 
         })
-        .slice(0, 8); // عرض أحدث 8 أعمال فقط
+        .slice(0, 5); 
 
-    // إخفاء القسم بالكامل إذا لم تكن هناك أعمال
     if(latest.length === 0) {
         document.querySelector('.updates-section').style.display = 'none';
+        document.querySelector('.elegant-divider').style.display = 'none';
         return;
     }
 
-    latest.forEach(m => {
-        let card = document.createElement('div');
-        card.className = 'updates-card';
+    // بناء السلايدات
+    latest.forEach((m, index) => {
+        let slide = document.createElement('div');
+        // السلايد الأول هو اللي هيكون نشط في البداية
+        slide.className = `slide ${index === 0 ? 'active' : ''}`;
+        slide.onclick = () => { window.location.href = `details.html?id=${m.id}`; };
 
-        card.onclick = () => {
-            window.location.href = `details.html?id=${m.id}`;
-        };
-
-        card.innerHTML = `
-        <div style="position:relative;">
-            <img src="${m.image_url}" alt="poster">
-            <div class="badge-new">عمل جديد ✨</div>
-        </div>
-        <div class="updates-title">${m.title}</div>
+        slide.innerHTML = `
+            <img src="${m.image_url}" alt="cover">
+            <div class="slide-overlay">
+                <span class="slide-badge"><i class="fa-solid fa-sparkles"></i> عمل جديد</span>
+                <div class="slide-title">${m.title}</div>
+            </div>
         `;
-
-        container.appendChild(card);
+        container.appendChild(slide);
     });
+
+    // تشغيل التقليب التلقائي
+    startSlider();
+}
+
+function startSlider() {
+    let slides = document.querySelectorAll('.slide');
+    if(slides.length <= 1) return; // لو عمل واحد مفيش داعي يقلب
+
+    clearInterval(slideInterval); // تنظيف أي إنترڤال قديم
+    
+    slideInterval = setInterval(() => {
+        // إخفاء السلايد الحالي
+        slides[currentSlide].classList.remove('active');
+        
+        // الانتقال للسلايد التالي
+        currentSlide = (currentSlide + 1) % slides.length;
+        
+        // إظهار السلايد الجديد
+        slides[currentSlide].classList.add('active');
+    }, 4000); // يقلب كل 4 ثواني
 }
 
 </script>
