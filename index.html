@@ -351,6 +351,17 @@ header {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: top; /* يضمن إن وش الشخصية يظهر دائماً */
+}
+
+@keyframes skeleton-loading {
+    0% { background-color: #1a2235; }
+    50% { background-color: #2d3748; }
+    100% { background-color: #1a2235; }
+}
+
+.poster img[src=""], .poster img:not([src]) {
+    animation: skeleton-loading 1.5s infinite;
 }
 
 /* تاج "جديد" الفخم */
