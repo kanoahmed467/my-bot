@@ -303,16 +303,17 @@ header {
     right: 10px;
     background: linear-gradient(45deg, #a855f7, #6366f1);
     color: white;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
-    padding: 4px 10px;
+    padding: 5px 12px;
     border-radius: 8px;
-    box-shadow: 0 0 15px var(--primary-glow);
-    z-index: 5;
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+    z-index: 10; /* عشان يظهر فوق أي حاجة */
     display: flex;
     align-items: center;
-    gap: 4px;
-    border: 1px solid rgba(255,255,255,0.2);
+    gap: 6px;
+    border: 1px solid rgba(255,255,255,0.3);
+    pointer-events: none;
 }
 
 /* حركة بسيطة عشان يلمع */
@@ -640,17 +641,18 @@ function renderUpdates() {
     let container = document.getElementById('updatesGrid');
     container.innerHTML = '';
 
-    // 💡 الحل الذكي: الكود هيعتبر إن "أكبر ID موجود حالياً" هو القديم.
-    // أي عمل ID بتاعه أكبر من الرقم ده (اللي هي الأعمال اللي هتضيفها بعدين) هيبقا جديد.
-    // مؤقتاً: عشان تختفي الكلمة من الأعمال الحالية، روح شوف أكبر ID عندك كام وحطه مكان 20000
-    const LAST_KNOWN_ID = 20000; 
+    // 💡 التعديل هنا: 
+    // لو عايز التاج يظهر على الأعمال الحالية للتجربة، خلي الرقم ده "صفر" 0
+    // لو عايز الأعمال الحالية ميبقاش عليها تاج، حط هنا رقم ID بتاع آخر عمل عندك
+    const LAST_KNOWN_ID = 0; 
 
+    // ترتيب الأعمال حسب الأحدث (ID أو updated_at)
     let latest = [...dataAll]
-        .sort((a, b) => (b.updated_at || b.id) - (a.updated_at || a.id))
-        .slice(0, 10);
+        .sort((a, b) => (b.id) - (a.id)) // بنرتب بالأي دي عشان الأحدث يظهر الأول
+        .slice(0, 10); // بناخد أول 10 بس
 
     latest.forEach(m => {
-        // التحقق من الـ ID
+        // فحص هل هو عمل جديد فعلاً؟
         const isActuallyNew = parseInt(m.id) > LAST_KNOWN_ID;
 
         let card = document.createElement('div');
@@ -659,7 +661,11 @@ function renderUpdates() {
 
         card.innerHTML = `
             <div class="elite-poster">
-                ${isActuallyNew ? '<span class="badge-new-elite"><i class="fa-solid fa-sparkles"></i> عمل جديد</span>' : ''}
+                ${isActuallyNew ? `
+                <div class="badge-new-elite">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>عمل جديد</span>
+                </div>` : ''}
                 <img src="${m.image_url}" loading="lazy">
             </div>
             <div class="elite-info">
