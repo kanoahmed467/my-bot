@@ -787,6 +787,47 @@ header {
     100% { transform: scale(1.05); opacity: 1; }
 }
 
+/* =========================================
+   📚 تنسيقات تبويبات قائمتي
+========================================= */
+.list-tabs {
+    display: flex;
+    gap: 10px;
+    padding: 10px 15px;
+    overflow-x: auto;
+    margin-bottom: 15px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+.list-tabs::-webkit-scrollbar { display: none; }
+
+.list-tab {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: 0.3s;
+    font-family: 'Cairo', sans-serif;
+    outline: none;
+}
+
+.list-tab:hover {
+    border-color: var(--primary);
+}
+
+.list-tab.active {
+    background: rgba(168, 85, 247, 0.15);
+    border-color: var(--primary);
+    color: var(--primary);
+    box-shadow: 0 0 10px var(--primary-glow);
+}
+
 </style>
 </head>
 
@@ -879,6 +920,30 @@ header {
     </div>
 </div>
 
+
+<!-- ================== شاشة قائمتي (My List) ================== -->
+<div id="mylist-page" style="display: none; padding-top: 20px;">
+    <div class="section-title" style="padding: 0 15px;">
+        <i class="fa-solid fa-book-bookmark" style="color: var(--primary);"></i> مكتبتي الخاصة
+    </div>
+    
+    <!-- التبويبات العلوية لقائمتي -->
+    <div class="list-tabs">
+        <button class="list-tab active" onclick="filterMyList('all', this)">الكل</button>
+        <button class="list-tab" onclick="filterMyList('fav', this)">🔖 محفوظة</button>
+        <button class="list-tab" onclick="filterMyList('reading', this)">📖 أقرأها</button>
+        <button class="list-tab" onclick="filterMyList('planned', this)">⏳ أرغب</button>
+        <button class="list-tab" onclick="filterMyList('completed', this)">✅ مكتملة</button>
+        <button class="list-tab" onclick="filterMyList('dropped', this)">❌ متروكة</button>
+    </div>
+
+    <!-- شبكة عرض المانجات في قائمتي -->
+    <div id="myListGrid" class="grid">
+        <!-- ستظهر هنا الأعمال -->
+    </div>
+</div>
+
+<!-- ================== شاشة حسابي ================== -->
 <!-- ================== شاشة حسابي ================== -->
 <div id="account-page" style="display: none;">
     <div class="profile-header">
@@ -896,39 +961,27 @@ header {
                 <i class="fa-solid fa-pen"></i>
             </button>
         </div>
-        
-        <!-- رجعنا سطر الـ ID اللي اتمسح -->
         <div class="user-id">ID: <span id="userId">00000000</span></div>
-        
-    </div> <!-- دي القفلة </div> اللي كانت ناقصة ومسببة المشكلة -->
+    </div> <!-- قفلة الهيدر -->
 
-    <div class="section-title-account">
-        <i class="fa-solid fa-bookmark" style="color: var(--primary);"></i> أعمالي المسجلة
-    </div>
-    
-    <div id="savedGrid" class="grid">
-        <div style="text-align:center; width:100%; color:var(--text-muted); padding:20px;">
-            لا توجد أعمال مسجلة حتى الآن.
-        </div>
-    </div>
-
-    <!-- زر تسجيل الخروج متضاف هنا جوه قسم حسابي عشان يختفي تماماً لو مش مسجل دخول -->
+    <!-- زر تسجيل الخروج -->
     <button class="logout-btn" onclick="logoutUser()"><i class="fa-solid fa-right-from-bracket"></i> تسجيل الخروج</button>
 </div>
 
+<!-- ================== شريط التنقل السفلي ================== -->
 <!-- ================== شريط التنقل السفلي ================== -->
 <nav class="bottom-nav">
     <a href="#" class="nav-item active" id="nav-home" onclick="switchTab('home')">
         <i class="fa-solid fa-house"></i>
         <span>الرئيسية</span>
     </a>
+    <a href="#" class="nav-item" id="nav-mylist" onclick="switchTab('mylist')">
+        <i class="fa-solid fa-list-ul"></i>
+        <span>قائمتي</span>
+    </a>
     <a href="#" class="nav-item" id="nav-account" onclick="switchTab('account')">
         <i class="fa-solid fa-user"></i>
         <span>حسابي</span>
-    </a>
-    <a href="statistics.html" class="nav-item">
-        <i class="fa-solid fa-chart-simple"></i>
-        <span>إحصائياتي</span>
     </a>
 </nav>
 
@@ -1177,85 +1230,72 @@ init();
 // ==========================================
 window.currentFirebaseUser = null; // متغير لحفظ حالة المستخدم
 
+// ==========================================
+// 🔄 التنقل بين الصفحات مع حماية (قائمتي وحسابي)
+// ==========================================
 window.switchTab = function(tab) {
+    // 1. تعريف كل الصفحات
     const homePage = document.getElementById('home-page');
     const accountPage = document.getElementById('account-page');
     const authPage = document.getElementById('auth-page');
+    const mylistPage = document.getElementById('mylist-page'); // ضفنا صفحة قائمتي
+
+    // 2. تعريف أزرار النافبار
     const navHome = document.getElementById('nav-home');
     const navAccount = document.getElementById('nav-account');
+    const navMylist = document.getElementById('nav-mylist'); // ضفنا زرار قائمتي
 
-    // إزالة اللون من كل الزراير
+    // 3. إخفاء كل الصفحات في البداية وإزالة الألوان من الزراير
+    homePage.style.display = 'none';
+    accountPage.style.display = 'none';
+    authPage.style.display = 'none';
+    mylistPage.style.display = 'none';
     document.querySelectorAll('.bottom-nav .nav-item').forEach(el => el.classList.remove('active'));
 
+    const currentUser = window.currentFirebaseUser;
+
+    // 4. تحديد الصفحة اللي هتفتح بناءً على الضغطة
     if (tab === 'home') {
         homePage.style.display = 'block';
-        accountPage.style.display = 'none';
-        authPage.style.display = 'none';
         navHome.classList.add('active');
-    } else if (tab === 'account') {
-        homePage.style.display = 'none';
+    } 
+    else if (tab === 'account') {
         navAccount.classList.add('active');
-        
-        // هنا الفحص: هل المستخدم مسجل دخول؟
-        const currentUser = window.currentFirebaseUser;
-        
-        if (currentUser) {
-            // لو مسجل بإيميل لازم يكون مأكده، أو يكون داخل بجوجل
-            const isGoogleUser = currentUser.providerData && currentUser.providerData.some(p => p.providerId === 'google.com');
-            
-            if (currentUser.emailVerified || isGoogleUser) {
-                authPage.style.display = 'none';
-                accountPage.style.display = 'block';
-                window.loadUserProfileReal(currentUser); // تحميل بياناته
-            } else {
-                accountPage.style.display = 'none';
-                authPage.style.display = 'block';
-                window.toggleAuthForm('verify'); // تحويله لرسالة التفعيل
+        checkAuthAndShow(currentUser, accountPage, authPage, () => {
+            window.loadUserProfileReal(currentUser); // لو مسجل، حمل بياناته
+        });
+    }
+    else if (tab === 'mylist') {
+        navMylist.classList.add('active');
+        checkAuthAndShow(currentUser, mylistPage, authPage, () => {
+            if(typeof window.renderMyListUI === 'function') {
+                window.renderMyListUI('all'); // لو مسجل، افتح القائمة وحملها
             }
-        } else {
-            // لو مش مسجل دخول خالص
-            accountPage.style.display = 'none';
-            authPage.style.display = 'block';
-            window.toggleAuthForm('login'); // تحويله لصفحة الدخول
-        }
+        });
     }
     
+    // تأثير الاهتزاز في تليجرام
     if(window.Telegram && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
         Telegram.WebApp.HapticFeedback.impactOccurred('light');
     }
 }
 
-// دالة التنقل بين (تسجيل الدخول / إنشاء حساب / التفعيل)
-window.toggleAuthForm = function(formName) {
-    document.getElementById('register-form').style.display = 'none';
-    document.getElementById('login-form').style.display = 'none';
-    document.getElementById('verify-form').style.display = 'none';
-    document.getElementById(`${formName}-form`).style.display = 'block';
-}
-
-/// ==========================================
-// 👤 بيانات الحساب الحقيقية من فايربيز
-// ==========================================
-window.loadUserProfileReal = function(user) {
-    // جلب الاسم (لو مفيش اسم نعرض أول جزء من الإيميل)
-    let emailPrefix = user.email ? user.email.split('@')[0] : "مستخدم النخبة";
-    let name = user.displayName || emailPrefix;
-    let userId = "UID: " + user.uid.substring(0, 8); // رقم تعريفي مميز
-
-    document.getElementById('userName').innerText = name;
-    document.getElementById('userId').innerText = userId;
-
-    // جلب الصورة (من جوجل أو من التخزين المحلي)
-    if (user.photoURL) {
-        document.getElementById('userAvatar').src = user.photoURL;
+// دالة مساعدة عشان تفحص المستخدم مسجل دخول ولا لأ (عشان منكررش الكود)
+function checkAuthAndShow(currentUser, targetPage, authPage, onSuccessCallback) {
+    if (currentUser) {
+        // فحص لو داخل بجوجل أو مفعل الإيميل
+        const isGoogleUser = currentUser.providerData && currentUser.providerData.some(p => p.providerId === 'google.com');
+        
+        if (currentUser.emailVerified || isGoogleUser) {
+            targetPage.style.display = 'block'; // افتح الصفحة
+            onSuccessCallback(); // نفذ المطلوب (عرض البيانات)
+        } else {
+            authPage.style.display = 'block'; // حوله لصفحة التأكيد
+            window.toggleAuthForm('verify');
+        }
     } else {
-        let savedAvatar = localStorage.getItem('userAvatar_KLE');
-        document.getElementById('userAvatar').src = savedAvatar ? savedAvatar : 'https://i.ibb.co/q1z6bL8/default-avatar.png'; 
-    }
-
-    // عرض الأعمال المحفوظة
-    if (typeof renderSavedList === "function") {
-        renderSavedList();
+        authPage.style.display = 'block'; // حوله لتسجيل الدخول
+        window.toggleAuthForm('login');
     }
 }
 
@@ -1457,63 +1497,103 @@ function renderSavedList() {
   // ==========================================
 // 📚 عرض قائمة الأعمال المسجلة (المفضلة) حقيقياً
 // ==========================================
-function renderSavedList() {
-    let savedGrid = document.getElementById('savedGrid');
-    
-    // جلب الـ IDs المحفوظة من الذاكرة (اللي اتسجلت من صفحة التفاصيل)
-    let savedArray = JSON.parse(localStorage.getItem('KLE_Saved_Mangas')) ||[];
+// ==========================================
+// 📚 تشغيل نظام "قائمتي" بالكامل في الصفحة الرئيسية
+// ==========================================
 
-    // لو مفيش أي أعمال محفوظة
-    if (savedArray.length === 0) {
-        savedGrid.innerHTML = `<div style="text-align:center; width:100%; color:var(--text-muted); padding:30px 20px; font-weight:700; font-size:14px;">
-            <i class="fa-solid fa-folder-open" style="font-size:30px; margin-bottom:10px; color:var(--border-color);"></i><br>
-            لا توجد أعمال مسجلة حتى الآن.<br>قم بالدخول لأي عمل واضغط على "حفظ" ليظهر هنا!
+// دالة التنقل بين تبويبات قائمتي
+window.filterMyList = function(type, btn) {
+    // 1. إزالة التفعيل من كل الأزرار وإضافته للزر المضغوط
+    document.querySelectorAll('.list-tabs .list-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // 2. تحديث الشبكة بناءً على النوع
+    renderMyListUI(type);
+}
+
+// دالة رسم المانجات في قسم "قائمتي" بناءً على الفلتر
+window.renderMyListUI = function(filterType = 'all') {
+    let listGrid = document.getElementById('myListGrid');
+    
+    // جلب البيانات من الذاكرة المحلية (LocalStorage)
+    let savedIds = JSON.parse(localStorage.getItem('KLE_Saved_Mangas')) ||[];
+    let statusObj = JSON.parse(localStorage.getItem('KLE_Manga_Status')) || {}; 
+    // ^ statusObj شكلها هيكون كذا: { "1": "reading", "2": "completed", "5": "planned" }
+
+    let filteredMangas =[];
+
+    // فلترة الأعمال بناءً على التبويب المختار
+    if(filterType === 'all') {
+        // عرض أي مانجا تم التفاعل معها (سواء محفوظة أو لها حالة قراءة)
+        let allInteractedIds = new Set([...savedIds, ...Object.keys(statusObj)]);
+        filteredMangas = dataAll.filter(m => allInteractedIds.has(m.id.toString()));
+    } else if (filterType === 'fav') {
+        filteredMangas = dataAll.filter(m => savedIds.includes(m.id.toString()));
+    } else {
+        // فلترة حالات القراءة (reading, planned, completed, dropped)
+        let idsWithThisStatus = Object.keys(statusObj).filter(id => statusObj[id] === filterType);
+        filteredMangas = dataAll.filter(m => idsWithThisStatus.includes(m.id.toString()));
+    }
+
+    // لو القائمة فارغة
+    if(filteredMangas.length === 0) {
+         listGrid.innerHTML = `
+         <div style="text-align:center; width:100%; color:var(--text-muted); padding:40px 20px;">
+            <i class="fa-solid fa-folder-open" style="font-size:40px; margin-bottom:15px; color:var(--border-color);"></i><br>
+            لا توجد أعمال في هذه القائمة حتى الآن.
         </div>`;
         return;
     }
 
-    // فلترة المانجات كلها (dataAll) ونجيب بس اللي الـ ID بتاعها موجود في مصفوفة الحفظ
-    // حولنا الـ id لـ String عشان نتأكد إن المطابقة هتكون صحيحة 100%
-    let savedMangas = dataAll.filter(m => savedArray.includes(m.id.toString()));
-
-    // لو حصل خطأ والمصفوفة طلعت فاضية (مثلاً المانجا اتمسحت من السيرفر)
-    if (savedMangas.length === 0) {
-        savedGrid.innerHTML = `<div style="text-align:center; width:100%; color:var(--text-muted); padding:20px; font-weight:700;">لا توجد أعمال مسجلة حتى الآن.</div>`;
-        return;
-    }
-
-    // تفريغ الشبكة ورسم الكروت المحفوظة
-    savedGrid.innerHTML = '';
-    
-    savedMangas.forEach(m => {
+    // رسم الكروت
+    listGrid.innerHTML = '';
+    filteredMangas.forEach(m => {
         let live = m.status && m.status.includes('مستمر');
         let rating = m.rating ? parseFloat(m.rating).toFixed(1) : "0.0";
+        
+        // تحديد التاج (الوسم) الذي سيظهر على الكارت بناءً على القائمة
+        const tags = { 
+            'fav': 'محفوظ 🔖', 'reading': 'أقرأها 📖', 
+            'planned': 'أرغب ⏳', 'completed': 'مكتملة ✅', 'dropped': 'متروكة ❌' 
+        };
+        let tagText = tags[filterType] || 'في قائمتي 📚';
 
         let card = document.createElement('div');
         card.className = 'card';
         card.onclick = () => { window.location.href = `details.html?id=${m.id}`; };
-
+        
         card.innerHTML = `
         <div class="poster">
-            <div class="status ${live ? 'live' : 'done'}">
-                ${live ? 'مستمر' : 'مكتمل'}
-            </div>
+            <div class="status ${live ? 'live' : 'done'}">${live ? 'مستمر' : 'مكتمل'}</div>
             <img src="${m.image_url}" loading="lazy" alt="poster">
         </div>
         <div class="content">
             <div class="title">${m.title}</div>
             <div class="genres">
-                <span class="tag" style="background: rgba(168, 85, 247, 0.2); color: var(--primary); border: 1px solid var(--primary);">محفوظ 🔖</span>
+                <span class="tag" style="background: rgba(168, 85, 247, 0.2); color: var(--primary); border: 1px solid var(--primary); font-weight: 800;">${tagText}</span>
             </div>
             <div class="meta-footer">
                 <div class="stars"><i class="fa-solid fa-star"></i> ${rating}</div>
             </div>
         </div>
         `;
-        savedGrid.appendChild(card);
+        listGrid.appendChild(card);
     });
 }
-  
+
+// ⚠️ ملحوظة: قم بتعديل دالة window.switchTab في كودك الأصلي، 
+// بحيث عندما يضغط المستخدم على "قائمتي"، يتم استدعاء التحديث التلقائي هكذا:
+/*
+if (tab === 'mylist') {
+    homePage.style.display = 'none';
+    accountPage.style.display = 'none';
+    authPage.style.display = 'none';
+    document.getElementById('mylist-page').style.display = 'block';
+    document.getElementById('nav-mylist').classList.add('active');
+    renderMyListUI('all'); // <--- إضافة هذا السطر لتحديث القائمة فور الدخول إليها
+}
+*/
+
 </script>
 
 </body>
