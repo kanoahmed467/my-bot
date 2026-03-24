@@ -341,408 +341,162 @@
 
 </div>
 
-<script>
+<script type="module">
+   // 1. استدعاءات فايربيز
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getDatabase, ref, update, get, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-import { getDatabase, ref, update, get, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    // 2. إعداداتك
+    const firebaseConfig = {
+        apiKey: "AIzaSyCEecz0x8SnEckiBNxDqI-jGe8p5-fKfsw",
+        authDomain: "manga-kingdom.firebaseapp.com",
+        projectId: "manga-kingdom",
+        storageBucket: "manga-kingdom.firebasestorage.app",
+        messagingSenderId: "531742563780",
+        appId: "1:531742563780:web:f820950be7e76058cfd891"
+    };
 
-const database = getDatabase(app);
-const mangaIdStr = new URLSearchParams(window.location.search).get('id'); // جلب ID المانجا من الرابط
-
-// =========================================
-// 1. جلب حالة المانجا عند فتح الصفحة
-// =========================================
-// نضع هذه الدالة داخل onAuthStateChanged لنتأكد أن المستخدم سجل دخول
-onAuthStateChanged(auth, async (user) => {
-    window.currentFirebaseUser = user;
+    // 3. تشغيل فايربيز
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const database = getDatabase(app);
     
-    if (user && mangaIdStr) {
-        try {
-            const dbRef = ref(database);
-            const snapshot = await get(child(dbRef, `users/${user.uid}`));
-            
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                
-                // التأكد من القائمة المنسدلة (الحالة)
-                if (data.mangaStatus && data.mangaStatus[mangaIdStr]) {
-                    document.getElementById('mangaStatusSelect').value = data.mangaStatus[mangaIdStr];
-                }
+    // متغير عام هنحفظ فيه بيانات المستخدم لما يسجل دخول
+    window.currentFirebaseUser = null; 
 
-                // التأكد من زر المفضلة
-                if (data.savedMangas && data.savedMangas.includes(mangaIdStr)) {
-                    const btn = document.getElementById('favBtn');
-                    btn.classList.add('active');
-                    btn.innerHTML = '<i class="fa-solid fa-bookmark"></i>'; // أيقونة ممتلئة
+    // 4. جلب رقم المانجا من الرابط (عشان نجيب صورتها وبياناتها)
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentMangaId = urlParams.get('id');
+
+    // دالة جلب وعرض البيانات
+    async function loadMangaData() {
+        if (!currentMangaId) return; // لو مفيش ID متعملش حاجة
+
+        // 1. إظهار البوستر والخلفية فوراً
+        const imageUrl = `https://github.com/kanoahmed467/my-bot/blob/main/covers/${currentMangaId}.jpg?raw=true`;
+        document.getElementById('bg-img').src = imageUrl;
+        document.getElementById('poster-img').src = imageUrl;
+
+        // 2. جلب الاسم والوصف والتصنيفات
+        try {
+            const response = await fetch('data.json');
+            const data = await response.json();
+            const manga = data.mangas.find(m => m.id == currentMangaId);
+
+            if(manga) {
+                document.getElementById('manga-title').innerText = manga.title;
+                document.getElementById('manga-desc').innerText = manga.description || 'لا يوجد وصف متاح.';
+                
+                // رسم التصنيفات (الأكشن، شونين، إلخ)
+                if(manga.genre) {
+                    const genres = manga.genre.split('•');
+                    document.getElementById('genres-container').innerHTML = genres.map(g => `<span class="tag">${g.trim()}</span>`).join('');
                 }
             }
         } catch (error) {
-            console.error("خطأ في جلب بيانات المستخدم:", error);
+            console.error("حدث خطأ في جلب البيانات:", error);
         }
     }
-});
-
-// =========================================
-// 2. تحديث الحالة في قاعدة البيانات (Dropdown)
-// =========================================
-window.changeMangaStatus = async function(status) {
-    const user = window.currentFirebaseUser;
     
-    if (!user) {
-        alert("يجب تسجيل الدخول أولاً لإضافة أعمال إلى قائمتك!");
-        document.getElementById('mangaStatusSelect').value = 'none'; // إرجاع القائمة لوضعها الافتراضي
-        return;
-    }
+    // تشغيل الدالة أول ما الصفحة تفتح
+    loadMangaData();
 
-    const updates = {};
-    if (status === 'none') {
-        // لو اختار "أضف إلى قائمتي" (يعني عايز يمسحها من الحالات)
-        updates[`users/${user.uid}/mangaStatus/${mangaIdStr}`] = null; 
-    } else {
-        updates[`users/${user.uid}/mangaStatus/${mangaIdStr}`] = status;
-    }
+    // 1. دالة القائمة المنسدلة (أقرأها، أرغب بقراءتها...)
+    window.changeMangaStatus = async function(status) {
+        const user = window.currentFirebaseUser;
+        
+        // لو مش مسجل دخول
+        if (!user) {
+            alert("يجب تسجيل الدخول أولاً من الصفحة الرئيسية!");
+            document.getElementById('mangaStatusSelect').value = 'none'; // رجع القائمة للصفر
+            return;
+        }
 
-    try {
+        const updates = {};
+        if (status === 'none') {
+            updates[`users/${user.uid}/mangaStatus/${currentMangaId}`] = null; // احذفها لو اختار "أضف إلى قائمتي"
+        } else {
+            updates[`users/${user.uid}/mangaStatus/${currentMangaId}`] = status; // احفظ الحالة الجديدة
+        }
+
+        // إرسال لفايربيز
+        try {
+            await update(ref(database), updates);
+        } catch (error) {
+            alert("حدث خطأ أثناء الحفظ، تأكد من الإنترنت.");
+        }
+    };
+
+    // 2. دالة زرار المحفوظات (المفضلة)
+    window.toggleFavorite = async function() {
+        const user = window.currentFirebaseUser;
+        if (!user) return alert("يجب تسجيل الدخول أولاً!");
+
+        const btn = document.getElementById('favBtn');
+        const isActive = btn.classList.contains('active');
+        
+        // جلب قائمة المفضلة القديمة من فايربيز
+        const snapshot = await get(child(ref(database), `users/${user.uid}/savedMangas`));
+        let savedMangas = snapshot.exists() ? snapshot.val() : [];
+
+        if (isActive) {
+            // لو كانت محفوظة -> احذفها
+            savedMangas = savedMangas.filter(id => id !== currentMangaId);
+            btn.classList.remove('active');
+            btn.innerHTML = '<i class="fa-regular fa-bookmark"></i>';
+        } else {
+            // لو مش محفوظة -> ضيفها
+            if (!savedMangas.includes(currentMangaId)) savedMangas.push(currentMangaId);
+            btn.classList.add('active');
+            btn.innerHTML = '<i class="fa-solid fa-bookmark"></i>';
+        }
+
+        // رفع القائمة الجديدة لفايربيز
+        const updates = {};
+        updates[`users/${user.uid}/savedMangas`] = savedMangas;
         await update(ref(database), updates);
-        // تم الحفظ بنجاح (بدون إزعاج المستخدم بـ Alert كل شوية)
-    } catch (error) {
-        console.error("خطأ في تحديث الحالة:", error);
-        alert("حدث خطأ أثناء الحفظ.");
-    }
-};
+    };
 
-// =========================================
-// 3. زر المفضلة (المحفوظات)
-// =========================================
-window.toggleFavorite = async function() {
-    const user = window.currentFirebaseUser;
-    
-    if (!user) {
-        alert("يجب تسجيل الدخول أولاً!");
-        return;
-    }
-
-    const btn = document.getElementById('favBtn');
-    const isActive = btn.classList.contains('active');
-    
-    // نجلب المصفوفة القديمة أولاً من قاعدة البيانات
-    const snapshot = await get(child(ref(database), `users/${user.uid}/savedMangas`));
-    let savedMangas = snapshot.exists() ? snapshot.val() : [];
-
-    if (isActive) {
-        // إزالة من المفضلة
-        savedMangas = savedMangas.filter(id => id !== mangaIdStr);
-        btn.classList.remove('active');
-        btn.innerHTML = '<i class="fa-regular fa-bookmark"></i>'; // أيقونة مفرغة
-    } else {
-        // إضافة للمفضلة
-        if (!savedMangas.includes(mangaIdStr)) {
-            savedMangas.push(mangaIdStr);
-        }
+    // 3. دالة التبويبات (التفاصيل / الفصول) السهلة جداً
+    window.switchTab = function(tabId, btn) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
         btn.classList.add('active');
-        btn.innerHTML = '<i class="fa-solid fa-bookmark"></i>'; // أيقونة ممتلئة
-    }
+    };
 
-    // رفع المصفوفة الجديدة لقاعدة البيانات
-    const updates = {};
-    updates[`users/${user.uid}/savedMangas`] = savedMangas;
-    
-    try {
-        await update(ref(database), updates);
-    } catch (error) {
-        console.error("خطأ في تحديث المفضلة:", error);
-    }
-};
+    // مراقب حالة المستخدم (بيشتغل أول ما يفتح الصفحة)
+    onAuthStateChanged(auth, async (user) => {
+        window.currentFirebaseUser = user;
+        
+        // لو مسجل دخول والصفحة ليها ID
+        if (user && currentMangaId) {
+            try {
+                // هات بياناته من قاعدة البيانات
+                const snapshot = await get(child(ref(database), `users/${user.uid}`));
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    
+                    // 1. هل المانجا دي ليها حالة قراءة؟ لو اه، حددها في القائمة
+                    if (data.mangaStatus && data.mangaStatus[currentMangaId]) {
+                        document.getElementById('mangaStatusSelect').value = data.mangaStatus[currentMangaId];
+                    }
 
-// --- 1. إعداد الـ ID ---
-const urlParams = new URLSearchParams(window.location.search);
-const currentMangaId = urlParams.get('id') || '10'; // افتراضي 10
-
-// بناء رابط الصورة بناءً على الـ ID
-const imageUrl = `https://github.com/kanoahmed467/my-bot/blob/main/covers/${currentMangaId}.jpg?raw=true`;
-
-// ==========================================
-// 🔴 إحصائيات قاعدة البيانات (تبدأ من الصفر تماماً)
-// ==========================================
-let dbStats = {
-    votes:[0,0,0,0,0,0,0,0,0,0], // كم شخص قيم بـ 1، 2، 3.. لحد 10
-    status: { fav: 0, reading: 0, planned: 0, completed: 0, dropped: 0 },
-    radarTotal: { story: 0, chars: 0, art: 0, usersCount: 0 }, // مجموع التقييمات
-    radarAvg: { story: 0, chars: 0, art: 0 } // المتوسط الذي سيظهر على الرادار
-};
-
-// ==========================================
-// 🟢 بيانات المستخدم الحالي (عشان منسمحلوش يصوت مرتين)
-// ==========================================
-let userData = JSON.parse(localStorage.getItem(`user_stats_manga_${currentMangaId}`)) || {
-    isFav: false, status: null, rating: { story: 0, chars: 0, art: 0, total: 0 }
-};
-
-let barChart, doughnutChart, radarChart;
-
-function switchTab(tabId, btn) {
-    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    btn.classList.add('active');
-}
-
-// دالة جلب البيانات الأساسية (وصف واسم المانجا فقط من JSON)
-async function loadMangaData() {
-    try {
-        const response = await fetch('data.json');
-        const data = await response.json();
-        const manga = data.mangas.find(m => m.id == currentMangaId);
-
-        if(manga) {
-            document.getElementById('manga-title').innerText = manga.title;
-            document.getElementById('manga-desc').innerText = manga.description || 'لا يوجد وصف متاح.';
-            document.getElementById('bg-img').src = imageUrl;
-            document.getElementById('poster-img').src = imageUrl;
-
-            if(manga.genre) {
-                const genres = manga.genre.split('•');
-                document.getElementById('genres-container').innerHTML = genres.map(g => `<span class="tag">${g.trim()}</span>`).join('');
+                    // 2. هل المانجا دي محفوظة في المفضلة؟ لو اه، نور زرار الحفظ
+                    if (data.savedMangas && data.savedMangas.includes(currentMangaId)) {
+                        const btn = document.getElementById('favBtn');
+                        if(btn) {
+                            btn.classList.add('active');
+                            btn.innerHTML = '<i class="fa-solid fa-bookmark"></i>';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("خطأ في جلب بيانات المستخدم:", error);
             }
-
-            renderChaptersList(manga.chapters_count || 1);
-            
-            // تهيئة الجرافات وهي (فارغة / أصفار)
-            initCharts();
-            
-            // استدعاء دالة الإحصائيات الحقيقية
-            syncRealTimeDatabase();
         }
-    } catch (error) {
-        console.error("خطأ:", error);
-    }
-}
-
-function renderChaptersList(count) {
-    let html = '';
-    for(let i = count; i >= 1; i--) {
-        html += `<div class="chapter-card" onclick="this.classList.toggle('read')"><span class="chap-num" style="font-weight: 700;">الفصل ${i}</span><i class="fas fa-check-circle" style="color: var(--text-muted);"></i></div>`;
-    }
-    document.getElementById('chapters-list').innerHTML = html;
-}
-
-function renderStars() {['story', 'chars', 'art'].forEach(cat => {
-        const container = document.getElementById(`rate-${cat}`);
-        let html = '';
-        for (let i = 5; i >= 1; i--) {
-            let active = userData.rating[cat] >= i ? 'active' : '';
-            html += `<i class="fas fa-star ${active}" onclick="rateCategory('${cat}', ${i})"></i>`;
-        }
-        container.innerHTML = html;
     });
-}
-
-function initCharts() {
-    Chart.defaults.color = '#94a3b8';
-    Chart.defaults.font.family = "'Cairo', sans-serif";
-    Chart.defaults.font.weight = 'bold';
-
-    const ctxBar = document.getElementById('votesBarChart').getContext('2d');
-    barChart = new Chart(ctxBar, {
-        type: 'bar',
-        data: { labels:['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'], datasets:[{ data: dbStats.votes, backgroundColor: '#f43f5e', barPercentage: 0.5 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false, grid: { display: false } }, x: { grid: { display: false }, ticks: { color: '#ffffff' } } } }
-    });
-
-    const ctxDoughnut = document.getElementById('statusDoughnutChart').getContext('2d');
-    doughnutChart = new Chart(ctxDoughnut, {
-        type: 'doughnut',
-        data: { labels:['مفضلة', 'أقرأها', 'أرغب', 'مكتملة', 'متروكة'], datasets:[{ data:[0,0,0,0,0], backgroundColor:['#3b82f6', '#10b981', '#f43f5e', '#a855f7', '#ec4899'], borderWidth: 2, borderColor: '#1e1b24', cutout: '65%' }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-    });
-
-    const ctxRadar = document.getElementById('radarChart').getContext('2d');
-    radarChart = new Chart(ctxRadar, {
-        type: 'radar',
-        data: { labels:['القصة', 'الرسم', 'الشخصيات'], datasets: [{ data:[0,0,0], backgroundColor: 'rgba(249, 115, 22, 0.6)', borderColor: '#3b82f6', borderWidth: 2, pointRadius: 0 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { angleLines: { display: false }, grid: { color: 'rgba(255, 255, 255, 0.05)' }, pointLabels: { color: '#ffffff', font: { size: 13 } }, ticks: { display: false, min: 0, max: 10 } } } }
-    });
-}
-
-// ==========================================
-// 🚀 نظام التحديث والتفاعل (Real-Time Logic)
-// ==========================================
-
-// --- المتغير المسؤول عن جلب الأعمال المحفوظة في التطبيق بالكامل ---
-let globalSavedMangas = JSON.parse(localStorage.getItem('KLE_Saved_Mangas')) ||[];
-
-// 1. الدالة المسؤولة عن تحديث الشاشة والجرافات
-function updateDashboardUI() {
-    const favBtn = document.getElementById('favBtn');
-    let idStr = currentMangaId.toString();
-    
-    // فحص حقيقي هل المانجا دي محفوظة؟
-    if (globalSavedMangas.includes(idStr)) { 
-        userData.isFav = true;
-        favBtn.classList.add('active'); 
-        favBtn.innerHTML = '<i class="fas fa-bookmark"></i> محفوظ'; 
-    } else { 
-        userData.isFav = false;
-        favBtn.classList.remove('active'); 
-        favBtn.innerHTML = '<i class="far fa-bookmark"></i> حفظ'; 
-    }
-
-    // تحديث أزرار الحالة
-    document.querySelectorAll('.status-card').forEach(card => card.classList.remove('active'));
-    if(userData.status) document.querySelector(`.status-card[data-status="${userData.status}"]`).classList.add('active');
-    
-    // تحديث أرقام الدونات للجميع
-    document.getElementById('val-fav').innerText = dbStats.status.fav;
-    document.getElementById('val-reading').innerText = dbStats.status.reading;
-    document.getElementById('val-planned').innerText = dbStats.status.planned;
-    document.getElementById('val-completed').innerText = dbStats.status.completed;
-    document.getElementById('val-dropped').innerText = dbStats.status.dropped;
-
-    // تحديث متوسط التقييم العام بالأعلى
-    let totalGlobalScore = 0; let totalGlobalVoters = 0;
-    for(let i=0; i<10; i++) { 
-        totalGlobalScore += dbStats.votes[i] * (i+1); 
-        totalGlobalVoters += dbStats.votes[i]; 
-    }
-    let globalAvg = totalGlobalVoters > 0 ? (totalGlobalScore / totalGlobalVoters).toFixed(1) : "0.0";
-    document.getElementById('global-rating-text').innerText = globalAvg;
-
-    if(doughnutChart) { doughnutChart.data.datasets[0].data =[dbStats.status.fav, dbStats.status.reading, dbStats.status.planned, dbStats.status.completed, dbStats.status.dropped]; doughnutChart.update(); }
-    if(barChart) { barChart.data.datasets[0].data = dbStats.votes; barChart.update(); }
-    if(radarChart) { radarChart.data.datasets[0].data =[dbStats.radarAvg.story, dbStats.radarAvg.art, dbStats.radarAvg.chars]; radarChart.update(); }
-    
-    renderStars();
-}
-
-// 2. دوال ضغطات المستخدم (User Interactions)
-function toggleFav() {
-    let idStr = currentMangaId.toString(); // تحويل الـ ID لنص عشان نتجنب أي مشاكل
-
-    // هل المانجا دي محفوظة قبل كده؟
-    if (globalSavedMangas.includes(idStr)) {
-        // لو محفوظة -> احذفها من المصفوفة (إلغاء الحفظ)
-        globalSavedMangas = globalSavedMangas.filter(id => id !== idStr);
-        userData.isFav = false;
-        if(dbStats.status.fav > 0) dbStats.status.fav--; // تقليل الإحصائية
-        
-        if(window.Telegram && Telegram.WebApp) Telegram.WebApp.HapticFeedback.impactOccurred('light');
-    } else {
-        // لو مش محفوظة -> ضيفها للمصفوفة (حفظ جديد)
-        globalSavedMangas.push(idStr);
-        userData.isFav = true;
-        dbStats.status.fav++; // زيادة الإحصائية
-        
-        if(window.Telegram && Telegram.WebApp) Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-    }
-
-    // تحديث الذاكرة العامة عشان صفحة "حسابي" تقرأها
-    localStorage.setItem('KLE_Saved_Mangas', JSON.stringify(globalSavedMangas));
-
-    // حفظ البيانات الشخصية وتحديث الشاشة
-    saveAndSync();
-}
-
-function setUserStatus(newStatus) {
-    let oldStatus = userData.status;
-    
-    if(userData.status === newStatus) {
-        userData.status = null; // إلغاء التحديد
-        dbStats.status[newStatus]--; 
-    } else {
-        userData.status = newStatus;
-        dbStats.status[newStatus]++;
-        if(oldStatus) dbStats.status[oldStatus]--; // خصم من الحالة القديمة
-    }
-    saveAndSync();
-}
-
-function rateCategory(category, val) {
-    // 1. خصم التقييم القديم إن وجد
-    if(userData.rating[category] > 0) {
-        dbStats.radarTotal[category] -= (userData.rating[category] * 2);
-    } else {
-        // إذا كان هذا أول تقييم له في هذه الخانة
-        dbStats.radarTotal.usersCount++; 
-    }
-
-    // 2. تسجيل التقييم الجديد
-    userData.rating[category] = val;
-    dbStats.radarTotal[category] += (val * 2);
-
-    // حساب متوسط الرادار
-    let uc = dbStats.radarTotal.usersCount;
-    dbStats.radarAvg.story = uc > 0 ? (dbStats.radarTotal.story / uc).toFixed(2) : 0;
-    dbStats.radarAvg.chars = uc > 0 ? (dbStats.radarTotal.chars / uc).toFixed(2) : 0;
-    dbStats.radarAvg.art = uc > 0 ? (dbStats.radarTotal.art / uc).toFixed(2) : 0;
-
-    // تحديث التصويت الكلي (البار شارت)
-    let sum = userData.rating.story + userData.rating.chars + userData.rating.art;
-    let partsRated = (userData.rating.story>0?1:0) + (userData.rating.chars>0?1:0) + (userData.rating.art>0?1:0);
-    
-    let oldTotal = userData.rating.total;
-    userData.rating.total = Math.round((sum / partsRated) * 2); // من 1 لـ 10
-
-    if(oldTotal > 0) dbStats.votes[oldTotal - 1]--; // خصم القديم
-    if(userData.rating.total > 0) dbStats.votes[userData.rating.total - 1]++; // إضافة الجديد
-
-    saveAndSync();
-}
-
-function saveAndSync() {
-    // حفظ حالة المستخدم شخصياً
-    localStorage.setItem(`user_stats_manga_${currentMangaId}`, JSON.stringify(userData));
-    // تحديث الشاشة فوراً
-    updateDashboardUI();
-    // إرسال البيانات لقاعدة البيانات الحقيقية
-    sendToDatabase();
-}
-
-// ==========================================
-// 🔌 منطقة الربط بقاعدة البيانات الفعلية (Backend)
-// ==========================================
-
-function syncRealTimeDatabase() {
-    // 💡 مبرمجي العزيز: هنا تضع كود قراءة البيانات من Firebase أو Supabase.
-    // حالياً، النظام سيبدأ الجرافات من أصفار، وأي ضغطة ستزيد العداد وتظهر أمامك فوراً للتجربة.
-    
-    console.log("تم تهيئة الجرافات من الصفر! جاهز لاستقبال التفاعلات.");
-    updateDashboardUI();
-}
-
-function sendToDatabase() {
-    // 💡 هنا تضع كود (Push/Update) لرفع المتغير `dbStats` إلى السيرفر الخاص بك.
-    console.log("تم التحديث! الإحصائيات العامة الآن:", dbStats);
-}
-
-// بدء التشغيل
-window.onload = loadMangaData;
-
-import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-// دالة تحديث حالة المانجا (أقرأها، أرغب، إلخ)
-window.updateMangaStatus = async function(mangaId, status) {
-    const user = window.currentFirebaseUser;
-    if (!user) {
-        alert("يجب تسجيل الدخول أولاً!");
-        return;
-    }
-
-    const database = getDatabase();
-    const updates = {};
-    
-    // المسار في قاعدة البيانات سيكون: users/رقم_المستخدم/mangaStatus/رقم_المانجا
-    updates[`users/${user.uid}/mangaStatus/${mangaId}`] = status;
-
-    try {
-        await update(ref(database), updates);
-        alert("تم تحديث القائمة بنجاح!");
-    } catch (error) {
-        console.error("خطأ في الحفظ:", error);
-        alert("حدث خطأ أثناء الحفظ.");
-    }
-}
-
-
-
 </script>
 
 </body>
