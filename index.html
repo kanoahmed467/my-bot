@@ -727,6 +727,48 @@ header {
     transform: translateY(-2px);
 }
 
+
+/* =========================================
+   تنسيقات تغيير اسم المستخدم
+========================================= */
+.name-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px; /* المسافة اللي كانت في user-name القديمة */
+}
+
+.user-name {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-top: 0; /* شلناها عشان الفليكس بوكس يظبط المحاذاة */
+}
+
+.edit-name-btn {
+    background: rgba(168, 85, 247, 0.1);
+    color: var(--primary);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 13px;
+    outline: none;
+}
+
+.edit-name-btn:hover {
+    background: var(--primary);
+    color: #fff;
+    transform: scale(1.1) rotate(10deg);
+    box-shadow: 0 0 12px var(--primary-glow);
+    border-color: var(--primary);
+}
 </style>
 </head>
 
@@ -830,9 +872,12 @@ header {
             <input type="file" id="avatarUpload" accept="image/*" style="display: none;" onchange="uploadAvatar(event)">
         </div>
         
-        <div class="user-name" id="userName">جاري التحميل...</div>
-        <div class="user-id">ID: <span id="userId">00000000</span></div>
-    </div>
+       <div class="name-container">
+            <div class="user-name" id="userName">جاري التحميل...</div>
+            <button class="edit-name-btn" onclick="editUserName()" title="تغيير الاسم">
+                <i class="fa-solid fa-pen"></i>
+            </button>
+        </div>
 
     <div class="section-title-account">
         <i class="fa-solid fa-bookmark" style="color: var(--primary);"></i> أعمالي المسجلة
@@ -1280,7 +1325,8 @@ function renderSavedList() {
     onAuthStateChanged, 
     signOut,
     GoogleAuthProvider,
-    signInWithPopup
+    signInWithPopup,
+    updateProfile  // <--- هذا ما قمنا بإضافته
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   // 2. إعدادات قاعدة البيانات بتاعتك
@@ -1383,6 +1429,56 @@ function renderSavedList() {
           window.switchTab('account'); // هيرجعه لصفحة تسجيل الدخول تلقائي
       }
   }
+
+// 9. دالة تغيير اسم المستخدم (تدعم الزخرفة)
+  window.editUserName = async function() {
+      const user = window.currentFirebaseUser;
+      if (!user) return alert("يجب تسجيل الدخول أولاً!");
+
+      // جلب الاسم الحالي لوضع كقيمة افتراضية
+      let currentName = document.getElementById('userName').innerText;
+      if (currentName === "جاري التحميل..." || currentName.includes("مستخدم النخبة")) {
+          currentName = "";
+      }
+
+      // إظهار نافذة منبثقة للمستخدم لكتابة الاسم
+      const newName = prompt("أدخل اسمك الجديد (الأسماء المزخرفة مقبولة ✨):", currentName);
+
+      // لو ضغط "إلغاء" أو ترك المربع فارغاً
+      if (newName === null || newName.trim() === "") return;
+
+      // التأكد أن الاسم ليس طويلاً جداً حتى لا يشوه شكل الصفحة
+      if (newName.length > 25) {
+          return alert("الاسم طويل جداً! الحد الأقصى 25 حرف.");
+      }
+
+      try {
+          // تغيير شكل الزر أو الاسم لـ "جاري التحديث..." (اختياري)
+          document.getElementById('userName').innerText = "جاري التحديث...";
+
+          // تحديث الاسم في سيرفرات فايربيز
+          await updateProfile(user, {
+              displayName: newName.trim()
+          });
+
+          // تحديث الاسم في الصفحة فوراً بعد النجاح
+          document.getElementById('userName').innerText = newName.trim();
+
+          // تأثير اهتزاز خفيف لو بيستخدم تليجرام
+          if(window.Telegram && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+              Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+          }
+
+          alert("تم تحديث اسمك بنجاح! 👑");
+
+      } catch (error) {
+          console.error(error);
+          alert("حدث خطأ أثناء تغيير الاسم. تأكد من اتصالك بالإنترنت.");
+          // إرجاع الاسم القديم لو حصل خطأ
+          document.getElementById('userName').innerText = currentName;
+      }
+  }
+  
 </script>
 
 </body>
