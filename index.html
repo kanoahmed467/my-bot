@@ -204,11 +204,21 @@ header {
     <div class="auth-container">
         
         <!-- نموذج إنشاء حساب -->
+      <!-- نموذج إنشاء حساب -->
         <div id="register-form" class="auth-card" style="display: none;">
             <h2>إنشاء حساب جديد 🌟</h2>
             <input type="email" id="reg-email" class="auth-input" placeholder="البريد الإلكتروني">
             <input type="password" id="reg-pass" class="auth-input" placeholder="كلمة المرور (6 أحرف على الأقل)">
             <button class="auth-btn" id="reg-btn" onclick="startRegistration()">إنشاء حساب</button>
+            
+            <!-- ====== الفاصل وزرار جوجل ====== -->
+            <div class="auth-divider">أو</div>
+            <button class="google-btn" onclick="loginWithGoogle(this)">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
+                المتابعة باستخدام جوجل
+            </button>
+            <!-- =============================== -->
+
             <div class="auth-switch" onclick="toggleAuthForm('login')">لدي حساب بالفعل؟ <span>تسجيل الدخول</span></div>
         </div>
 
