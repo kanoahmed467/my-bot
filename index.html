@@ -1515,13 +1515,14 @@ window.renderMyListUI = async function(filterType = 'all') {
     const user = window.currentFirebaseUser;
 
     if (!user) {
-        listGrid.innerHTML = `
-        <div style="text-align:center; width:100%; color:var(--text-muted); padding:40px 20px;">
-            <i class="fa-solid fa-lock" style="font-size:40px; margin-bottom:15px; color:var(--border-color);"></i><br>
-            يجب تسجيل الدخول لعرض قائمتك الخاصة.
-        </div>`;
-        return;
-    }
+    listGrid.innerHTML = `
+    <div style="text-align:center; width:100%; color:var(--text-muted); padding:60px 20px; grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px dashed var(--border-color);">
+        <i class="fa-solid fa-lock" style="font-size:50px; margin-bottom:15px; color: rgba(255,255,255,0.1);"></i>
+        <span style="font-size: 16px; font-weight: 800; color: var(--text-label);">يجب تسجيل الدخول لعرض قائمتك</span>
+        <button onclick="switchTab('account')" style="margin-top: 15px; background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 800; font-family: 'Cairo', sans-serif; cursor: pointer; box-shadow: 0 5px 15px var(--primary-glow);">تسجيل الدخول</button>
+    </div>`;
+    return;
+}
 
     listGrid.innerHTML = `
     <div style="text-align:center; width:100%; color:var(--primary); padding:40px 20px;">
@@ -1555,13 +1556,14 @@ window.renderMyListUI = async function(filterType = 'all') {
         }
 
         if(filteredMangas.length === 0) {
-            listGrid.innerHTML = `
-            <div style="text-align:center; width:100%; color:var(--text-muted); padding:40px 20px;">
-                <i class="fa-solid fa-folder-open" style="font-size:40px; margin-bottom:15px; color:var(--border-color);"></i><br>
-                قائمتك فارغة في هذا القسم!
-            </div>`;
-            return;
-        }
+    listGrid.innerHTML = `
+    <div style="text-align:center; width:100%; color:var(--text-muted); padding:60px 20px; grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px dashed var(--border-color);">
+        <i class="fa-solid fa-box-open" style="font-size:50px; margin-bottom:15px; color: rgba(255,255,255,0.1);"></i>
+        <span style="font-size: 16px; font-weight: 800; color: var(--text-label);">قائمتك فارغة في هذا القسم!</span>
+        <span style="font-size: 13px; margin-top: 8px;">ابدأ بإضافة بعض الأعمال لمكتبتك 📚</span>
+    </div>`;
+    return;
+}
 
         listGrid.innerHTML = '';
         filteredMangas.forEach(m => {
