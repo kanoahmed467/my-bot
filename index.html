@@ -986,7 +986,7 @@ header {
 </nav>
 
 <script>
-let dataAll =[];
+window.dataAll =[];
 
 // 1. تعريف المتغيرات والعناصر أولاً (لتجنب تعطل الكود)
 const input = document.getElementById('searchInput');
@@ -1004,7 +1004,7 @@ async function init(){
     try {
         const res = await fetch('data.json?v='+Date.now());
         const data = await res.json();
-        dataAll = data.mangas;
+        window.dataAll = data.mangas;
 
         // إخفاء رسالة التحميل
         document.getElementById('loader').style.display = 'none';
@@ -1459,22 +1459,31 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
   });
 
   // 5. دالة الدخول بحساب جوجل
-  window.loginWithGoogle = async function() {
-      const btn = document.querySelector('.google-btn');
-      const originalText = btn.innerHTML;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحويل...';
-      btn.disabled = true;
+ window.loginWithGoogle = async function() {
+    const btn = document.querySelector('.google-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحويل...';
+    btn.disabled = true;
 
-      try {
-          const result = await signInWithPopup(auth, googleProvider);
-          if(result.user) window.switchTab('account');
-      } catch (error) {
-          alert("حدث خطأ: تأكد أنك تستخدم متصفح خارجي مثل كروم (جوجل تمنع الدخول من داخل تليجرام).");
-      } finally {
-          btn.innerHTML = originalText;
-          btn.disabled = false;
-      }
-  }
+    try {
+        const result = await signInWithPopup(auth, googleProvider);
+        if(result.user) window.switchTab('account');
+    } catch (error) {
+        console.error("Google Auth Error: ", error); // لطباعة الخطأ الحقيقي للمبرمج
+        
+        // إظهار رسالة الخطأ الحقيقية القادمة من جوجل
+        if (error.code === 'auth/popup-closed-by-user') {
+            alert("لقد قمت بإغلاق نافذة تسجيل الدخول قبل الاكتمال.");
+        } else if (error.code === 'auth/unauthorized-domain') {
+            alert("خطأ: هذا الرابط غير مصرح له بتسجيل الدخول في إعدادات فايربيز.");
+        } else {
+            alert("حدث خطأ أثناء تسجيل الدخول: " + error.message);
+        }
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
 
   // 6. دالة إنشاء حساب بالإيميل
   window.startRegistration = async function() {
@@ -1576,8 +1585,9 @@ window.renderMyListUI = async function(filterType = 'all') {
 
     try {
         // 3. جلب بيانات المستخدم ده تحديداً من قاعدة البيانات
-        const userDocRef = window.doc(window.db, "users", user.uid);
-        const userDoc = await window.getDoc(userDocRef);
+        // الكود الصحيح بدون window.
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
 
         let savedIds =[];
         let statusObj = {};
@@ -1592,15 +1602,16 @@ window.renderMyListUI = async function(filterType = 'all') {
         let filteredMangas =[];
 
         // 4. فلترة الأعمال بناءً على التبويب المختار
-        if(filterType === 'all') {
-            let allInteractedIds = new Set([...savedIds, ...Object.keys(statusObj)]);
-            filteredMangas = dataAll.filter(m => allInteractedIds.has(m.id.toString()));
-        } else if (filterType === 'fav') {
-            filteredMangas = dataAll.filter(m => savedIds.includes(m.id.toString()));
-        } else {
-            let idsWithThisStatus = Object.keys(statusObj).filter(id => statusObj[id] === filterType);
-            filteredMangas = dataAll.filter(m => idsWithThisStatus.includes(m.id.toString()));
-        }
+        // استبدل dataAll بـ window.dataAll في الـ filters
+if(filterType === 'all') {
+    let allInteractedIds = new Set([...savedIds, ...Object.keys(statusObj)]);
+    filteredMangas = window.dataAll.filter(m => allInteractedIds.has(m.id.toString()));
+} else if (filterType === 'fav') {
+    filteredMangas = window.dataAll.filter(m => savedIds.includes(m.id.toString()));
+} else {
+    let idsWithThisStatus = Object.keys(statusObj).filter(id => statusObj[id] === filterType);
+    filteredMangas = window.dataAll.filter(m => idsWithThisStatus.includes(m.id.toString()));
+}
 
         // 5. لو القائمة فارغة ومفيش أعمال
         if(filteredMangas.length === 0) {
