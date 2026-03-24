@@ -272,23 +272,8 @@
     transform: scale(1.2);
 }
 
-.status-selector select:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
-}
 
-/* سهم مخصص للقائمة */
-.status-selector::after {
-    content: '\f107'; /* كود أيقونة السهم من FontAwesome */
-    font-family: 'Font Awesome 6 Free';
-    font-weight: 900;
-    position: absolute;
-    left: 15px; /* السهم على اليسار لأن الموقع عربي */
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-muted);
-    pointer-events: none;
-}
+
     </style>
 </head>
 <body>
@@ -333,8 +318,8 @@
         </div>
         <div class="dropdown-list">
             <div class="dropdown-item" onclick="selectStatus('none', 'أضف إلى قائمتي...')">
-                <i class="fas fa-list" style="color: var(--text-muted);"></i> أضف إلى قائمتي...
-            </div>
+    <i class="fas fa-trash-alt" style="color: var(--c-red);"></i> إزالة من القائمة
+</div>
             <div class="dropdown-item" onclick="selectStatus('reading', '📖 أقرأها حالياً')">
                 <i class="fas fa-book-reader" style="color: var(--c-green);"></i> أقرأها حالياً
             </div>
