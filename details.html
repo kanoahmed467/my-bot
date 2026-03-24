@@ -342,10 +342,10 @@
 </div>
 
 <script type="module">
-   // 1. استدعاءات فايربيز
+    // 1. استدعاءات فايربيز (تم التحديث لاستخدام Firestore بدلاً من Realtime Database)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getDatabase, ref, update, get, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     // 2. إعداداتك
     const firebaseConfig = {
@@ -357,28 +357,26 @@
         appId: "1:531742563780:web:f820950be7e76058cfd891"
     };
 
-    // 3. تشغيل فايربيز
+    // 3. تشغيل فايربيز و Firestore
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const database = getDatabase(app);
+    const db = getFirestore(app); // استخدام Firestore
     
     // متغير عام هنحفظ فيه بيانات المستخدم لما يسجل دخول
     window.currentFirebaseUser = null; 
 
-    // 4. جلب رقم المانجا من الرابط (عشان نجيب صورتها وبياناتها)
+    // 4. جلب رقم المانجا من الرابط
     const urlParams = new URLSearchParams(window.location.search);
     const currentMangaId = urlParams.get('id');
 
     // دالة جلب وعرض البيانات
     async function loadMangaData() {
-        if (!currentMangaId) return; // لو مفيش ID متعملش حاجة
+        if (!currentMangaId) return;
 
-        // 1. إظهار البوستر والخلفية فوراً
         const imageUrl = `https://github.com/kanoahmed467/my-bot/blob/main/covers/${currentMangaId}.jpg?raw=true`;
         document.getElementById('bg-img').src = imageUrl;
         document.getElementById('poster-img').src = imageUrl;
 
-        // 2. جلب الاسم والوصف والتصنيفات
         try {
             const response = await fetch('data.json');
             const data = await response.json();
@@ -388,88 +386,94 @@
                 document.getElementById('manga-title').innerText = manga.title;
                 document.getElementById('manga-desc').innerText = manga.description || 'لا يوجد وصف متاح.';
                 
-                // رسم التصنيفات (الأكشن، شونين، إلخ)
                 if(manga.genre) {
                     const genres = manga.genre.split('•');
                     document.getElementById('genres-container').innerHTML = genres.map(g => `<span class="tag">${g.trim()}</span>`).join('');
-                    // رسم الفصول
+                }
+                
                 let chaptersHtml = '';
-                let count = manga.chapters_count || 10; // لو مفيش عدد فصول في الداتا، هيحط 10 افتراضي
+                let count = manga.chapters_count || 10; 
                 for(let i = count; i >= 1; i--) {
                     chaptersHtml += `<div class="chapter-card"><span class="chap-num" style="font-weight: 700;">الفصل ${i}</span></div>`;
                 }
                 document.getElementById('chapters-list').innerHTML = chaptersHtml;
-                }
             }
         } catch (error) {
             console.error("حدث خطأ في جلب البيانات:", error);
         }
     }
     
-    // تشغيل الدالة أول ما الصفحة تفتح
     loadMangaData();
 
-    // 1. دالة القائمة المنسدلة (أقرأها، أرغب بقراءتها...)
+    // 1. دالة القائمة المنسدلة (تم تحويلها لـ Firestore)
     window.changeMangaStatus = async function(status) {
         const user = window.currentFirebaseUser;
         
-        // لو مش مسجل دخول
         if (!user) {
             alert("يجب تسجيل الدخول أولاً من الصفحة الرئيسية!");
-            document.getElementById('mangaStatusSelect').value = 'none'; // رجع القائمة للصفر
+            document.getElementById('mangaStatusSelect').value = 'none'; 
             return;
         }
 
-        const updates = {};
-        if (status === 'none') {
-            updates[`users/${user.uid}/mangaStatus/${currentMangaId}`] = null; // احذفها لو اختار "أضف إلى قائمتي"
-        } else {
-            updates[`users/${user.uid}/mangaStatus/${currentMangaId}`] = status; // احفظ الحالة الجديدة
-        }
-
-        // إرسال لفايربيز
+        const userRef = doc(db, "users", user.uid);
+        
         try {
-            await update(ref(database), updates);
+            // تحديث حالة المانجا الحالية فقط بدون التأثير على باقي المانجات
+            await setDoc(userRef, {
+                mangaStatus: {
+                    [currentMangaId]: status === 'none' ? null : status
+                }
+            }, { merge: true }); // merge: true مهمة جداً عشان ميمسحش البيانات القديمة
+            
         } catch (error) {
+            console.error("Error updating status:", error);
             alert("حدث خطأ أثناء الحفظ، تأكد من الإنترنت.");
         }
     };
 
-    // 2. دالة زرار المحفوظات (المفضلة)
+    // 2. دالة زرار المحفوظات (تم تحويلها لـ Firestore)
     window.toggleFavorite = async function() {
         const user = window.currentFirebaseUser;
         if (!user) return alert("يجب تسجيل الدخول أولاً!");
 
-        // هنجيب كل زراير الحفظ اللي في الصفحة
         const favBtns = document.querySelectorAll('.fav-btn, .fav-btn-bottom');
         const isActive = favBtns[0].classList.contains('active');
+        const userRef = doc(db, "users", user.uid);
         
-        // جلب قائمة المفضلة القديمة من فايربيز
-        const snapshot = await get(child(ref(database), `users/${user.uid}/savedMangas`));
-        let savedMangas = snapshot.exists() ? snapshot.val() : [];
+        let savedMangas = [];
 
-       if (isActive) {
-            savedMangas = savedMangas.filter(id => id !== currentMangaId);
-            favBtns.forEach(btn => {
-                btn.classList.remove('active');
-                // لو الزرار اللي تحت حط كلمة حفظ، لو اللي فوق سيبه أيقونة بس
-                btn.innerHTML = btn.classList.contains('fav-btn-bottom') ? '<i class="far fa-bookmark"></i> حفظ' : '<i class="fa-regular fa-bookmark"></i>';
-            });
-        } else {
-            if (!savedMangas.includes(currentMangaId)) savedMangas.push(currentMangaId);
-            favBtns.forEach(btn => {
-                btn.classList.add('active');
-                btn.innerHTML = btn.classList.contains('fav-btn-bottom') ? '<i class="fa-solid fa-bookmark"></i> محفوظ' : '<i class="fa-solid fa-bookmark"></i>';
-            });
+        try {
+            // 1. جلب قائمة المفضلة الحالية من Firestore
+            const docSnap = await getDoc(userRef);
+            if (docSnap.exists() && docSnap.data().savedMangas) {
+                savedMangas = docSnap.data().savedMangas;
+            }
+
+            // 2. إضافة أو إزالة المانجا من القائمة
+            if (isActive) {
+                savedMangas = savedMangas.filter(id => id !== currentMangaId);
+                favBtns.forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.innerHTML = btn.classList.contains('fav-btn-bottom') ? '<i class="far fa-bookmark"></i> حفظ' : '<i class="fa-regular fa-bookmark"></i>';
+                });
+            } else {
+                if (!savedMangas.includes(currentMangaId)) savedMangas.push(currentMangaId);
+                favBtns.forEach(btn => {
+                    btn.classList.add('active');
+                    btn.innerHTML = btn.classList.contains('fav-btn-bottom') ? '<i class="fa-solid fa-bookmark"></i> محفوظ' : '<i class="fa-solid fa-bookmark"></i>';
+                });
+            }
+
+            // 3. رفع القائمة الجديدة لـ Firestore
+            await setDoc(userRef, { savedMangas: savedMangas }, { merge: true });
+
+        } catch (error) {
+            console.error("Error toggling favorite:", error);
+            alert("حدث خطأ أثناء الحفظ.");
         }
-
-        // رفع القائمة الجديدة لفايربيز
-        const updates = {};
-        updates[`users/${user.uid}/savedMangas`] = savedMangas;
-        await update(ref(database), updates);
     };
 
-    // 3. دالة التبويبات (التفاصيل / الفصول) السهلة جداً
+    // 3. دالة التبويبات
     window.switchTab = function(tabId, btn) {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -477,30 +481,29 @@
         btn.classList.add('active');
     };
 
-    // مراقب حالة المستخدم (بيشتغل أول ما يفتح الصفحة)
+    // 4. مراقب حالة المستخدم (تم تحويله لـ Firestore لجلب حالة الأزرار)
     onAuthStateChanged(auth, async (user) => {
         window.currentFirebaseUser = user;
         
-        // لو مسجل دخول والصفحة ليها ID
         if (user && currentMangaId) {
             try {
-                // هات بياناته من قاعدة البيانات
-                const snapshot = await get(child(ref(database), `users/${user.uid}`));
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
+                const userRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(userRef);
+                
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
                     
-                    // 1. هل المانجا دي ليها حالة قراءة؟ لو اه، حددها في القائمة
-                    if (data.mangaStatus && data.mangaStatus[currentMangaId]) {
+                    // 1. تحديث قائمة (أقرأها حالياً...)
+                    if (data.mangaStatus && data.mangaStatus[currentMangaId] && data.mangaStatus[currentMangaId] !== 'none') {
                         document.getElementById('mangaStatusSelect').value = data.mangaStatus[currentMangaId];
                     }
 
-                    // 2. هل المانجا دي محفوظة في المفضلة؟ لو اه، نور زرار الحفظ
+                    // 2. تحديث زر المحفوظات
                     if (data.savedMangas && data.savedMangas.includes(currentMangaId)) {
-                        const btn = document.getElementById('favBtn');
-                        if(btn) {
+                        document.querySelectorAll('.fav-btn, .fav-btn-bottom').forEach(btn => {
                             btn.classList.add('active');
-                            btn.innerHTML = '<i class="fa-solid fa-bookmark"></i>';
-                        }
+                            btn.innerHTML = btn.classList.contains('fav-btn-bottom') ? '<i class="fa-solid fa-bookmark"></i> محفوظ' : '<i class="fa-solid fa-bookmark"></i>';
+                        });
                     }
                 }
             } catch (error) {
