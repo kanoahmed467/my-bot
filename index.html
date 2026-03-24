@@ -492,61 +492,28 @@ window.renderSavedList = function() {
     onAuthStateChanged, 
     signOut,
     GoogleAuthProvider,
-    signInWithRedirect,
-    getRedirectResult
+    signInWithPopup // استبدلنا Redirect بـ Popup لعدم عمل Refresh للصفحة
   } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCEecz0x8SnEckiBNxDqI-jGe8p5-fKfsw",
-    authDomain: "manga-kingdom.firebaseapp.com",
-    projectId: "manga-kingdom",
-    storageBucket: "manga-kingdom.firebasestorage.app",
-    messagingSenderId: "531742563780",
-    appId: "1:531742563780:web:f820950be7e76058cfd891",
-    measurementId: "G-F3WZ08BTZM"
-  };
 
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
   const auth = getAuth(app);
   const googleProvider = new GoogleAuthProvider();
 
-  // 1. الدالة اللي اتمسحت: المراقبة التلقائية لحالة المستخدم
-  onAuthStateChanged(auth, (user) => {
-    const authPage = document.getElementById('auth-page');
-    const accountPage = document.getElementById('account-page');
+  // متغير لحفظ حالة المستخدم لتجنب تأخير الفايربيز
+  window.currentFirebaseUser = null;
 
+  // 1. المراقبة التلقائية لحالة المستخدم (تم تعديلها لتكون أذكى)
+  onAuthStateChanged(auth, (user) => {
+    window.currentFirebaseUser = user; // حفظ المستخدم فوراً
+    
+    // إذا كان المستخدم فاتح تاب "حسابي"، نحدث الشاشة فوراً
     if (document.getElementById('nav-account').classList.contains('active')) {
-        if (user) {
-            if (user.emailVerified || (user.providerData.length > 0 && user.providerData[0].providerId === 'google.com')) {
-                authPage.style.display = 'none';
-                accountPage.style.display = 'block';
-                window.loadUserProfileReal(user);
-            } else {
-                authPage.style.display = 'block';
-                accountPage.style.display = 'none';
-                window.toggleAuthForm('verify');
-            }
-        } else {
-            authPage.style.display = 'block';
-            accountPage.style.display = 'none';
-            window.toggleAuthForm('login');
-        }
+        window.switchTab('account');
     }
   });
 
-  // 2. معالجة الرجوع من جوجل
-  getRedirectResult(auth).then((result) => {
-      if (result) {
-          window.switchTab('account');
-      }
-  }).catch((error) => {
-      if(error.code !== 'auth/cancelled-popup-request') {
-          console.error("Redirect Error: ", error);
-      }
-  });
-
-  // 3. الدالة اللي اتمسحت: التنقل بين شاشة الدخول وإنشاء حساب
+  // 3. التنقل بين شاشة الدخول وإنشاء حساب
   window.toggleAuthForm = function(formName) {
       document.getElementById('register-form').style.display = 'none';
       document.getElementById('login-form').style.display = 'none';
@@ -554,20 +521,24 @@ window.renderSavedList = function() {
       document.getElementById(`${formName}-form`).style.display = 'block';
   }
 
-  // 4. الدخول بجوجل
+  // 4. الدخول بجوجل (تم استخدام Popup بدلاً من Redirect لحل مشكلة الريفريش)
   window.loginWithGoogle = async function(btn) {
       if(btn) {
           btn.disabled = true;
           btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحويل...';
       }
       try {
-          await signInWithRedirect(auth, googleProvider);
+          // استخدام Popup يمنع إعادة تحميل الصفحة ويحل المشكلة
+          const result = await signInWithPopup(auth, googleProvider);
+          if(result.user) {
+              window.switchTab('account');
+          }
       } catch (error) {
           if(btn) {
               btn.disabled = false;
               btn.innerHTML = '<img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google"> المتابعة باستخدام جوجل';
           }
-          alert("حدث خطأ أثناء الاتصال بجوجل: " + error.message);
+          alert("حدث خطأ: تأكد أنك لا تفتح الموقع من داخل تيليجرام، افتحه في متصفح خارجي (كروم/سفاري). رسالة الخطأ: " + error.message);
       }
   }
 
@@ -588,7 +559,7 @@ window.renderSavedList = function() {
           await sendEmailVerification(userCredential.user);
           alert("تم إنشاء الحساب بنجاح! 🌟\nبرجاء مراجعة بريدك الإلكتروني لتأكيد الحساب.");
           await signOut(auth);
-          window.toggleAuthForm('verify');
+          window.toggleAuthForm('login'); // توجيه لتسجيل الدخول بدلاً من شاشة مبهمة
       } catch (error) {
           if (error.code === 'auth/email-already-in-use') alert("هذا البريد مستخدم بالفعل! قم بتسجيل الدخول.");
           else alert("حدث خطأ: " + error.message);
@@ -608,7 +579,7 @@ window.renderSavedList = function() {
       try {
           const userCredential = await signInWithEmailAndPassword(auth, email, pass);
           if (!userCredential.user.emailVerified) {
-              alert("برجاء تأكيد بريدك الإلكتروني أولاً!");
+              alert("برجاء تأكيد بريدك الإلكتروني أولاً عبر الرابط المرسل إليك!");
               await signOut(auth);
               window.toggleAuthForm('verify');
           } else {
@@ -640,13 +611,13 @@ window.renderSavedList = function() {
           document.getElementById('userAvatar').src = user.photoURL;
       } else {
           let savedAvatar = localStorage.getItem('userAvatar_KLE');
-          document.getElementById('userAvatar').src = savedAvatar ? savedAvatar : 'https://i.ibb.co/q1z6bL8/default-avatar.png'; 
+          document.getElementById('userAvatar').src = savedAvatar ? savedAvatar : 'https://via.placeholder.com/100'; 
       }
       
       if (typeof window.renderSavedList === "function") window.renderSavedList();
   }
 
-  // 9. التنقل بين الصفحات
+  // 9. التنقل بين الصفحات (معدلة لحل مشكلة الـ Refresh)
   window.switchTab = function(tab) {
       const homePage = document.getElementById('home-page');
       const accountPage = document.getElementById('account-page');
@@ -663,11 +634,22 @@ window.renderSavedList = function() {
           homePage.style.display = 'none';
           document.getElementById('nav-account').classList.add('active');
           
-          const currentUser = auth.currentUser;
-          if (currentUser && (currentUser.emailVerified || (currentUser.providerData.length > 0 && currentUser.providerData[0].providerId === 'google.com'))) {
-              authPage.style.display = 'none';
-              accountPage.style.display = 'block';
-              window.loadUserProfileReal(currentUser);
+          // نستخدم المتغير اللي تم حفظه بدلاً من الاعتماد المباشر على auth.currentUser اللي بيتأخر
+          const currentUser = window.currentFirebaseUser || auth.currentUser;
+          
+          if (currentUser) {
+              // الدخول مسموح لو الإيميل مؤكد أو مسجل بجوجل
+              const isGoogleUser = currentUser.providerData.some(p => p.providerId === 'google.com');
+              
+              if (currentUser.emailVerified || isGoogleUser) {
+                  authPage.style.display = 'none';
+                  accountPage.style.display = 'block';
+                  window.loadUserProfileReal(currentUser);
+              } else {
+                  accountPage.style.display = 'none';
+                  authPage.style.display = 'block';
+                  window.toggleAuthForm('verify');
+              }
           } else {
               accountPage.style.display = 'none';
               authPage.style.display = 'block';
