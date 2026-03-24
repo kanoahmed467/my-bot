@@ -1525,23 +1525,29 @@ window.filterMyList = function(type, btn) {
 }
 
 // دالة رسم المانجات في قسم "قائمتي" (تعمل مع Realtime Database)
+// دالة رسم المانجات في قسم "قائمتي" (محدثة ومضبوطة 100% في المنتصف)
 window.renderMyListUI = async function(filterType = 'all') {
     let listGrid = document.getElementById('myListGrid');
     const user = window.currentFirebaseUser;
 
+    // 1. حالة: المستخدم غير مسجل دخول
     if (!user) {
-    listGrid.innerHTML = `
-<div class="center-message">
-    <i class="fas fa-spinner fa-spin" style="font-size:45px; color: var(--primary); margin-bottom:15px; text-shadow: 0 0 15px var(--primary-glow);"></i>
-    <span style="font-size: 16px; font-weight: 800; color: var(--primary);">جاري جلب مكتبتك...</span>
-</div>`;
-    return;
-}
+        listGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 50vh; width: 100%;">
+            <div style="background: rgba(255,255,255,0.02); padding: 40px; border-radius: 16px; border: 1px dashed var(--border-color); width: 100%; text-align: center; max-width: 400px; margin: 0 auto;">
+                <i class="fa-solid fa-lock" style="font-size:50px; margin-bottom:15px; color: rgba(255,255,255,0.1);"></i><br>
+                <span style="font-size: 16px; font-weight: 800; color: var(--text-label);">يجب تسجيل الدخول لعرض قائمتك</span><br>
+                <button onclick="switchTab('account')" style="margin-top: 15px; background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 800; font-family: 'Cairo', sans-serif; cursor: pointer; box-shadow: 0 5px 15px var(--primary-glow);">الذهاب لتسجيل الدخول</button>
+            </div>
+        </div>`;
+        return;
+    }
 
+    // 2. حالة: جاري تحميل البيانات
     listGrid.innerHTML = `
-    <div style="text-align:center; width:100%; color:var(--primary); padding:40px 20px;">
-        <i class="fas fa-spinner fa-spin" style="font-size:30px; margin-bottom:10px;"></i><br>
-        جاري جلب مكتبتك...
+    <div style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 50vh; width: 100%; text-align: center;">
+        <i class="fas fa-spinner fa-spin" style="font-size:45px; color: var(--primary); margin-bottom:15px; text-shadow: 0 0 15px var(--primary-glow);"></i>
+        <span style="font-size: 16px; font-weight: 800; color: var(--primary);">جاري جلب مكتبتك...</span>
     </div>`;
 
     try {
@@ -1569,16 +1575,20 @@ window.renderMyListUI = async function(filterType = 'all') {
             filteredMangas = window.dataAll.filter(m => idsWithThisStatus.includes(m.id.toString()));
         }
 
+        // 3. حالة: القائمة فارغة
         if(filteredMangas.length === 0) {
-    listGrid.innerHTML = `
-    <div style="text-align:center; width:100%; color:var(--text-muted); padding:60px 20px; grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px dashed var(--border-color);">
-        <i class="fa-solid fa-box-open" style="font-size:50px; margin-bottom:15px; color: rgba(255,255,255,0.1);"></i>
-        <span style="font-size: 16px; font-weight: 800; color: var(--text-label);">قائمتك فارغة في هذا القسم!</span>
-        <span style="font-size: 13px; margin-top: 8px;">ابدأ بإضافة بعض الأعمال لمكتبتك 📚</span>
-    </div>`;
-    return;
-}
+            listGrid.innerHTML = `
+            <div style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 50vh; width: 100%;">
+                <div style="background: rgba(255,255,255,0.02); padding: 40px; border-radius: 16px; border: 1px dashed var(--border-color); width: 100%; text-align: center; max-width: 400px; margin: 0 auto;">
+                    <i class="fa-solid fa-box-open" style="font-size:50px; margin-bottom:15px; color: rgba(255,255,255,0.1);"></i><br>
+                    <span style="font-size: 16px; font-weight: 800; color: var(--text-label);">قائمتك فارغة في هذا القسم!</span><br>
+                    <span style="font-size: 13px; color: var(--text-muted); margin-top: 8px; display: block;">ابدأ بإضافة بعض الأعمال لمكتبتك 📚</span>
+                </div>
+            </div>`;
+            return;
+        }
 
+        // 4. حالة: عرض المانجات بنجاح
         listGrid.innerHTML = '';
         filteredMangas.forEach(m => {
             let live = m.status && m.status.includes('مستمر');
@@ -1623,11 +1633,14 @@ window.renderMyListUI = async function(filterType = 'all') {
         });
 
     } catch (error) {
+        // 5. حالة: حدوث خطأ في الاتصال
         console.error("خطأ في جلب البيانات من فايربيز:", error);
         listGrid.innerHTML = `
-        <div style="text-align:center; width:100%; color:#ef4444; padding:40px 20px;">
-            <i class="fa-solid fa-triangle-exclamation" style="font-size:40px; margin-bottom:15px;"></i><br>
-            حدث خطأ أثناء الاتصال بقاعدة البيانات.
+        <div style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 50vh; width: 100%;">
+            <div style="background: rgba(239, 68, 68, 0.05); padding: 40px; border-radius: 16px; border: 1px dashed rgba(239, 68, 68, 0.3); width: 100%; text-align: center; max-width: 400px; margin: 0 auto;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size:50px; margin-bottom:15px; color: #ef4444;"></i><br>
+                <span style="font-size: 16px; font-weight: 800; color: #ef4444;">حدث خطأ أثناء الاتصال بقاعدة البيانات.</span>
+            </div>
         </div>`;
     }
 }
