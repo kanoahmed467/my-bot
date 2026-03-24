@@ -44,39 +44,25 @@ body {
 ========================================= */
 header {
     position: sticky; top: 0; z-index: 1000; padding: 15px;
-    background: rgba(15, 20, 30, 0.85); backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border-color);
+    background: rgba(15, 20, 30, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color);
 }
 .search-box {
     position: relative; display: flex; align-items: center; gap: 10px;
-    padding: 12px 16px; border-radius: 12px; background: var(--bg-header);
-    border: 1px solid var(--border-color); transition: 0.3s ease;
+    padding: 12px 16px; border-radius: 12px; background: var(--bg-header); border: 1px solid var(--border-color); transition: 0.3s ease;
 }
 .search-box:focus-within { border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); }
 .icon { color: var(--text-muted); font-size: 16px; transition: 0.3s ease; }
 .search-box:focus-within .icon { color: var(--primary); }
 .search-box input { flex: 1; background: none; border: none; outline: none; color: var(--text-main); font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 600; }
 .search-box input::placeholder { color: var(--text-muted); font-weight: 400; }
-.clear-btn {
-    width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
-    border-radius: 50%; cursor: pointer; color: var(--text-muted);
-    opacity: 0; transform: scale(0.7); pointer-events: none; transition: 0.3s ease;
-}
+.clear-btn { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; color: var(--text-muted); opacity: 0; transform: scale(0.7); pointer-events: none; transition: 0.3s ease; }
 .clear-btn.show { opacity: 1; transform: scale(1); pointer-events: auto; }
 .clear-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-main); }
 
-.search-results {
-    position: absolute; width: calc(100% - 30px); left: 15px; top: 70px;
-    background: var(--bg-header); border-radius: 12px; border: 1px solid var(--border-color);
-    max-height: 250px; overflow-y: auto; display: none; z-index: 1001;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
+.search-results { position: absolute; width: calc(100% - 30px); left: 15px; top: 70px; background: var(--bg-header); border-radius: 12px; border: 1px solid var(--border-color); max-height: 250px; overflow-y: auto; display: none; z-index: 1001; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 .search-results::-webkit-scrollbar { width: 6px; }
 .search-results::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
-.result-item {
-    display: flex; gap: 12px; padding: 10px 12px; cursor: pointer; transition: 0.2s; align-items: center;
-    border-bottom: 1px solid rgba(255,255,255,0.03);
-}
+.result-item { display: flex; gap: 12px; padding: 10px 12px; cursor: pointer; transition: 0.2s; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.03); }
 .result-item:hover { background: rgba(168, 85, 247, 0.1); }
 .result-img { width: 45px; height: 60px; object-fit: cover; border-radius: 8px; }
 .result-title { font-size: 13px; font-weight: 700; color: var(--text-main); }
@@ -84,41 +70,25 @@ header {
 .result-meta { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
 
 /* =========================================
-   🎛️ الفلاتر
+   🎛️ الفلاتر والشبكة
 ========================================= */
 .filters { display: flex; gap: 10px; padding: 15px; overflow-x: auto; }
 .filters::-webkit-scrollbar { display: none; }
-.filters button {
-    border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 20px;
-    background: var(--bg-card); color: var(--text-label); font-family: 'Cairo', sans-serif; font-weight: 600; font-size: 13px;
-    cursor: pointer; transition: 0.3s; white-space: nowrap;
-}
+.filters button { border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 20px; background: var(--bg-card); color: var(--text-label); font-family: 'Cairo', sans-serif; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.3s; white-space: nowrap; }
 .filters button:hover { border-color: var(--primary); }
 .filters button.active { background: rgba(168, 85, 247, 0.15); border-color: var(--primary); color: var(--primary); }
 
-/* =========================================
-   📚 شبكة العرض والبطاقات
-========================================= */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; padding: 0 15px 20px 15px; }
-.card {
-    background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px;
-    overflow: hidden; transition: 0.3s ease; cursor: pointer; display: flex; flex-direction: column;
-}
+.card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: 0.3s ease; cursor: pointer; display: flex; flex-direction: column; }
 .card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.5), 0 0 15px var(--primary-glow); }
 .poster { width: 100%; aspect-ratio: 2/3; position: relative; overflow: hidden; }
 .poster img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
 .card:hover .poster img { transform: scale(1.08); }
-.status {
-    position: absolute; top: 8px; right: 8px; padding: 4px 8px; border-radius: 6px;
-    font-size: 10px; font-weight: 700; backdrop-filter: blur(5px); z-index: 2; border: 1px solid rgba(255,255,255,0.1);
-}
+.status { position: absolute; top: 8px; right: 8px; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; backdrop-filter: blur(5px); z-index: 2; border: 1px solid rgba(255,255,255,0.1); }
 .live { background: rgba(16, 185, 129, 0.2); color: var(--green); border-color: rgba(16, 185, 129, 0.3); }
 .done { background: rgba(59, 130, 246, 0.2); color: var(--blue); border-color: rgba(59, 130, 246, 0.3); }
 .content { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
-.title {
-    font-size: 13px; font-weight: 700; line-height: 1.4; color: var(--text-main); margin-bottom: 8px;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
+.title { font-size: 13px; font-weight: 700; line-height: 1.4; color: var(--text-main); margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .genres { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
 .tag { background: rgba(255, 255, 255, 0.05); color: var(--text-label); padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; }
 .meta-footer { display: flex; justify-content: space-between; align-items: center; }
@@ -128,11 +98,7 @@ header {
 /* =========================================
    📱 شريط التنقل السفلي
 ========================================= */
-.bottom-nav {
-    position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bg-header); border-top: 1px solid var(--border-color);
-    display: flex; justify-content: space-around; align-items: center; padding: 10px 0; z-index: 1000;
-    padding-bottom: env(safe-area-inset-bottom, 10px);
-}
+.bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bg-header); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; padding: 10px 0; z-index: 1000; padding-bottom: env(safe-area-inset-bottom, 10px); }
 .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); text-decoration: none; font-size: 11px; font-weight: 600; transition: 0.3s; width: 33.33%; }
 .nav-item i { font-size: 18px; }
 .nav-item.active { color: var(--primary); }
@@ -146,34 +112,19 @@ header {
 .updates-scroll { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
 .updates-scroll::-webkit-scrollbar { height: 4px; }
 .updates-scroll::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
-.elite-card {
-    min-width: 140px; max-width: 140px; background: rgba(26, 34, 53, 0.6); border-radius: 16px; backdrop-filter: blur(5px);
-    overflow: hidden; position: relative; border: 1px solid rgba(168, 85, 247, 0.2); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.elite-card:hover {
-    transform: translateY(-10px); border-color: transparent; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(168, 85, 247, 0.2);
-    background: linear-gradient(#1a2235, #1a2235) padding-box, linear-gradient(45deg, #a855f7, #6366f1) border-box;
-}
+.elite-card { min-width: 140px; max-width: 140px; background: rgba(26, 34, 53, 0.6); border-radius: 16px; backdrop-filter: blur(5px); overflow: hidden; position: relative; border: 1px solid rgba(168, 85, 247, 0.2); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.elite-card:hover { transform: translateY(-10px); border-color: transparent; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(168, 85, 247, 0.2); background: linear-gradient(#1a2235, #1a2235) padding-box, linear-gradient(45deg, #a855f7, #6366f1) border-box; }
 @keyframes pulse-purple { 0% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(168, 85, 247, 0); } 100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); } }
 .elite-poster::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, rgba(15, 20, 30, 0.9), transparent); }
 .card:hover img, .elite-card:hover img { transform: scale(1.1); transition: transform 0.5s ease; }
 .elite-poster { width: 100%; height: 200px; position: relative; }
 .elite-poster img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
-@keyframes skeleton-loading { 0% { background-color: #1a2235; } 50% { background-color: #2d3748; } 100% { background-color: #1a2235; } }
-.poster, .elite-poster { background-color: #1a2235; animation: skeleton-loading 1.5s infinite; }
-.badge-new-elite {
-    position: absolute; top: 10px; right: 10px; background: linear-gradient(45deg, #a855f7, #6366f1); color: white;
-    font-size: 11px; font-weight: 800; padding: 5px 12px; border-radius: 8px; z-index: 10; display: flex; align-items: center; gap: 6px;
-    border: 1px solid rgba(255,255,255,0.3); pointer-events: none; animation: pulse-purple 2s infinite;
-}
+.badge-new-elite { position: absolute; top: 10px; right: 10px; background: linear-gradient(45deg, #a855f7, #6366f1); color: white; font-size: 11px; font-weight: 800; padding: 5px 12px; border-radius: 8px; box-shadow: 0 0 15px rgba(168, 85, 247, 0.5); z-index: 10; display: flex; align-items: center; gap: 6px; border: 1px solid rgba(255,255,255,0.3); pointer-events: none; animation: pulse-purple 2s infinite; }
 .elite-info { padding: 8px; background: linear-gradient(to top, var(--bg-card), transparent); }
 .elite-title { font-size: 12px; font-weight: 700; color: #fff; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
 .neon-divider { height: 2px; background: linear-gradient(90deg, transparent, var(--primary), transparent); margin: 5px 30px 20px; box-shadow: 0 0 10px var(--primary); opacity: 0.5; }
 .updates-wrapper { position: relative; display: flex; align-items: center; }
-.scroll-btn {
-    position: absolute; width: 35px; height: 35px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2); color: white; z-index: 10; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center;
-}
+.scroll-btn { position: absolute; width: 35px; height: 35px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.2); color: white; z-index: 10; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
 .scroll-btn:hover { background: var(--primary); border-color: var(--primary); box-shadow: 0 0 10px var(--primary-glow); }
 .scroll-btn.left { left: -10px; } .scroll-btn.right { right: -10px; }
 @media (max-width: 480px) { .scroll-btn { display: none; } }
@@ -189,6 +140,8 @@ header {
 .user-name { font-size: 20px; font-weight: 800; margin-top: 15px; color: var(--text-main); }
 .user-id { display: inline-block; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 20px; margin-top: 8px; letter-spacing: 1px; }
 .section-title-account { font-size: 18px; font-weight: 800; margin: 20px 15px; padding-bottom: 10px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+.logout-btn { display: block; width: calc(100% - 30px); margin: 20px auto; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 10px; border-radius: 10px; text-align: center; font-weight: 700; cursor: pointer; transition: 0.3s; font-family: 'Cairo', sans-serif;}
+.logout-btn:hover { background: #ef4444; color: white; }
 
 /* =========================================
    🔐 نظام تسجيل الدخول الحقيقي CSS
@@ -203,9 +156,13 @@ header {
 .auth-switch { margin-top: 15px; font-size: 13px; color: var(--text-muted); cursor: pointer; transition: 0.3s; }
 .auth-switch span { color: var(--primary); font-weight: 700; }
 .auth-switch:hover { color: var(--text-main); }
-.logout-btn { display: block; width: calc(100% - 30px); margin: 20px auto; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 10px; border-radius: 10px; text-align: center; font-weight: 700; cursor: pointer; transition: 0.3s; font-family: 'Cairo', sans-serif;}
-.logout-btn:hover { background: #ef4444; color: white; }
-
+.google-btn { width: 100%; padding: 12px; background: #ffffff; color: #1a2235; border: none; border-radius: 10px; font-family: 'Cairo', sans-serif; font-weight: 800; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; margin-top: 15px; }
+.google-btn:hover { background: #f8fafc; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255,255,255,0.2); }
+.google-btn img { width: 22px; height: 22px; }
+.auth-divider { display: flex; align-items: center; text-align: center; margin: 20px 0 10px; color: var(--text-muted); font-size: 12px; font-weight: 700; }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border-color); }
+.auth-divider:not(:empty)::before { margin-left: 10px; }
+.auth-divider:not(:empty)::after { margin-right: 10px; }
 </style>
 </head>
 
@@ -245,13 +202,30 @@ header {
 <!-- ================== شاشة تسجيل الدخول الحقيقية ================== -->
 <div id="auth-page" style="display: none;">
     <div class="auth-container">
+        
         <!-- نموذج إنشاء حساب -->
-        <div id="register-form" class="auth-card">
+        <div id="register-form" class="auth-card" style="display: none;">
             <h2>إنشاء حساب جديد 🌟</h2>
             <input type="email" id="reg-email" class="auth-input" placeholder="البريد الإلكتروني">
             <input type="password" id="reg-pass" class="auth-input" placeholder="كلمة المرور (6 أحرف على الأقل)">
             <button class="auth-btn" id="reg-btn" onclick="startRegistration()">إنشاء حساب</button>
             <div class="auth-switch" onclick="toggleAuthForm('login')">لدي حساب بالفعل؟ <span>تسجيل الدخول</span></div>
+        </div>
+
+        <!-- نموذج تسجيل الدخول -->
+        <div id="login-form" class="auth-card">
+            <h2>مرحباً بعودتك 👋</h2>
+            <input type="email" id="log-email" class="auth-input" placeholder="البريد الإلكتروني">
+            <input type="password" id="log-pass" class="auth-input" placeholder="كلمة المرور">
+            <button class="auth-btn" id="log-btn" onclick="loginUser()">دخول</button>
+            
+            <div class="auth-divider">أو</div>
+            <button class="google-btn" onclick="loginWithGoogle()">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
+                المتابعة باستخدام جوجل
+            </button>
+
+            <div class="auth-switch" onclick="toggleAuthForm('register')">ليس لديك حساب؟ <span>إنشاء حساب</span></div>
         </div>
 
         <!-- شاشة رسالة تأكيد البريد -->
@@ -263,14 +237,6 @@ header {
             <button class="auth-btn" onclick="toggleAuthForm('login')">الذهاب لتسجيل الدخول</button>
         </div>
 
-        <!-- نموذج تسجيل الدخول -->
-        <div id="login-form" class="auth-card" style="display: none;">
-            <h2>مرحباً بعودتك 👋</h2>
-            <input type="email" id="log-email" class="auth-input" placeholder="البريد الإلكتروني">
-            <input type="password" id="log-pass" class="auth-input" placeholder="كلمة المرور">
-            <button class="auth-btn" id="log-btn" onclick="loginUser()">دخول</button>
-            <div class="auth-switch" onclick="toggleAuthForm('register')">ليس لديك حساب؟ <span>إنشاء حساب</span></div>
-        </div>
     </div>
 </div>
 
@@ -296,7 +262,7 @@ header {
         </div>
     </div>
 
-    <!-- زر تسجيل الخروج -->
+    <!-- زر تسجيل الخروج اللي كان ناقص -->
     <button class="logout-btn" onclick="logoutUser()"><i class="fa-solid fa-right-from-bracket"></i> تسجيل الخروج</button>
 </div>
 
@@ -316,7 +282,7 @@ header {
     </a>
 </nav>
 
-<!-- ================== السكريبت الأساسي للموقع ================== -->
+<!-- ================== سكريبت الموقع الأساسي ================== -->
 <script>
 let dataAll =[];
 const input = document.getElementById('searchInput');
@@ -387,8 +353,7 @@ function smartSearch(query){
         score += (m.rating || 0) * 2;
         return {...m, score};
     }).filter(m => m.score > 10).sort((a,b) => b.score - a.score).filter(m => {
-        if(seen.has(m.title)) return false;
-        seen.add(m.title); return true;
+        if(seen.has(m.title)) return false; seen.add(m.title); return true;
     });
 }
 
@@ -400,8 +365,7 @@ input.addEventListener('input', () => {
     searchTimeout = setTimeout(() => {
         if(!q){ resultsBox.style.display = 'none'; render(dataAll); return; }
         let filtered = smartSearch(q);
-        render(filtered);
-        showResults(filtered, q);
+        render(filtered); showResults(filtered, q);
     }, 300); 
 });
 
@@ -457,10 +421,8 @@ function renderUpdates() {
         container.appendChild(card);
     });
 }
-
 init();
 
-// دوال التحكم بالصورة الشخصية والأعمال المحفوظة
 window.uploadAvatar = function(event) {
     const file = event.target.files[0];
     if (file) {
@@ -477,7 +439,7 @@ window.uploadAvatar = function(event) {
 
 window.renderSavedList = function() {
     let savedGrid = document.getElementById('savedGrid');
-    let userSavedIds =[1, 3, 5]; // بيانات تجريبية (يتم استبدالها لاحقاً من قاعدة البيانات)
+    let userSavedIds =[1, 3, 5]; // بيانات تجريبية 
     let savedMangas = dataAll.filter(m => userSavedIds.includes(parseInt(m.id)));
     if (savedMangas.length === 0) {
         savedGrid.innerHTML = `<div style="text-align:center; width:100%; color:var(--text-muted); padding:20px;">لا توجد أعمال مسجلة حتى الآن.</div>`;
@@ -507,8 +469,9 @@ window.renderSavedList = function() {
 }
 </script>
 
-<!-- ================== سكريبت Firebase لتسجيل الدخول ================== -->
+<!-- ================== سكريبت الفايربيز الأساسي ================== -->
 <script type="module">
+  // 1. استيراد المكتبات (بما فيها جوجل)
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
   import { 
@@ -517,9 +480,12 @@ window.renderSavedList = function() {
     signInWithEmailAndPassword, 
     sendEmailVerification, 
     onAuthStateChanged, 
-    signOut 
+    signOut,
+    GoogleAuthProvider,
+    signInWithPopup
   } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
+  // 2. بيانات ربط مشروعك
   const firebaseConfig = {
     apiKey: "AIzaSyCEecz0x8SnEckiBNxDqI-jGe8p5-fKfsw",
     authDomain: "manga-kingdom.firebaseapp.com",
@@ -530,17 +496,21 @@ window.renderSavedList = function() {
     measurementId: "G-F3WZ08BTZM"
   };
 
+  // 3. تفعيل الفايربيز
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
   const auth = getAuth(app);
+  const googleProvider = new GoogleAuthProvider();
 
+  // 4. مراقبة حالة المستخدم (هل هو مسجل ولا لأ)
   onAuthStateChanged(auth, (user) => {
     const authPage = document.getElementById('auth-page');
     const accountPage = document.getElementById('account-page');
 
     if (document.getElementById('nav-account').classList.contains('active')) {
         if (user) {
-            if (user.emailVerified) {
+            // لو سجل بجوجل، الإيميل بيكون متأكد تلقائي
+            if (user.emailVerified || user.providerData[0].providerId === 'google.com') {
                 authPage.style.display = 'none';
                 accountPage.style.display = 'block';
                 loadUserProfileReal(user);
@@ -557,6 +527,7 @@ window.renderSavedList = function() {
     }
   });
 
+  // 5. أوامر التشغيل الأساسية
   window.toggleAuthForm = function(formName) {
       document.getElementById('register-form').style.display = 'none';
       document.getElementById('login-form').style.display = 'none';
@@ -564,6 +535,18 @@ window.renderSavedList = function() {
       document.getElementById(`${formName}-form`).style.display = 'block';
   }
 
+  // الدخول بجوجل
+  window.loginWithGoogle = async function() {
+      try {
+          const result = await signInWithPopup(auth, googleProvider);
+          window.switchTab('account'); 
+      } catch (error) {
+          console.error(error);
+          alert("حدث خطأ أثناء تسجيل الدخول بجوجل: " + error.message);
+      }
+  }
+
+  // إنشاء حساب بالإيميل
   window.startRegistration = async function() {
       const email = document.getElementById('reg-email').value.trim();
       const pass = document.getElementById('reg-pass').value;
@@ -574,42 +557,33 @@ window.renderSavedList = function() {
           return;
       }
 
-      btn.innerText = "جاري الإنشاء...";
-      btn.disabled = true;
-
+      btn.innerText = "جاري الإنشاء..."; btn.disabled = true;
       try {
           const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
           await sendEmailVerification(userCredential.user);
-          alert("تم إنشاء الحساب بنجاح! 🌟\nبرجاء مراجعة بريدك الإلكتروني للضغط على رابط التأكيد.");
+          alert("تم إنشاء الحساب بنجاح! 🌟\nبرجاء مراجعة بريدك الإلكتروني لتأكيد الحساب.");
           await signOut(auth);
           window.toggleAuthForm('verify');
       } catch (error) {
           if (error.code === 'auth/email-already-in-use') alert("هذا البريد مستخدم بالفعل! قم بتسجيل الدخول.");
-          else if (error.code === 'auth/invalid-email') alert("صيغة البريد الإلكتروني غير صحيحة!");
           else alert("حدث خطأ: " + error.message);
       } finally {
-          btn.innerText = "إنشاء حساب";
-          btn.disabled = false;
+          btn.innerText = "إنشاء حساب"; btn.disabled = false;
       }
   }
 
+  // الدخول بالإيميل
   window.loginUser = async function() {
       const email = document.getElementById('log-email').value.trim();
       const pass = document.getElementById('log-pass').value;
       const btn = document.getElementById('log-btn');
 
-      if (!email || !pass) {
-          alert("يرجى إدخال البريد الإلكتروني وكلمة المرور.");
-          return;
-      }
-
-      btn.innerText = "جاري الدخول...";
-      btn.disabled = true;
-
+      if (!email || !pass) return alert("يرجى إدخال البريد الإلكتروني وكلمة المرور.");
+      btn.innerText = "جاري الدخول..."; btn.disabled = true;
       try {
           const userCredential = await signInWithEmailAndPassword(auth, email, pass);
           if (!userCredential.user.emailVerified) {
-              alert("برجاء تأكيد بريدك الإلكتروني أولاً! لقد أرسلنا لك رابطاً مسبقاً.");
+              alert("برجاء تأكيد بريدك الإلكتروني أولاً!");
               await signOut(auth);
               window.toggleAuthForm('verify');
           } else {
@@ -618,38 +592,37 @@ window.renderSavedList = function() {
       } catch (error) {
           alert("البريد الإلكتروني أو كلمة المرور غير صحيحة!");
       } finally {
-          btn.innerText = "دخول";
-          btn.disabled = false;
+          btn.innerText = "دخول"; btn.disabled = false;
       }
   }
 
+  // تسجيل الخروج
   window.logoutUser = async function() {
       if(confirm("هل أنت متأكد من تسجيل الخروج؟")) {
-          try {
-              await signOut(auth);
-              window.switchTab('account');
-          } catch (error) {
-              alert("حدث خطأ أثناء تسجيل الخروج.");
-          }
+          await signOut(auth);
+          window.switchTab('account');
       }
   }
 
+  // تحميل بيانات البروفايل
   function loadUserProfileReal(user) {
-      let name = user.email.split('@')[0];
+      let name = user.displayName || user.email.split('@')[0];
       let userId = "UID: " + user.uid.substring(0, 8);
       document.getElementById('userName').innerText = name;
       document.getElementById('userId').innerText = userId;
 
-      let savedAvatar = localStorage.getItem('userAvatar_KLE');
-      if (savedAvatar) {
-          document.getElementById('userAvatar').src = savedAvatar;
+      // لو سجل بجوجل ليه صورة، نعرضها
+      if (user.photoURL) {
+          document.getElementById('userAvatar').src = user.photoURL;
       } else {
-          document.getElementById('userAvatar').src = 'https://i.ibb.co/q1z6bL8/default-avatar.png'; 
+          let savedAvatar = localStorage.getItem('userAvatar_KLE');
+          document.getElementById('userAvatar').src = savedAvatar ? savedAvatar : 'https://i.ibb.co/q1z6bL8/default-avatar.png'; 
       }
       
       if (typeof window.renderSavedList === "function") window.renderSavedList();
   }
 
+  // دالة التنقل بين الصفحات (المسئولة عن فتح شاشة التسجيل أو البروفايل)
   window.switchTab = function(tab) {
       const homePage = document.getElementById('home-page');
       const accountPage = document.getElementById('account-page');
@@ -660,23 +633,21 @@ window.renderSavedList = function() {
       if (tab === 'home') {
           homePage.style.display = 'block';
           accountPage.style.display = 'none';
-          if(authPage) authPage.style.display = 'none';
+          authPage.style.display = 'none';
           document.getElementById('nav-home').classList.add('active');
       } else if (tab === 'account') {
           homePage.style.display = 'none';
           document.getElementById('nav-account').classList.add('active');
           
           const currentUser = auth.currentUser;
-          if (currentUser && currentUser.emailVerified) {
-              if(authPage) authPage.style.display = 'none';
+          if (currentUser && (currentUser.emailVerified || currentUser.providerData[0].providerId === 'google.com')) {
+              authPage.style.display = 'none';
               accountPage.style.display = 'block';
               loadUserProfileReal(currentUser);
           } else {
               accountPage.style.display = 'none';
-              if(authPage) {
-                  authPage.style.display = 'block';
-                  window.toggleAuthForm('login');
-              }
+              authPage.style.display = 'block';
+              window.toggleAuthForm('login');
           }
       }
   }
