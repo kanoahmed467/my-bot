@@ -36,84 +36,45 @@ body {
     font-family: 'Cairo', sans-serif;
     background: var(--bg-main);
     color: var(--text-main);
-    padding-bottom: 90px; /* مساحة لشريط التنقل السفلي */
-
+    padding-bottom: 90px;
 }
 
 /* =========================================
-   🔍 الهيدر والبحث (بأسلوب الإحصائيات)
+   🔍 الهيدر والبحث
 ========================================= */
 header {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    padding: 15px;
-    background: rgba(15, 20, 30, 0.85);
-    backdrop-filter: blur(12px);
+    position: sticky; top: 0; z-index: 1000; padding: 15px;
+    background: rgba(15, 20, 30, 0.85); backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-color);
 }
-
 .search-box {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
-    border-radius: 12px;
-    background: var(--bg-header);
-    border: 1px solid var(--border-color);
-    transition: 0.3s ease;
+    position: relative; display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; border-radius: 12px; background: var(--bg-header);
+    border: 1px solid var(--border-color); transition: 0.3s ease;
 }
-
-.search-box:focus-within {
-    border-color: var(--primary);
-    box-shadow: 0 0 15px var(--primary-glow);
-}
-
+.search-box:focus-within { border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); }
 .icon { color: var(--text-muted); font-size: 16px; transition: 0.3s ease; }
 .search-box:focus-within .icon { color: var(--primary); }
-
-.search-box input {
-    flex: 1;
-    background: none;
-    border: none;
-    outline: none;
-    color: var(--text-main);
-    font-family: 'Cairo', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-}
-
+.search-box input { flex: 1; background: none; border: none; outline: none; color: var(--text-main); font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 600; }
 .search-box input::placeholder { color: var(--text-muted); font-weight: 400; }
-
 .clear-btn {
-    width: 26px; height: 26px;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 50%; cursor: pointer;
-    color: var(--text-muted);
-    opacity: 0; transform: scale(0.7); pointer-events: none;
-    transition: 0.3s ease;
+    width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; cursor: pointer; color: var(--text-muted);
+    opacity: 0; transform: scale(0.7); pointer-events: none; transition: 0.3s ease;
 }
 .clear-btn.show { opacity: 1; transform: scale(1); pointer-events: auto; }
 .clear-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-main); }
 
-/* نتائج البحث المنسدلة */
 .search-results {
     position: absolute; width: calc(100% - 30px); left: 15px; top: 70px;
-    background: var(--bg-header);
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-    max-height: 250px; overflow-y: auto;
-    display: none; z-index: 1001;
+    background: var(--bg-header); border-radius: 12px; border: 1px solid var(--border-color);
+    max-height: 250px; overflow-y: auto; display: none; z-index: 1001;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
-
 .search-results::-webkit-scrollbar { width: 6px; }
 .search-results::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
-
 .result-item {
-    display: flex; gap: 12px; padding: 10px 12px;
-    cursor: pointer; transition: 0.2s; align-items: center;
+    display: flex; gap: 12px; padding: 10px 12px; cursor: pointer; transition: 0.2s; align-items: center;
     border-bottom: 1px solid rgba(255,255,255,0.03);
 }
 .result-item:hover { background: rgba(168, 85, 247, 0.1); }
@@ -125,114 +86,54 @@ header {
 /* =========================================
    🎛️ الفلاتر
 ========================================= */
-.filters {
-    display: flex; gap: 10px; padding: 15px; overflow-x: auto;
-}
+.filters { display: flex; gap: 10px; padding: 15px; overflow-x: auto; }
 .filters::-webkit-scrollbar { display: none; }
-
 .filters button {
-    border: 1px solid var(--border-color);
-    padding: 8px 16px;
-    border-radius: 20px;
-    background: var(--bg-card);
-    color: var(--text-label);
-    font-family: 'Cairo', sans-serif; font-weight: 600; font-size: 13px;
-    cursor: pointer; transition: 0.3s;
-    white-space: nowrap;
+    border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 20px;
+    background: var(--bg-card); color: var(--text-label); font-family: 'Cairo', sans-serif; font-weight: 600; font-size: 13px;
+    cursor: pointer; transition: 0.3s; white-space: nowrap;
 }
 .filters button:hover { border-color: var(--primary); }
-.filters button.active {
-    background: rgba(168, 85, 247, 0.15);
-    border-color: var(--primary);
-    color: var(--primary);
-}
+.filters button.active { background: rgba(168, 85, 247, 0.15); border-color: var(--primary); color: var(--primary); }
 
 /* =========================================
    📚 شبكة العرض والبطاقات
 ========================================= */
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 15px; padding: 0 15px 20px 15px;
-}
-
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; padding: 0 15px 20px 15px; }
 .card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    overflow: hidden;
-    transition: 0.3s ease;
-    cursor: pointer;
-    display: flex; flex-direction: column;
+    background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px;
+    overflow: hidden; transition: 0.3s ease; cursor: pointer; display: flex; flex-direction: column;
 }
-
-.card:hover {
-    transform: translateY(-5px);
-    border-color: var(--primary);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.5), 0 0 15px var(--primary-glow);
-}
-
-.poster {
-    width: 100%; aspect-ratio: 2/3;
-    position: relative; overflow: hidden;
-}
-
-.poster img {
-    width: 100%; height: 100%; object-fit: cover;
-    transition: transform 0.4s ease;
-}
+.card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.5), 0 0 15px var(--primary-glow); }
+.poster { width: 100%; aspect-ratio: 2/3; position: relative; overflow: hidden; }
+.poster img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
 .card:hover .poster img { transform: scale(1.08); }
-
-/* شارة الحالة */
 .status {
-    position: absolute; top: 8px; right: 8px;
-    padding: 4px 8px; border-radius: 6px;
-    font-size: 10px; font-weight: 700;
-    backdrop-filter: blur(5px);
-    z-index: 2; border: 1px solid rgba(255,255,255,0.1);
+    position: absolute; top: 8px; right: 8px; padding: 4px 8px; border-radius: 6px;
+    font-size: 10px; font-weight: 700; backdrop-filter: blur(5px); z-index: 2; border: 1px solid rgba(255,255,255,0.1);
 }
 .live { background: rgba(16, 185, 129, 0.2); color: var(--green); border-color: rgba(16, 185, 129, 0.3); }
 .done { background: rgba(59, 130, 246, 0.2); color: var(--blue); border-color: rgba(59, 130, 246, 0.3); }
-
-/* محتوى البطاقة السفلي */
 .content { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
-
 .title {
-    font-size: 13px; font-weight: 700; line-height: 1.4;
-    color: var(--text-main); margin-bottom: 8px;
+    font-size: 13px; font-weight: 700; line-height: 1.4; color: var(--text-main); margin-bottom: 8px;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
-
 .genres { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
-.tag {
-    background: rgba(255, 255, 255, 0.05); color: var(--text-label);
-    padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;
-}
-
+.tag { background: rgba(255, 255, 255, 0.05); color: var(--text-label); padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; }
 .meta-footer { display: flex; justify-content: space-between; align-items: center; }
 .stars { font-size: 11px; color: var(--yellow); font-weight: 700; display: flex; align-items: center; gap: 3px; }
-
-/* رسالة التحميل */
 .loader { text-align: center; padding: 50px 20px; color: var(--text-muted); font-weight: 600; }
 
 /* =========================================
-   📱 شريط التنقل السفلي (Bottom Nav)
+   📱 شريط التنقل السفلي
 ========================================= */
 .bottom-nav {
-    position: fixed; bottom: 0; left: 0; width: 100%;
-    background: var(--bg-header);
-    border-top: 1px solid var(--border-color);
-    display: flex; justify-content: space-around; align-items: center;
-    padding: 10px 0; z-index: 1000;
-    padding-bottom: env(safe-area-inset-bottom, 10px); /* للآيفون */
+    position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bg-header); border-top: 1px solid var(--border-color);
+    display: flex; justify-content: space-around; align-items: center; padding: 10px 0; z-index: 1000;
+    padding-bottom: env(safe-area-inset-bottom, 10px);
 }
-
-.nav-item {
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    color: var(--text-muted); text-decoration: none; font-size: 11px; font-weight: 600;
-    transition: 0.3s; width: 25%;
-}
-
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); text-decoration: none; font-size: 11px; font-weight: 600; transition: 0.3s; width: 33.33%; }
 .nav-item i { font-size: 18px; }
 .nav-item.active { color: var(--primary); }
 .nav-item:hover { color: var(--text-main); }
@@ -240,309 +141,70 @@ header {
 /* =========================================
    ✨ كروت Elite لآخر التحديثات
 ========================================= */
-.updates-section {
-    padding: 20px 15px;
-    background: linear-gradient(180deg, rgba(168, 85, 247, 0.05) 0%, transparent 100%);
-}
-
-.section-title {
-    font-size: 18px;
-    font-weight: 800;
-    margin-bottom: 15px;
-    color: var(--primary);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-/* حاوية الكروت بسكرول أفقي ناعم */
-.updates-scroll {
-    display: flex;
-    gap: 15px;
-    overflow-x: auto;
-    padding-bottom: 10px;
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-}
-.updates-scroll::-webkit-scrollbar { display: none; }
-
-/* كرت الـ Elite */
+.updates-section { padding: 20px 15px; background: linear-gradient(180deg, rgba(168, 85, 247, 0.05) 0%, transparent 100%); }
+.section-title { font-size: 18px; font-weight: 800; margin-bottom: 15px; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+.updates-scroll { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+.updates-scroll::-webkit-scrollbar { height: 4px; }
+.updates-scroll::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
 .elite-card {
-    min-width: 140px;
-    max-width: 140px;
-    background: var(--bg-card);
-    border-radius: 14px;
-    overflow: hidden;
-    position: relative;
-    border: 1px solid rgba(168, 85, 247, 0.2);
-    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    min-width: 140px; max-width: 140px; background: rgba(26, 34, 53, 0.6); border-radius: 16px; backdrop-filter: blur(5px);
+    overflow: hidden; position: relative; border: 1px solid rgba(168, 85, 247, 0.2); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-
 .elite-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    border-color: var(--primary);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.6), 0 0 15px var(--primary-glow);
-    border-color: transparent;
-    background: linear-gradient(#1a2235, #1a2235) padding-box,
-                linear-gradient(45deg, #a855f7, #6366f1) border-box;
-    border: 1px solid transparent;
+    transform: translateY(-10px); border-color: transparent; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(168, 85, 247, 0.2);
+    background: linear-gradient(#1a2235, #1a2235) padding-box, linear-gradient(45deg, #a855f7, #6366f1) border-box;
 }
-
-@keyframes pulse-purple {
-    0% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(168, 85, 247, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
-}
-
-.elite-poster::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 50%;
-    background: linear-gradient(to top, rgba(15, 20, 30, 0.9), transparent);
-}
-
-.card:hover img, .elite-card:hover img {
-    transform: scale(1.1);
-    transition: transform 0.5s ease;
-}
-
-/* تحسين كارت الإيليت */
-.elite-card {
-    border-radius: 16px;
-    background: rgba(26, 34, 53, 0.6);
-    backdrop-filter: blur(5px);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-/* حركة التاج */
+@keyframes pulse-purple { 0% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(168, 85, 247, 0); } 100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); } }
+.elite-poster::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, rgba(15, 20, 30, 0.9), transparent); }
+.card:hover img, .elite-card:hover img { transform: scale(1.1); transition: transform 0.5s ease; }
+.elite-poster { width: 100%; height: 200px; position: relative; }
+.elite-poster img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+@keyframes skeleton-loading { 0% { background-color: #1a2235; } 50% { background-color: #2d3748; } 100% { background-color: #1a2235; } }
+.poster, .elite-poster { background-color: #1a2235; animation: skeleton-loading 1.5s infinite; }
 .badge-new-elite {
-    background: linear-gradient(135deg, #a855f7 0%, #6e2cf2 100%);
-    border: none;
-    font-size: 10px;
-    letter-spacing: 0.5px;
-    animation: pulse-purple 2s infinite;
+    position: absolute; top: 10px; right: 10px; background: linear-gradient(45deg, #a855f7, #6366f1); color: white;
+    font-size: 11px; font-weight: 800; padding: 5px 12px; border-radius: 8px; z-index: 10; display: flex; align-items: center; gap: 6px;
+    border: 1px solid rgba(255,255,255,0.3); pointer-events: none; animation: pulse-purple 2s infinite;
 }
-
-/* تأثير الإضاءة عند الوقوف على الكارت */
-.elite-card:hover {
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(168, 85, 247, 0.2);
-    transform: translateY(-10px);
-}
-
-/* تحسين السكرول بار */
-.updates-scroll::-webkit-scrollbar {
-    height: 4px;
-}
-.updates-scroll::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: 10px;
-}
-
-
-.elite-poster {
-    width: 100%;
-    height: 200px;
-    position: relative;
-}
-
-.elite-poster img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: top; /* يضمن إن وش الشخصية يظهر دائماً */
-}
-
-@keyframes skeleton-loading {
-    0% { background-color: #1a2235; }
-    50% { background-color: #2d3748; }
-    100% { background-color: #1a2235; }
-}
-
-.poster, .elite-poster {
-    background-color: #1a2235;
-    animation: skeleton-loading 1.5s infinite;
-}
-
-/* تاج "جديد" الفخم */
-/* 👑 التاج البنفسجي الخرافي */
-.badge-new-elite {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: linear-gradient(45deg, #a855f7, #6366f1);
-    color: white;
-    font-size: 11px;
-    font-weight: 800;
-    padding: 5px 12px;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
-    z-index: 10; /* عشان يظهر فوق أي حاجة */
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    border: 1px solid rgba(255,255,255,0.3);
-    pointer-events: none;
-    animation: rotate-sparkle 2s infinite linear;
-    animation: pulse-purple 2s infinite;
-}
-
-/* حركة بسيطة عشان يلمع */
-
-@keyframes rotate-sparkle {
-    0% { transform: rotate(0deg) scale(1); }
-    50% { transform: rotate(180deg) scale(1.2); }
-    100% { transform: rotate(360deg) scale(1); }
-}
-
-.elite-info {
-    padding: 8px;
-    background: linear-gradient(to top, var(--bg-card), transparent);
-}
-
-.elite-title {
-    font-size: 12px;
-    font-weight: 700;
-    color: #fff;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    line-height: 1.3;
-}
-
-/* الفاصل المضيء */
-.neon-divider {
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--primary), transparent);
-    margin: 5px 30px 20px;
-    box-shadow: 0 0 10px var(--primary);
-    opacity: 0.5;
-}
-
-.updates-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
+.elite-info { padding: 8px; background: linear-gradient(to top, var(--bg-card), transparent); }
+.elite-title { font-size: 12px; font-weight: 700; color: #fff; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
+.neon-divider { height: 2px; background: linear-gradient(90deg, transparent, var(--primary), transparent); margin: 5px 30px 20px; box-shadow: 0 0 10px var(--primary); opacity: 0.5; }
+.updates-wrapper { position: relative; display: flex; align-items: center; }
 .scroll-btn {
-    position: absolute;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    z-index: 10;
-    cursor: pointer;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: absolute; width: 35px; height: 35px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2); color: white; z-index: 10; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center;
 }
-
-.scroll-btn:hover {
-    background: var(--primary);
-    border-color: var(--primary);
-    box-shadow: 0 0 10px var(--primary-glow);
-}
-
-.scroll-btn.left { left: -10px; }
-.scroll-btn.right { right: -10px; }
-
-/* إخفاء الأزرار في الشاشات الصغيرة جداً لو مش محتاجها، بس هي شكلها شيك */
-@media (max-width: 480px) {
-    .scroll-btn { display: none; }
-}
+.scroll-btn:hover { background: var(--primary); border-color: var(--primary); box-shadow: 0 0 10px var(--primary-glow); }
+.scroll-btn.left { left: -10px; } .scroll-btn.right { right: -10px; }
+@media (max-width: 480px) { .scroll-btn { display: none; } }
 
 /* =========================================
    👤 قسم حسابي (Profile)
 ========================================= */
-.profile-header {
-    text-align: center;
-    padding: 40px 15px 20px;
-    background: linear-gradient(180deg, rgba(168, 85, 247, 0.1) 0%, transparent 100%);
-    border-bottom: 1px solid var(--border-color);
-}
+.profile-header { text-align: center; padding: 40px 15px 20px; background: linear-gradient(180deg, rgba(168, 85, 247, 0.1) 0%, transparent 100%); border-bottom: 1px solid var(--border-color); }
+.avatar-container { position: relative; width: 90px; height: 90px; margin: 0 auto; }
+.avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); box-shadow: 0 0 15px var(--primary-glow); }
+.edit-avatar { position: absolute; bottom: -5px; right: -5px; background: var(--primary); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; border: 3px solid var(--bg-main); transition: 0.3s; }
+.edit-avatar:hover { transform: scale(1.1); background: #fff; color: var(--primary); }
+.user-name { font-size: 20px; font-weight: 800; margin-top: 15px; color: var(--text-main); }
+.user-id { display: inline-block; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 20px; margin-top: 8px; letter-spacing: 1px; }
+.section-title-account { font-size: 18px; font-weight: 800; margin: 20px 15px; padding-bottom: 10px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
 
-.avatar-container {
-    position: relative;
-    width: 90px;
-    height: 90px;
-    margin: 0 auto;
-}
-
-.avatar {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid var(--primary);
-    box-shadow: 0 0 15px var(--primary-glow);
-}
-
-.edit-avatar {
-    position: absolute;
-    bottom: -5px;
-    right: -5px;
-    background: var(--primary);
-    color: white;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    cursor: pointer;
-    border: 3px solid var(--bg-main);
-    transition: 0.3s;
-}
-
-.edit-avatar:hover {
-    transform: scale(1.1);
-    background: #fff;
-    color: var(--primary);
-}
-
-.user-name {
-    font-size: 20px;
-    font-weight: 800;
-    margin-top: 15px;
-    color: var(--text-main);
-}
-
-.user-id {
-    display: inline-block;
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-muted);
-    font-size: 12px;
-    font-weight: 700;
-    padding: 5px 12px;
-    border-radius: 20px;
-    margin-top: 8px;
-    letter-spacing: 1px;
-}
-
-.section-title-account {
-    font-size: 18px;
-    font-weight: 800;
-    margin: 20px 15px;
-    padding-bottom: 10px;
-    color: var(--text-main);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-/* تعديل عرض أزرار الـ Nav بعد ما بقوا 3 */
-.bottom-nav .nav-item {
-    width: 33.33%;
-}
-
+/* =========================================
+   🔐 نظام تسجيل الدخول الحقيقي CSS
+========================================= */
+.auth-container { display: flex; justify-content: center; align-items: center; min-height: 70vh; padding: 20px; }
+.auth-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 30px 20px; width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+.auth-card h2 { color: var(--primary); margin-bottom: 20px; font-size: 22px; font-weight: 800; }
+.auth-input { width: 100%; padding: 12px 15px; margin-bottom: 15px; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 10px; color: var(--text-main); font-family: 'Cairo', sans-serif; outline: none; transition: 0.3s; }
+.auth-input:focus { border-color: var(--primary); box-shadow: 0 0 10px var(--primary-glow); }
+.auth-btn { width: 100%; padding: 12px; background: linear-gradient(45deg, var(--primary), #6366f1); border: none; border-radius: 10px; color: white; font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.3s; }
+.auth-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px var(--primary-glow); }
+.auth-switch { margin-top: 15px; font-size: 13px; color: var(--text-muted); cursor: pointer; transition: 0.3s; }
+.auth-switch span { color: var(--primary); font-weight: 700; }
+.auth-switch:hover { color: var(--text-main); }
+.logout-btn { display: block; width: calc(100% - 30px); margin: 20px auto; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 10px; border-radius: 10px; text-align: center; font-weight: 700; cursor: pointer; transition: 0.3s; font-family: 'Cairo', sans-serif;}
+.logout-btn:hover { background: #ef4444; color: white; }
 
 </style>
 </head>
@@ -550,7 +212,6 @@ header {
 <body>
 <!-- ================== شاشة الرئيسية ================== -->
 <div id="home-page">
-    <!-- شريط البحث العلوي -->
     <header>
         <div class="search-box">
             <i class="icon fa-solid fa-magnifying-glass"></i>
@@ -560,18 +221,14 @@ header {
         <div id="searchResults" class="search-results"></div>
     </header>
 
-    <!-- الفلاتر -->
     <div class="filters">
         <button class="active" onclick="filter('all', this)">الكل</button>
         <button onclick="filter('مستمر', this)"><span style="color:var(--green)">●</span> مستمر</button>
         <button onclick="filter('مكتمل', this)"><span style="color:var(--blue)">✔</span> مكتمل</button>
     </div>
 
-    <!-- آخر التحديثات -->
     <div class="updates-section">
-        <div class="section-title">
-            <i class="fa-solid fa-bolt-lightning"></i> أحدث التحديثات الرهيبة
-        </div>
+        <div class="section-title"><i class="fa-solid fa-bolt-lightning"></i> أحدث التحديثات الرهيبة</div>
         <div class="updates-wrapper">
             <button class="scroll-btn left" onclick="scrollUpdates(-200)"><i class="fa-solid fa-chevron-left"></i></button>
             <div id="updatesGrid" class="updates-scroll"></div>
@@ -581,7 +238,6 @@ header {
 
     <div class="neon-divider"></div>
 
-    <!-- المحتوى -->
     <div id="loader" class="loader"><i class="fas fa-spinner fa-spin"></i> جاري جلب البيانات...</div>
     <div id="grid" class="grid"></div>
 </div>
@@ -589,7 +245,6 @@ header {
 <!-- ================== شاشة تسجيل الدخول الحقيقية ================== -->
 <div id="auth-page" style="display: none;">
     <div class="auth-container">
-        
         <!-- نموذج إنشاء حساب -->
         <div id="register-form" class="auth-card">
             <h2>إنشاء حساب جديد 🌟</h2>
@@ -616,7 +271,6 @@ header {
             <button class="auth-btn" id="log-btn" onclick="loginUser()">دخول</button>
             <div class="auth-switch" onclick="toggleAuthForm('register')">ليس لديك حساب؟ <span>إنشاء حساب</span></div>
         </div>
-
     </div>
 </div>
 
@@ -624,30 +278,26 @@ header {
 <div id="account-page" style="display: none;">
     <div class="profile-header">
         <div class="avatar-container">
-            <!-- الصورة الافتراضية، لو المستخدم رفع صورة هتتغير -->
             <img id="userAvatar" src="https://via.placeholder.com/100" class="avatar" alt="User">
-            
-            <!-- زر تغيير الصورة -->
-            <label for="avatarUpload" class="edit-avatar">
-                <i class="fa-solid fa-camera"></i>
-            </label>
+            <label for="avatarUpload" class="edit-avatar"><i class="fa-solid fa-camera"></i></label>
             <input type="file" id="avatarUpload" accept="image/*" style="display: none;" onchange="uploadAvatar(event)">
         </div>
-        
         <div class="user-name" id="userName">جاري التحميل...</div>
-        <div class="user-id">ID: <span id="userId">00000000</span></div>
+        <div class="user-id"><span id="userId">00000000</span></div>
     </div>
 
     <div class="section-title-account">
         <i class="fa-solid fa-bookmark" style="color: var(--primary);"></i> أعمالي المسجلة
     </div>
     
-    <!-- شبكة لعرض الأعمال المفضلة (زي الشبكة العادية بالظبط) -->
     <div id="savedGrid" class="grid">
         <div style="text-align:center; width:100%; color:var(--text-muted); padding:20px;">
             لا توجد أعمال مسجلة حتى الآن.
         </div>
     </div>
+
+    <!-- زر تسجيل الخروج -->
+    <button class="logout-btn" onclick="logoutUser()"><i class="fa-solid fa-right-from-bracket"></i> تسجيل الخروج</button>
 </div>
 
 <!-- ================== شريط التنقل السفلي ================== -->
@@ -666,161 +316,110 @@ header {
     </a>
 </nav>
 
+<!-- ================== السكريبت الأساسي للموقع ================== -->
 <script>
 let dataAll =[];
-
-// 1. تعريف المتغيرات والعناصر أولاً (لتجنب تعطل الكود)
 const input = document.getElementById('searchInput');
 const resultsBox = document.getElementById('searchResults');
 const clearBtn = document.querySelector('.clear-btn');
 
-// تهيئة تليجرام
 if(window.Telegram && Telegram.WebApp) {
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
 }
 
-// 2. دالة البداية لجلب البيانات
 async function init(){
     try {
         const res = await fetch('data.json?v='+Date.now());
         const data = await res.json();
         dataAll = data.mangas;
-
-        // إخفاء رسالة التحميل
         document.getElementById('loader').style.display = 'none';
-        
-        render(dataAll); // رسم الكروت الأساسية
-        renderUpdates(); // رسم التحديثات الجديدة
-
+        render(dataAll);
+        renderUpdates();
     } catch(e) {
         document.getElementById('loader').innerHTML = 'حدث خطأ في تحميل البيانات.';
         console.error("Fetch Error: ", e);
     }
 }
 
-// دالة تنظيف التصنيفات
 function cleanGenres(g){
     if(!g) return[];
-    return g.replace(/[^\w\s,\u0600-\u06FF]/g,'')
-    .split(',')
-    .map(x=>x.trim())
-    .filter(x=>x.length > 2)
-    .slice(0, 2);
+    return g.replace(/[^\w\s,\u0600-\u06FF]/g,'').split(',').map(x=>x.trim()).filter(x=>x.length > 2).slice(0, 2);
 }
 
-// دالة رسم البطاقات
 function render(arr){
     let grid = document.getElementById('grid');
     grid.innerHTML = '';
-
     arr.forEach(m => {
         let live = m.status && m.status.includes('مستمر');
         let rating = m.rating ? parseFloat(m.rating).toFixed(1) : "0.0";
-
         let card = document.createElement('div');
         card.className = 'card';
-        
         card.onclick = () => { window.location.href = `details.html?id=${m.id}`; };
-
         card.innerHTML = `
         <div class="poster">
-            <div class="status ${live ? 'live' : 'done'}">
-                ${live ? 'مستمر' : 'مكتمل'}
-            </div>
+            <div class="status ${live ? 'live' : 'done'}">${live ? 'مستمر' : 'مكتمل'}</div>
             <img src="${m.image_url}" loading="lazy" alt="poster">
         </div>
         <div class="content">
             <div class="title">${m.title}</div>
-            <div class="genres">
-                ${cleanGenres(m.genre).map(g => `<span class="tag">${g}</span>`).join('')}
-            </div>
+            <div class="genres">${cleanGenres(m.genre).map(g => `<span class="tag">${g}</span>`).join('')}</div>
             <div class="meta-footer">
                 <div class="stars"><i class="fa-solid fa-star"></i> ${rating}</div>
             </div>
-        </div>
-        `;
+        </div>`;
         grid.appendChild(card);
     });
 }
 
-// 🔥 دالة البحث الذكي (كانت محذوفة بالخطأ وتم إرجاعها)
 function smartSearch(query){
     query = query.toLowerCase();
     let seen = new Set();
-
     return dataAll.map(m => {
         let title = m.title.toLowerCase();
         let score = 0;
-
         if(title === query) score += 200;
         if(title.startsWith(query)) score += 120;
         if(title.split(' ').includes(query)) score += 100;
         if(title.includes(query)) score += 40;
-
         let distance = Math.abs(title.length - query.length);
         score -= distance;
         score += (m.rating || 0) * 2;
-
         return {...m, score};
-    })
-    .filter(m => m.score > 10) 
-    .sort((a,b) => b.score - a.score)
-    .filter(m => {
+    }).filter(m => m.score > 10).sort((a,b) => b.score - a.score).filter(m => {
         if(seen.has(m.title)) return false;
-        seen.add(m.title);
-        return true;
+        seen.add(m.title); return true;
     });
 }
 
-// البحث مع التوقيت (Debounce) لعدم التهنيج
 let searchTimeout;
 input.addEventListener('input', () => {
     let q = input.value.trim().toLowerCase();
-
-    if(q) {
-        clearBtn.classList.add('show');
-    } else {
-        clearBtn.classList.remove('show');
-    }
-
+    if(q) clearBtn.classList.add('show'); else clearBtn.classList.remove('show');
     clearTimeout(searchTimeout);
-
     searchTimeout = setTimeout(() => {
-        if(!q){
-            resultsBox.style.display = 'none';
-            render(dataAll);
-            return;
-        }
-
+        if(!q){ resultsBox.style.display = 'none'; render(dataAll); return; }
         let filtered = smartSearch(q);
         render(filtered);
         showResults(filtered, q);
     }, 300); 
 });
 
-// الفلاتر
 function filter(type, btn){
     document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-
     if(type === 'all') return render(dataAll);
     render(dataAll.filter(m => m.status && m.status.includes(type)));
 }
 
-// إظهار النتائج المنسدلة
 function showResults(arr, q){
     if(arr.length === 0){
         resultsBox.innerHTML = `<div class="result-item" style="color:var(--text-muted); justify-content:center;">لا توجد نتائج تطابق بحثك</div>`;
-        resultsBox.style.display = 'block';
-        return;
+        resultsBox.style.display = 'block'; return;
     }
-
     resultsBox.innerHTML = arr.slice(0, 5).map(m => {
         let title = m.title.replace(new RegExp(q, 'gi'), match => `<span class="highlight">${match}</span>`);
         let rating = m.rating ? parseFloat(m.rating).toFixed(1) : "0.0";
-
-        // تم إضافة علامات التنصيص لـ id هنا لتجنب المشاكل
         return `
         <div class="result-item" onclick="goTo('${m.id}')">
             <img src="${m.image_url}" class="result-img" alt="img">
@@ -829,226 +428,98 @@ function showResults(arr, q){
                 <div class="result-meta">${cleanGenres(m.genre).join(' • ')}</div>
             </div>
             <div style="font-size:11px; color:var(--yellow); font-weight:700;"><i class="fa-solid fa-star"></i> ${rating}</div>
-        </div>
-        `;
+        </div>`;
     }).join('');
-
     resultsBox.style.display = 'block';
 }
 
-function goTo(id){
-    window.location.href = `details.html?id=${id}`;
-}
+function goTo(id){ window.location.href = `details.html?id=${id}`; }
+function clearSearch(){ input.value = ''; resultsBox.style.display = 'none'; clearBtn.classList.remove('show'); render(dataAll); }
+document.addEventListener('click', (e) => { if(!e.target.closest('header')) resultsBox.style.display = 'none'; });
+function scrollUpdates(distance) { document.getElementById('updatesGrid').scrollBy({ left: distance, behavior: 'smooth' }); }
 
-// مسح البحث
-function clearSearch(){
-    input.value = '';
-    resultsBox.style.display = 'none';
-    clearBtn.classList.remove('show');
-    render(dataAll); 
-    // تم حذف input.focus() المزعج
-}
-
-// إغلاق قائمة البحث عند الضغط خارجها
-document.addEventListener('click', (e) => {
-    if(!e.target.closest('header')){
-        resultsBox.style.display = 'none';
-    }
-});
-
-// التمرير بالأسهم للأعمال الجديدة
-function scrollUpdates(distance) {
-    document.getElementById('updatesGrid').scrollBy({
-        left: distance,
-        behavior: 'smooth'
-    });
-}
-
-// رسم أعمال قسم (أحدث التحديثات)
 function renderUpdates() {
     let container = document.getElementById('updatesGrid');
     container.innerHTML = '';
-
     const LAST_KNOWN_ID = 0; 
-
-    let latest = [...dataAll]
-        .sort((a, b) => (b.id) - (a.id))
-        .slice(0, 10);
-
+    let latest = [...dataAll].sort((a, b) => (b.id) - (a.id)).slice(0, 10);
     latest.forEach(m => {
         const isActuallyNew = parseInt(m.id) > LAST_KNOWN_ID;
-
         let card = document.createElement('div');
         card.className = 'elite-card';
         card.onclick = () => { window.location.href = `details.html?id=${m.id}`; };
-
         card.innerHTML = `
             <div class="elite-poster">
-                ${isActuallyNew ? `
-                <div class="badge-new-elite">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    <span>عمل جديد</span>
-                </div>` : ''}
+                ${isActuallyNew ? `<div class="badge-new-elite"><i class="fa-solid fa-wand-magic-sparkles"></i><span>عمل جديد</span></div>` : ''}
                 <img src="${m.image_url}" loading="lazy">
             </div>
-            <div class="elite-info">
-                <div class="elite-title">${m.title}</div>
-            </div>
-        `;
+            <div class="elite-info"><div class="elite-title">${m.title}</div></div>`;
         container.appendChild(card);
     });
 }
 
-// 🚀 تشغيل البداية
 init();
 
-
-// ==========================================
-// 🔄 التنقل بين الرئيسية وحسابي
-// ==========================================
-function switchTab(tab) {
-    // جلب العناصر
-    const homePage = document.getElementById('home-page');
-    const accountPage = document.getElementById('account-page');
-    const navHome = document.getElementById('nav-home');
-    const navAccount = document.getElementById('nav-account');
-
-    // إزالة كلاس active من الـ Nav
-    document.querySelectorAll('.bottom-nav .nav-item').forEach(el => el.classList.remove('active'));
-
-    if (tab === 'home') {
-        homePage.style.display = 'block';
-        accountPage.style.display = 'none';
-        navHome.classList.add('active');
-    } else if (tab === 'account') {
-        homePage.style.display = 'none';
-        accountPage.style.display = 'block';
-        navAccount.classList.add('active');
-        loadUserProfile(); // تحميل بيانات الحساب لما يفتح التاب
-    }
-    
-    // هزة خفيفة للموبايل (لو تليجرام مدعوم)
-    if(window.Telegram && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
-        Telegram.WebApp.HapticFeedback.impactOccurred('light');
-    }
-}
-
-// ==========================================
-// 👤 بيانات الحساب وتليجرام
-// ==========================================
-function loadUserProfile() {
-    let name = "مستخدم النخبة"; // اسم افتراضي
-    let tgId = "غير معروف"; // ID افتراضي
-
-    // محاولة جلب البيانات من تليجرام
-    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
-        let tgUser = Telegram.WebApp.initDataUnsafe.user;
-        name = tgUser.first_name + (tgUser.last_name ? " " + tgUser.last_name : "");
-        tgId = tgUser.id;
-    }
-
-    document.getElementById('userName').innerText = name;
-    document.getElementById('userId').innerText = tgId;
-
-    // استرجاع الصورة لو المستخدم كان رافع صورة قبل كدة (من المتصفح LocalStorage)
-    let savedAvatar = localStorage.getItem('userAvatar_KLE');
-    if (savedAvatar) {
-        document.getElementById('userAvatar').src = savedAvatar;
-    } else {
-        // لو مفيش صورة، حط صورة افتراضية شيك
-        document.getElementById('userAvatar').src = 'https://i.ibb.co/q1z6bL8/default-avatar.png'; 
-    }
-
-    // جلب الأعمال المسجلة
-    renderSavedList();
-}
-
-// ==========================================
-// 📸 رفع وتغيير الصورة الشخصية
-// ==========================================
-function uploadAvatar(event) {
+// دوال التحكم بالصورة الشخصية والأعمال المحفوظة
+window.uploadAvatar = function(event) {
     const file = event.target.files[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
             const base64Image = e.target.result;
-            
-            // تحديث الصورة في الصفحة
             document.getElementById('userAvatar').src = base64Image;
-            
-            // حفظ الصورة في التخزين المحلي عشان متتمسحش لما يقفل
             localStorage.setItem('userAvatar_KLE', base64Image);
-            
-            if(window.Telegram && Telegram.WebApp) {
-                Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-            }
+            if(window.Telegram && Telegram.WebApp) Telegram.WebApp.HapticFeedback.notificationOccurred('success');
         };
-        reader.readAsDataURL(file); // تحويل الصورة لكود يمكن حفظه
+        reader.readAsDataURL(file);
     }
 }
 
-// ==========================================
-// 📚 عرض قائمة الأعمال المسجلة (المفضلة)
-// ==========================================
-function renderSavedList() {
+window.renderSavedList = function() {
     let savedGrid = document.getElementById('savedGrid');
-    
-    // هنا المفروض بنجيب الـ IDs بتاعة المانجات اللي هو حفظها 
-    // (حالياً هنعمل مصفوفة وهمية للتجربة، بعدين هتربطها بالبوت بتاعك)
-    // مثلاً هو مسيف المانجات اللي الـ ID بتاعها 1 و 3 و 5
-    let userSavedIds = [1, 3, 5]; // << عدل دي لاحقاً عشان تيجي من البوت
-    
-    // بنفلتر كل المانجات ونجيب اللي الآي دي بتاعها موجود في المفضلة
+    let userSavedIds =[1, 3, 5]; // بيانات تجريبية (يتم استبدالها لاحقاً من قاعدة البيانات)
     let savedMangas = dataAll.filter(m => userSavedIds.includes(parseInt(m.id)));
-
     if (savedMangas.length === 0) {
         savedGrid.innerHTML = `<div style="text-align:center; width:100%; color:var(--text-muted); padding:20px;">لا توجد أعمال مسجلة حتى الآن.</div>`;
         return;
     }
-
     savedGrid.innerHTML = '';
-    // رسم الكروت بنفس شكل الرئيسية
     savedMangas.forEach(m => {
         let live = m.status && m.status.includes('مستمر');
         let rating = m.rating ? parseFloat(m.rating).toFixed(1) : "0.0";
-
         let card = document.createElement('div');
         card.className = 'card';
         card.onclick = () => { window.location.href = `details.html?id=${m.id}`; };
-
         card.innerHTML = `
         <div class="poster">
-            <div class="status ${live ? 'live' : 'done'}">
-                ${live ? 'مستمر' : 'مكتمل'}
-            </div>
+            <div class="status ${live ? 'live' : 'done'}">${live ? 'مستمر' : 'مكتمل'}</div>
             <img src="${m.image_url}" loading="lazy" alt="poster">
         </div>
         <div class="content">
             <div class="title">${m.title}</div>
-            <div class="genres">
-                <span class="tag">محفوظ 🔖</span>
-            </div>
+            <div class="genres"><span class="tag">محفوظ 🔖</span></div>
             <div class="meta-footer">
                 <div class="stars"><i class="fa-solid fa-star"></i> ${rating}</div>
             </div>
-        </div>
-        `;
+        </div>`;
         savedGrid.appendChild(card);
     });
 }
-
-
-
 </script>
+
+<!-- ================== سكريبت Firebase لتسجيل الدخول ================== -->
 <script type="module">
-  // Import the functions you need from the SDKs you need
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+  import { 
+    getAuth, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    sendEmailVerification, 
+    onAuthStateChanged, 
+    signOut 
+  } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
   const firebaseConfig = {
     apiKey: "AIzaSyCEecz0x8SnEckiBNxDqI-jGe8p5-fKfsw",
     authDomain: "manga-kingdom.firebaseapp.com",
@@ -1059,9 +530,156 @@ function renderSavedList() {
     measurementId: "G-F3WZ08BTZM"
   };
 
-  // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
+  const auth = getAuth(app);
+
+  onAuthStateChanged(auth, (user) => {
+    const authPage = document.getElementById('auth-page');
+    const accountPage = document.getElementById('account-page');
+
+    if (document.getElementById('nav-account').classList.contains('active')) {
+        if (user) {
+            if (user.emailVerified) {
+                authPage.style.display = 'none';
+                accountPage.style.display = 'block';
+                loadUserProfileReal(user);
+            } else {
+                authPage.style.display = 'block';
+                accountPage.style.display = 'none';
+                window.toggleAuthForm('verify');
+            }
+        } else {
+            authPage.style.display = 'block';
+            accountPage.style.display = 'none';
+            window.toggleAuthForm('login');
+        }
+    }
+  });
+
+  window.toggleAuthForm = function(formName) {
+      document.getElementById('register-form').style.display = 'none';
+      document.getElementById('login-form').style.display = 'none';
+      document.getElementById('verify-form').style.display = 'none';
+      document.getElementById(`${formName}-form`).style.display = 'block';
+  }
+
+  window.startRegistration = async function() {
+      const email = document.getElementById('reg-email').value.trim();
+      const pass = document.getElementById('reg-pass').value;
+      const btn = document.getElementById('reg-btn');
+
+      if (!email || pass.length < 6) {
+          alert("يرجى إدخال إيميل صحيح وكلمة مرور لا تقل عن 6 أحرف!");
+          return;
+      }
+
+      btn.innerText = "جاري الإنشاء...";
+      btn.disabled = true;
+
+      try {
+          const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+          await sendEmailVerification(userCredential.user);
+          alert("تم إنشاء الحساب بنجاح! 🌟\nبرجاء مراجعة بريدك الإلكتروني للضغط على رابط التأكيد.");
+          await signOut(auth);
+          window.toggleAuthForm('verify');
+      } catch (error) {
+          if (error.code === 'auth/email-already-in-use') alert("هذا البريد مستخدم بالفعل! قم بتسجيل الدخول.");
+          else if (error.code === 'auth/invalid-email') alert("صيغة البريد الإلكتروني غير صحيحة!");
+          else alert("حدث خطأ: " + error.message);
+      } finally {
+          btn.innerText = "إنشاء حساب";
+          btn.disabled = false;
+      }
+  }
+
+  window.loginUser = async function() {
+      const email = document.getElementById('log-email').value.trim();
+      const pass = document.getElementById('log-pass').value;
+      const btn = document.getElementById('log-btn');
+
+      if (!email || !pass) {
+          alert("يرجى إدخال البريد الإلكتروني وكلمة المرور.");
+          return;
+      }
+
+      btn.innerText = "جاري الدخول...";
+      btn.disabled = true;
+
+      try {
+          const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+          if (!userCredential.user.emailVerified) {
+              alert("برجاء تأكيد بريدك الإلكتروني أولاً! لقد أرسلنا لك رابطاً مسبقاً.");
+              await signOut(auth);
+              window.toggleAuthForm('verify');
+          } else {
+              window.switchTab('account');
+          }
+      } catch (error) {
+          alert("البريد الإلكتروني أو كلمة المرور غير صحيحة!");
+      } finally {
+          btn.innerText = "دخول";
+          btn.disabled = false;
+      }
+  }
+
+  window.logoutUser = async function() {
+      if(confirm("هل أنت متأكد من تسجيل الخروج؟")) {
+          try {
+              await signOut(auth);
+              window.switchTab('account');
+          } catch (error) {
+              alert("حدث خطأ أثناء تسجيل الخروج.");
+          }
+      }
+  }
+
+  function loadUserProfileReal(user) {
+      let name = user.email.split('@')[0];
+      let userId = "UID: " + user.uid.substring(0, 8);
+      document.getElementById('userName').innerText = name;
+      document.getElementById('userId').innerText = userId;
+
+      let savedAvatar = localStorage.getItem('userAvatar_KLE');
+      if (savedAvatar) {
+          document.getElementById('userAvatar').src = savedAvatar;
+      } else {
+          document.getElementById('userAvatar').src = 'https://i.ibb.co/q1z6bL8/default-avatar.png'; 
+      }
+      
+      if (typeof window.renderSavedList === "function") window.renderSavedList();
+  }
+
+  window.switchTab = function(tab) {
+      const homePage = document.getElementById('home-page');
+      const accountPage = document.getElementById('account-page');
+      const authPage = document.getElementById('auth-page');
+      
+      document.querySelectorAll('.bottom-nav .nav-item').forEach(el => el.classList.remove('active'));
+
+      if (tab === 'home') {
+          homePage.style.display = 'block';
+          accountPage.style.display = 'none';
+          if(authPage) authPage.style.display = 'none';
+          document.getElementById('nav-home').classList.add('active');
+      } else if (tab === 'account') {
+          homePage.style.display = 'none';
+          document.getElementById('nav-account').classList.add('active');
+          
+          const currentUser = auth.currentUser;
+          if (currentUser && currentUser.emailVerified) {
+              if(authPage) authPage.style.display = 'none';
+              accountPage.style.display = 'block';
+              loadUserProfileReal(currentUser);
+          } else {
+              accountPage.style.display = 'none';
+              if(authPage) {
+                  authPage.style.display = 'block';
+                  window.toggleAuthForm('login');
+              }
+          }
+      }
+  }
 </script>
 
 </body>
