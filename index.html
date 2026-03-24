@@ -1383,7 +1383,7 @@ function renderSavedList() {
 
 </script>
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
   import { 
     getAuth, 
@@ -1397,13 +1397,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
     updateProfile
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   
-  // 🔥 السطر ده اللي ضفناه عشان قاعدة البيانات
- import { getDatabase, ref, get, child, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  // 🔥 تم إصلاح المشكلة هنا: استدعاء أدوات Firestore الصحيحة لقائمتي
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// تعريف Realtime Database وربطها بالويندو
-  
-
-  // 2. إعدادات قاعدة البيانات بتاعتك
+  // إعدادات قاعدة البيانات بتاعتك
   const firebaseConfig = {
     apiKey: "AIzaSyCEecz0x8SnEckiBNxDqI-jGe8p5-fKfsw",
     authDomain: "manga-kingdom.firebaseapp.com",
@@ -1414,32 +1411,27 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
     measurementId: "G-F3WZ08BTZM"
   };
 
-  // 3. تشغيل الفايربيز
+  // تشغيل الفايربيز
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
   const auth = getAuth(app);
   const googleProvider = new GoogleAuthProvider();
-
-  const database = getDatabase(app);
-  window.database = database;
-  window.dbRef = ref(database);
-  window.get = get;
-  window.child = child;
   
-  // 🔥 تعريف قاعدة البيانات وربطها بالويندو عشان كل الدوال تشوفها
+  // 🔥 ربط Firestore بالويندو عشان دالة renderMyListUI تشوفها وتشتغل من غير ما تعلق
   const db = getFirestore(app);
   window.db = db;
+  window.doc = doc;
+  window.getDoc = getDoc;
 
-  // 4. مراقب حالة المستخدم (بيشتغل تلقائي أول ما الموقع يفتح)
+  // مراقب حالة المستخدم
   onAuthStateChanged(auth, (user) => {
     window.currentFirebaseUser = user; 
-    // لو المستخدم واقف في صفحة حسابي، نعمل تحديث فوري
     if (document.getElementById('nav-account').classList.contains('active')) {
         window.switchTab('account');
     }
   });
 
-  // 5. دالة الدخول بحساب جوجل
+  // دالة الدخول بحساب جوجل
  window.loginWithGoogle = async function() {
     const btn = document.querySelector('.google-btn');
     const originalText = btn.innerHTML;
@@ -1448,15 +1440,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 
     try {
         const result = await signInWithPopup(auth, googleProvider);
-        if(result.user) window.switchTab('account');
+        if(result.user) window.switchTab('mylist'); // خليناه يروح لقائمتي بعد الدخول
     } catch (error) {
-        console.error("Google Auth Error: ", error); // لطباعة الخطأ الحقيقي للمبرمج
-        
-        // إظهار رسالة الخطأ الحقيقية القادمة من جوجل
+        console.error("Google Auth Error: ", error); 
         if (error.code === 'auth/popup-closed-by-user') {
             alert("لقد قمت بإغلاق نافذة تسجيل الدخول قبل الاكتمال.");
-        } else if (error.code === 'auth/unauthorized-domain') {
-            alert("خطأ: هذا الرابط غير مصرح له بتسجيل الدخول في إعدادات فايربيز.");
         } else {
             alert("حدث خطأ أثناء تسجيل الدخول: " + error.message);
         }
@@ -1466,7 +1454,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
     }
 }
 
-  // 6. دالة إنشاء حساب بالإيميل
+  // دالة إنشاء حساب بالإيميل
   window.startRegistration = async function() {
       const email = document.getElementById('reg-email').value.trim();
       const pass = document.getElementById('reg-pass').value;
@@ -1477,9 +1465,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
       btn.innerText = "جاري الإنشاء..."; btn.disabled = true;
       try {
           const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-          await sendEmailVerification(userCredential.user); // إرسال رسالة التفعيل
+          await sendEmailVerification(userCredential.user); 
           alert("تم إنشاء الحساب بنجاح! 🌟\nبرجاء مراجعة بريدك الإلكتروني لتأكيد الحساب.");
-          await signOut(auth); // تسجيل خروج إجباري لحد ما يفعل الإيميل
+          await signOut(auth); 
           window.toggleAuthForm('verify');
       } catch (error) {
           if (error.code === 'auth/email-already-in-use') alert("هذا البريد مستخدم بالفعل! قم بتسجيل الدخول.");
@@ -1489,7 +1477,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
       }
   }
 
-  // 7. دالة تسجيل الدخول بالإيميل
+  // دالة تسجيل الدخول بالإيميل
   window.loginUser = async function() {
       const email = document.getElementById('log-email').value.trim();
       const pass = document.getElementById('log-pass').value;
@@ -1500,13 +1488,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
       btn.innerText = "جاري الدخول..."; btn.disabled = true;
       try {
           const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-          // التأكد إن الإيميل متفعل
           if (!userCredential.user.emailVerified) {
               alert("برجاء تأكيد بريدك الإلكتروني أولاً عبر الرابط المرسل إليك!");
               await signOut(auth);
               window.toggleAuthForm('verify');
           } else {
-              window.switchTab('account');
+              window.switchTab('mylist'); // التوجيه لقائمتي فوراً
           }
       } catch (error) {
           alert("البريد الإلكتروني أو كلمة المرور غير صحيحة!");
@@ -1515,38 +1502,22 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
       }
   }
 
-  // 8. دالة تسجيل الخروج
+  // دالة تسجيل الخروج
   window.logoutUser = async function() {
       if(confirm("هل أنت متأكد من تسجيل الخروج؟")) {
           await signOut(auth);
-          window.switchTab('account'); // هيرجعه لصفحة تسجيل الدخول تلقائي
+          window.switchTab('account'); 
       }
   }
 
-// 9. دالة تغيير اسم المستخدم (تدعم الزخرفة)
-  // ==========================================
-// 📚 عرض قائمة الأعمال المسجلة (المفضلة) حقيقياً
-// ==========================================
-// ==========================================
-// 📚 تشغيل نظام "قائمتي" بالكامل في الصفحة الرئيسية
-// ==========================================
-
-// دالة التنقل بين تبويبات قائمتي
-// ==========================================
-// 📚 تشغيل نظام "قائمتي" بالكامل وربطها بفايربيز
-// ==========================================
-
 // دالة التنقل بين تبويبات قائمتي
 window.filterMyList = function(type, btn) {
-    // 1. إزالة التفعيل من كل الأزرار وإضافته للزر المضغوط
     document.querySelectorAll('.list-tabs .list-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-
-    // 2. تحديث الشبكة بناءً على النوع
     window.renderMyListUI(type);
 }
 
-// دالة رسم المانجات في قسم "قائمتي" بناءً على الفلتر (مربوطة بفايربيز)
+// دالة رسم المانجات في قسم "قائمتي" (تم إصلاحها لتعمل مع الفايربيز بدون كراش)
 window.renderMyListUI = async function(filterType = 'all') {
     let listGrid = document.getElementById('myListGrid');
     const user = window.currentFirebaseUser;
@@ -1555,7 +1526,7 @@ window.renderMyListUI = async function(filterType = 'all') {
         listGrid.innerHTML = `
         <div style="text-align:center; width:100%; color:var(--text-muted); padding:40px 20px;">
             <i class="fa-solid fa-lock" style="font-size:40px; margin-bottom:15px; color:var(--border-color);"></i><br>
-            يجب تسجيل الدخول لعرض قائمتك.
+            يجب تسجيل الدخول لعرض قائمتك الخاصة.
         </div>`;
         return;
     }
@@ -1563,25 +1534,25 @@ window.renderMyListUI = async function(filterType = 'all') {
     listGrid.innerHTML = `
     <div style="text-align:center; width:100%; color:var(--primary); padding:40px 20px;">
         <i class="fas fa-spinner fa-spin" style="font-size:30px; margin-bottom:10px;"></i><br>
-        جاري جلب مكتبتك من السيرفر...
+        جاري جلب مكتبتك...
     </div>`;
 
     try {
-        // جلب البيانات من Realtime Database
-        const snapshot = await window.get(window.child(window.dbRef, `users/${user.uid}`));
-        
+        // الأن ستعمل بنجاح لأننا عرفنا window.doc و window.getDoc
+        const userDocRef = window.doc(window.db, "users", user.uid);
+        const userDoc = await window.getDoc(userDocRef);
+
         let savedIds = []; 
         let statusObj = {}; 
 
-        if (snapshot.exists()) {
-            const data = snapshot.val();
+        if (userDoc.exists()) {
+            const data = userDoc.data();
             savedIds = data.savedMangas || []; 
             statusObj = data.mangaStatus || {}; 
         }
 
         let filteredMangas = [];
 
-        // فلترة الأعمال بناءً على التبويب المختار
         if(filterType === 'all') {
             let allInteractedIds = new Set([...savedIds, ...Object.keys(statusObj)]);
             filteredMangas = window.dataAll.filter(m => allInteractedIds.has(m.id.toString()));
@@ -1593,10 +1564,10 @@ window.renderMyListUI = async function(filterType = 'all') {
         }
 
         if(filteredMangas.length === 0) {
-             listGrid.innerHTML = `
-             <div style="text-align:center; width:100%; color:var(--text-muted); padding:40px 20px;">
+            listGrid.innerHTML = `
+            <div style="text-align:center; width:100%; color:var(--text-muted); padding:40px 20px;">
                 <i class="fa-solid fa-folder-open" style="font-size:40px; margin-bottom:15px; color:var(--border-color);"></i><br>
-                قائمتك فارغة! ابدأ بإضافة بعض الأعمال.
+                قائمتك فارغة في هذا القسم!
             </div>`;
             return;
         }
@@ -1606,7 +1577,6 @@ window.renderMyListUI = async function(filterType = 'all') {
             let live = m.status && m.status.includes('مستمر');
             let rating = m.rating ? parseFloat(m.rating).toFixed(1) : "0.0";
             
-            // تحديد التاج المناسب
             let tagText = 'في قائمتي 📚';
             if (filterType !== 'all') {
                 const tags = { 
@@ -1635,7 +1605,7 @@ window.renderMyListUI = async function(filterType = 'all') {
             <div class="content">
                 <div class="title">${m.title}</div>
                 <div class="genres">
-                    <span class="tag" style="background: rgba(168, 85, 247, 0.2); color: var(--primary); border: 1px solid var(--primary); font-weight: 800;">${tagText}</span>
+                    <span class="tag" style="background: rgba(168, 85, 247, 0.15); color: var(--primary); border: 1px solid var(--primary); font-weight: 800;">${tagText}</span>
                 </div>
                 <div class="meta-footer">
                     <div class="stars"><i class="fa-solid fa-star"></i> ${rating}</div>
@@ -1646,29 +1616,14 @@ window.renderMyListUI = async function(filterType = 'all') {
         });
 
     } catch (error) {
-        console.error("خطأ في جلب البيانات:", error);
+        console.error("خطأ في جلب البيانات من فايربيز:", error);
         listGrid.innerHTML = `
         <div style="text-align:center; width:100%; color:#ef4444; padding:40px 20px;">
             <i class="fa-solid fa-triangle-exclamation" style="font-size:40px; margin-bottom:15px;"></i><br>
-            حدث خطأ أثناء جلب القائمة من السيرفر.
+            حدث خطأ أثناء الاتصال بقاعدة البيانات.
         </div>`;
     }
 }
-
-// ⚠️ ملحوظة: قم بتعديل دالة window.switchTab في كودك الأصلي، 
-// بحيث عندما يضغط المستخدم على "قائمتي"، يتم استدعاء التحديث التلقائي هكذا:
-/*
-if (tab === 'mylist') {
-    homePage.style.display = 'none';
-    accountPage.style.display = 'none';
-    authPage.style.display = 'none';
-    document.getElementById('mylist-page').style.display = 'block';
-    document.getElementById('nav-mylist').classList.add('active');
-    renderMyListUI('all'); // <--- إضافة هذا السطر لتحديث القائمة فور الدخول إليها
-}
-*/
-
 </script>
-
 </body>
 </html>
