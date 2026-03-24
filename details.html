@@ -342,34 +342,29 @@
 </div>
 
 <script type="module">
-    // 1. استدعاءات فايربيز (تم التحديث لاستخدام Firestore بدلاً من Realtime Database)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getDatabase, ref, get, child, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    // 2. إعداداتك
     const firebaseConfig = {
         apiKey: "AIzaSyCEecz0x8SnEckiBNxDqI-jGe8p5-fKfsw",
         authDomain: "manga-kingdom.firebaseapp.com",
+        databaseURL: "https://manga-kingdom-default-rtdb.firebaseio.com", // رابط الداتابيز بتاعتك
         projectId: "manga-kingdom",
         storageBucket: "manga-kingdom.firebasestorage.app",
         messagingSenderId: "531742563780",
         appId: "1:531742563780:web:f820950be7e76058cfd891"
     };
 
-    // 3. تشغيل فايربيز و Firestore
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app); // استخدام Firestore
+    const database = getDatabase(app);
     
-    // متغير عام هنحفظ فيه بيانات المستخدم لما يسجل دخول
     window.currentFirebaseUser = null; 
 
-    // 4. جلب رقم المانجا من الرابط
     const urlParams = new URLSearchParams(window.location.search);
     const currentMangaId = urlParams.get('id');
 
-    // دالة جلب وعرض البيانات
     async function loadMangaData() {
         if (!currentMangaId) return;
 
@@ -405,7 +400,7 @@
     
     loadMangaData();
 
-    // 1. دالة القائمة المنسدلة (تم تحويلها لـ Firestore)
+    // حفظ في قائمة (أقرأها، متروكة، إلخ...)
     window.changeMangaStatus = async function(status) {
         const user = window.currentFirebaseUser;
         
@@ -415,41 +410,32 @@
             return;
         }
 
-        const userRef = doc(db, "users", user.uid);
-        
+        const updates = {};
+        if (status === 'none') {
+            updates[`users/${user.uid}/mangaStatus/${currentMangaId}`] = null; 
+        } else {
+            updates[`users/${user.uid}/mangaStatus/${currentMangaId}`] = status; 
+        }
+
         try {
-            // تحديث حالة المانجا الحالية فقط بدون التأثير على باقي المانجات
-            await setDoc(userRef, {
-                mangaStatus: {
-                    [currentMangaId]: status === 'none' ? null : status
-                }
-            }, { merge: true }); // merge: true مهمة جداً عشان ميمسحش البيانات القديمة
-            
+            await update(ref(database), updates);
         } catch (error) {
-            console.error("Error updating status:", error);
             alert("حدث خطأ أثناء الحفظ، تأكد من الإنترنت.");
         }
     };
 
-    // 2. دالة زرار المحفوظات (تم تحويلها لـ Firestore)
+    // زر الحفظ (المفضلة)
     window.toggleFavorite = async function() {
         const user = window.currentFirebaseUser;
         if (!user) return alert("يجب تسجيل الدخول أولاً!");
 
         const favBtns = document.querySelectorAll('.fav-btn, .fav-btn-bottom');
         const isActive = favBtns[0].classList.contains('active');
-        const userRef = doc(db, "users", user.uid);
         
-        let savedMangas = [];
-
         try {
-            // 1. جلب قائمة المفضلة الحالية من Firestore
-            const docSnap = await getDoc(userRef);
-            if (docSnap.exists() && docSnap.data().savedMangas) {
-                savedMangas = docSnap.data().savedMangas;
-            }
+            const snapshot = await get(child(ref(database), `users/${user.uid}/savedMangas`));
+            let savedMangas = snapshot.exists() ? snapshot.val() : [];
 
-            // 2. إضافة أو إزالة المانجا من القائمة
             if (isActive) {
                 savedMangas = savedMangas.filter(id => id !== currentMangaId);
                 favBtns.forEach(btn => {
@@ -464,16 +450,15 @@
                 });
             }
 
-            // 3. رفع القائمة الجديدة لـ Firestore
-            await setDoc(userRef, { savedMangas: savedMangas }, { merge: true });
+            const updates = {};
+            updates[`users/${user.uid}/savedMangas`] = savedMangas;
+            await update(ref(database), updates);
 
         } catch (error) {
-            console.error("Error toggling favorite:", error);
-            alert("حدث خطأ أثناء الحفظ.");
+            console.error("Error saving to favorite", error);
         }
     };
 
-    // 3. دالة التبويبات
     window.switchTab = function(tabId, btn) {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -481,24 +466,20 @@
         btn.classList.add('active');
     };
 
-    // 4. مراقب حالة المستخدم (تم تحويله لـ Firestore لجلب حالة الأزرار)
+    // جلب حالة الأزرار لما المستخدم يدخل الصفحة
     onAuthStateChanged(auth, async (user) => {
         window.currentFirebaseUser = user;
         
         if (user && currentMangaId) {
             try {
-                const userRef = doc(db, "users", user.uid);
-                const docSnap = await getDoc(userRef);
-                
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
+                const snapshot = await get(child(ref(database), `users/${user.uid}`));
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
                     
-                    // 1. تحديث قائمة (أقرأها حالياً...)
-                    if (data.mangaStatus && data.mangaStatus[currentMangaId] && data.mangaStatus[currentMangaId] !== 'none') {
+                    if (data.mangaStatus && data.mangaStatus[currentMangaId]) {
                         document.getElementById('mangaStatusSelect').value = data.mangaStatus[currentMangaId];
                     }
 
-                    // 2. تحديث زر المحفوظات
                     if (data.savedMangas && data.savedMangas.includes(currentMangaId)) {
                         document.querySelectorAll('.fav-btn, .fav-btn-bottom').forEach(btn => {
                             btn.classList.add('active');
