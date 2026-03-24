@@ -1385,25 +1385,15 @@ function renderSavedList() {
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
-  import { 
-    getAuth, 
-    createUserWithEmailAndPassword, 
-    signInWithEmailAndPassword, 
-    sendEmailVerification, 
-    onAuthStateChanged, 
-    signOut,
-    GoogleAuthProvider,
-    signInWithPopup,
-    updateProfile
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   
-  // 🔥 تم إصلاح المشكلة هنا: استدعاء أدوات Firestore الصحيحة لقائمتي
-  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  // استدعاء أدوات Realtime Database الصحيحة اللي في صورتك
+  import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-  // إعدادات قاعدة البيانات بتاعتك
   const firebaseConfig = {
     apiKey: "AIzaSyCEecz0x8SnEckiBNxDqI-jGe8p5-fKfsw",
     authDomain: "manga-kingdom.firebaseapp.com",
+    databaseURL: "https://manga-kingdom-default-rtdb.firebaseio.com", // ضفنا الرابط اللي في صورتك
     projectId: "manga-kingdom",
     storageBucket: "manga-kingdom.firebasestorage.app",
     messagingSenderId: "531742563780",
@@ -1411,17 +1401,19 @@ function renderSavedList() {
     measurementId: "G-F3WZ08BTZM"
   };
 
-  // تشغيل الفايربيز
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
   const auth = getAuth(app);
   const googleProvider = new GoogleAuthProvider();
   
-  // 🔥 ربط Firestore بالويندو عشان دالة renderMyListUI تشوفها وتشتغل من غير ما تعلق
-  const db = getFirestore(app);
-  window.db = db;
-  window.doc = doc;
-  window.getDoc = getDoc;
+  // ربط الداتا بيز بالويندو
+  const database = getDatabase(app);
+  window.database = database;
+  window.dbRef = ref(database);
+  window.get = get;
+  window.child = child;
+
+  // (باقي الكود بتاع تسجيل الدخول زي ما هو بدون تغيير) ...
 
   // مراقب حالة المستخدم
   onAuthStateChanged(auth, (user) => {
@@ -1517,7 +1509,7 @@ window.filterMyList = function(type, btn) {
     window.renderMyListUI(type);
 }
 
-// دالة رسم المانجات في قسم "قائمتي" (تم إصلاحها لتعمل مع الفايربيز بدون كراش)
+// دالة رسم المانجات في قسم "قائمتي" (تعمل مع Realtime Database)
 window.renderMyListUI = async function(filterType = 'all') {
     let listGrid = document.getElementById('myListGrid');
     const user = window.currentFirebaseUser;
@@ -1538,15 +1530,14 @@ window.renderMyListUI = async function(filterType = 'all') {
     </div>`;
 
     try {
-        // الأن ستعمل بنجاح لأننا عرفنا window.doc و window.getDoc
-        const userDocRef = window.doc(window.db, "users", user.uid);
-        const userDoc = await window.getDoc(userDocRef);
-
+        // جلب البيانات من Realtime Database
+        const snapshot = await window.get(window.child(window.dbRef, `users/${user.uid}`));
+        
         let savedIds = []; 
         let statusObj = {}; 
 
-        if (userDoc.exists()) {
-            const data = userDoc.data();
+        if (snapshot.exists()) {
+            const data = snapshot.val();
             savedIds = data.savedMangas || []; 
             statusObj = data.mangaStatus || {}; 
         }
@@ -1624,6 +1615,7 @@ window.renderMyListUI = async function(filterType = 'all') {
         </div>`;
     }
 }
+
 </script>
 </body>
 </html>
