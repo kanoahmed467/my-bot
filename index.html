@@ -769,6 +769,24 @@ header {
     box-shadow: 0 0 12px var(--primary-glow);
     border-color: var(--primary);
 }
+
+/* =========================================
+   ✨ تأثير جاري التحديث للاسم
+========================================= */
+.updating-name {
+    color: var(--primary) !important;
+    text-shadow: 0 0 15px var(--primary-glow);
+    animation: pulse-name 0.6s infinite alternate ease-in-out;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+@keyframes pulse-name {
+    0% { transform: scale(0.98); opacity: 0.7; }
+    100% { transform: scale(1.05); opacity: 1; }
+}
+
 </style>
 </head>
 
@@ -1436,12 +1454,15 @@ function renderSavedList() {
   }
 
 // 9. دالة تغيير اسم المستخدم (تدعم الزخرفة)
+  // 9. دالة تغيير اسم المستخدم (تدعم الزخرفة والحركات)
   window.editUserName = async function() {
       const user = window.currentFirebaseUser;
       if (!user) return alert("يجب تسجيل الدخول أولاً!");
 
+      const userNameEl = document.getElementById('userName');
+      
       // جلب الاسم الحالي لوضع كقيمة افتراضية
-      let currentName = document.getElementById('userName').innerText;
+      let currentName = userNameEl.innerText;
       if (currentName === "جاري التحميل..." || currentName.includes("مستخدم النخبة")) {
           currentName = "";
       }
@@ -1452,35 +1473,45 @@ function renderSavedList() {
       // لو ضغط "إلغاء" أو ترك المربع فارغاً
       if (newName === null || newName.trim() === "") return;
 
-      // التأكد أن الاسم ليس طويلاً جداً حتى لا يشوه شكل الصفحة
       if (newName.length > 25) {
           return alert("الاسم طويل جداً! الحد الأقصى 25 حرف.");
       }
 
       try {
-          // تغيير شكل الزر أو الاسم لـ "جاري التحديث..." (اختياري)
-          document.getElementById('userName').innerText = "جاري التحديث...";
+          // 🚀 الحركات والتكات هنا: نشغل الأنيميشن ونحط أيقونة بتلف
+          userNameEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i> جاري التحديث...`;
+          userNameEl.classList.add('updating-name');
+          
+          // إخفاء زر القلم مؤقتاً عشان ميضغطش عليه تاني وهو بيحمل
+          const editBtn = document.querySelector('.edit-name-btn');
+          if(editBtn) editBtn.style.display = 'none';
 
           // تحديث الاسم في سيرفرات فايربيز
           await updateProfile(user, {
               displayName: newName.trim()
           });
 
-          // تحديث الاسم في الصفحة فوراً بعد النجاح
-          document.getElementById('userName').innerText = newName.trim();
+          // 🛑 نوقف الحركات والتكات ونعرض الاسم الجديد
+          userNameEl.classList.remove('updating-name');
+          userNameEl.innerText = newName.trim();
+          
+          // إظهار زر القلم تاني
+          if(editBtn) editBtn.style.display = 'flex';
 
-          // تأثير اهتزاز خفيف لو بيستخدم تليجرام
+          // تأثير اهتزاز خفيف لتليجرام
           if(window.Telegram && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
               Telegram.WebApp.HapticFeedback.notificationOccurred('success');
           }
 
-          alert("تم تحديث اسمك بنجاح! 👑");
-
       } catch (error) {
           console.error(error);
           alert("حدث خطأ أثناء تغيير الاسم. تأكد من اتصالك بالإنترنت.");
-          // إرجاع الاسم القديم لو حصل خطأ
-          document.getElementById('userName').innerText = currentName;
+          
+          // إرجاع الوضع القديم لو حصل خطأ
+          userNameEl.classList.remove('updating-name');
+          userNameEl.innerText = currentName;
+          const editBtn = document.querySelector('.edit-name-btn');
+          if(editBtn) editBtn.style.display = 'flex';
       }
   }
   
