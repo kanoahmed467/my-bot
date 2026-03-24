@@ -168,20 +168,108 @@
     position: relative;
 }
 
-.status-selector select {
-    width: 100%;
-    padding: 12px 15px;
-    background: var(--bg-card);
+/* =========================================
+   👑 القائمة المنسدلة الاحترافية (Custom Dropdown)
+========================================= */
+.status-selector {
+    flex: 1;
+    position: relative;
+    user-select: none;
+}
+
+.dropdown-header {
+    background: linear-gradient(145deg, var(--bg-card), #161c28);
     border: 1px solid var(--border-color);
-    color: var(--text-main);
+    padding: 12px 15px;
     border-radius: 12px;
-    font-family: 'Cairo', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    outline: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     cursor: pointer;
-    appearance: none; /* إخفاء سهم المتصفح الافتراضي */
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--text-main);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.dropdown-header:hover {
+    border-color: var(--c-purple);
+    box-shadow: 0 0 15px var(--c-purple-glow);
+    transform: translateY(-2px);
+}
+
+.chevron-icon {
+    color: var(--text-muted);
+    transition: transform 0.4s ease;
+}
+
+/* حالة الفتح للقائمة */
+.status-selector.open .dropdown-header {
+    border-color: var(--c-purple);
+    box-shadow: 0 0 15px var(--c-purple-glow);
+}
+
+.status-selector.open .chevron-icon {
+    transform: rotate(180deg);
+    color: var(--c-purple);
+}
+
+/* جسم القائمة اللي بيفتح */
+.dropdown-list {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    width: 100%;
+    background: rgba(26, 34, 53, 0.95);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--c-purple);
+    border-radius: 14px;
+    padding: 8px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.6), 0 0 20px var(--c-purple-glow);
+    z-index: 100;
+    
+    /* الأنيميشن السحري */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-15px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.status-selector.open .dropdown-list {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.dropdown-item {
+    padding: 12px 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-label);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.dropdown-item i {
+    font-size: 16px;
     transition: 0.3s;
+}
+
+.dropdown-item:hover {
+    background: rgba(168, 85, 247, 0.1);
+    border-color: rgba(168, 85, 247, 0.3);
+    color: white;
+    transform: translateX(-5px); /* حركة خفيفة لليسار عند الهوفر */
+}
+
+.dropdown-item:hover i {
+    transform: scale(1.2);
 }
 
 .status-selector select:focus {
@@ -237,14 +325,28 @@
     </button>
 
     <!-- قائمة اختيار الحالة -->
-    <div class="status-selector">
-        <select id="mangaStatusSelect" onchange="changeMangaStatus(this.value)">
-            <option value="none">أضف إلى قائمتي...</option>
-            <option value="reading">📖 أقرأها حالياً</option>
-            <option value="planned">⏳ أرغب بقراءتها</option>
-            <option value="completed">✅ أكملتها</option>
-            <option value="dropped">❌ تركتها</option>
-        </select>
+    <!-- قائمة اختيار الحالة المخصصة (Elite Dropdown) -->
+<div class="status-selector" id="custom-dropdown">
+    <div class="dropdown-header" onclick="toggleDropdown()">
+        <span id="dropdown-text">أضف إلى قائمتي...</span>
+        <i class="fas fa-chevron-down chevron-icon"></i>
+    </div>
+    <div class="dropdown-list">
+        <div class="dropdown-item" onclick="selectStatus('none', 'أضف إلى قائمتي...')">
+            <i class="fas fa-list" style="color: var(--text-muted);"></i> أضف إلى قائمتي...
+        </div>
+        <div class="dropdown-item" onclick="selectStatus('reading', '📖 أقرأها حالياً')">
+            <i class="fas fa-book-reader" style="color: var(--c-green);"></i> أقرأها حالياً
+        </div>
+        <div class="dropdown-item" onclick="selectStatus('planned', '⏳ أرغب بقراءتها')">
+            <i class="fas fa-clock" style="color: var(--c-red);"></i> أرغب بقراءتها
+        </div>
+        <div class="dropdown-item" onclick="selectStatus('completed', '✅ أكملتها')">
+            <i class="fas fa-check-circle" style="color: var(--c-purple);"></i> أكملتها
+        </div>
+        <div class="dropdown-item" onclick="selectStatus('dropped', '❌ تركتها')">
+            <i class="fas fa-times-circle" style="color: var(--c-pink);"></i> تركتها
+        </div>
     </div>
 </div>
 
@@ -492,6 +594,71 @@
             }
         }
     });
+
+// --- دوال القائمة المنسدلة الحركية ---
+
+// دالة لفتح وقفل القائمة
+window.toggleDropdown = function() {
+    document.getElementById('custom-dropdown').classList.toggle('open');
+}
+
+// دالة لما المستخدم يختار حاجة من القائمة
+window.selectStatus = function(value, text) {
+    // 1. تغيير النص المعروض
+    document.getElementById('dropdown-text').innerText = text;
+    // 2. قفل القائمة
+    document.getElementById('custom-dropdown').classList.remove('open');
+    // 3. إرسال القيمة لفايربيز (باستخدام الدالة القديمة اللي بتسجل الداتا)
+    window.changeMangaStatus(value);
+}
+
+// دالة لقفل القائمة لو داس في أي مكان فاضي في الشاشة
+document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('custom-dropdown');
+    if (dropdown && !dropdown.contains(e.target)) {
+        dropdown.classList.remove('open');
+    }
+});
+
+// --- تعديل صغير في دالة onAuthStateChanged ---
+// عشان لما المستخدم يفتح الصفحة، القائمة تاخد الاسم الصح من الداتابيز
+onAuthStateChanged(auth, async (user) => {
+    window.currentFirebaseUser = user;
+    
+    if (user && currentMangaId) {
+        try {
+            const snapshot = await get(child(ref(database), `users/${user.uid}`));
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                
+                // التعديل هنا: تحديث شكل القائمة المخصصة
+                if (data.mangaStatus && data.mangaStatus[currentMangaId]) {
+                    const statusVal = data.mangaStatus[currentMangaId];
+                    // نصوص مطابقة للقيمة
+                    const statusTexts = {
+                        'reading': '📖 أقرأها حالياً',
+                        'planned': '⏳ أرغب بقراءتها',
+                        'completed': '✅ أكملتها',
+                        'dropped': '❌ تركتها'
+                    };
+                    if (statusTexts[statusVal]) {
+                        document.getElementById('dropdown-text').innerText = statusTexts[statusVal];
+                    }
+                }
+
+                // تحديث زر المحفوظات (كما هو)
+                if (data.savedMangas && data.savedMangas.includes(currentMangaId)) {
+                    document.querySelectorAll('.fav-btn, .fav-btn-bottom').forEach(btn => {
+                        btn.classList.add('active');
+                        btn.innerHTML = btn.classList.contains('fav-btn-bottom') ? '<i class="fa-solid fa-bookmark"></i> محفوظ' : '<i class="fa-solid fa-bookmark"></i>';
+                    });
+                }
+            }
+        } catch (error) {
+            console.error("خطأ في جلب بيانات المستخدم:", error);
+        }
+    }
+});
 </script>
 
 </body>
