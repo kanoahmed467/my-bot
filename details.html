@@ -10,19 +10,19 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* --- نفس التصميم الفخم المعتمد --- */
+/* --- التصميم الفخم المحدث (Elite UI) --- */
         :root {
             --bg-main: #0f141e;      
-            --bg-card: #1e1b24;      
-            --bg-card-alt: #1a202c;  
-            --border-color: #2d2433; 
-            --border-alt: #2d3748;   
+            --bg-card: #1a2235;      
+            --bg-card-alt: rgba(26, 34, 53, 0.7);  
+            --border-color: #2d3748; 
             --text-main: #ffffff;
             --text-muted: #94a3b8;   
             --c-red: #f43f5e;
             --c-blue: #3b82f6;
             --c-green: #10b981;
             --c-purple: #a855f7;
+            --c-purple-glow: rgba(168, 85, 247, 0.4);
             --c-orange: #f97316;
             --c-pink: #ec4899;
         }
@@ -30,80 +30,100 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
         body { background-color: var(--bg-main); color: var(--text-main); overflow-x: hidden; }
 
+        /* شريط التنقل العلوي */
         .top-nav { position: fixed; top: 0; width: 100%; padding: 20px; display: flex; justify-content: space-between; z-index: 100; background: linear-gradient(to bottom, rgba(15, 20, 30, 0.9), transparent); }
-        .icon-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; transition: 0.3s; }
-        .icon-btn:hover { border-color: var(--c-purple); color: var(--c-purple); }
+        .icon-btn { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); color: white; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; transition: 0.3s; }
+        .icon-btn:hover { background: var(--c-purple); border-color: var(--c-purple); box-shadow: 0 0 15px var(--c-purple-glow); }
 
+        /* البانر العلوي */
         .hero-banner { position: relative; height: 45vh; width: 100%; }
-        .hero-banner img { width: 100%; height: 100%; object-fit: cover; filter: blur(5px) brightness(0.4); }
-        .hero-banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, var(--bg-main) 0%, transparent 100%); }
+        .hero-banner img { width: 100%; height: 100%; object-fit: cover; filter: blur(8px) brightness(0.5); }
+        .hero-banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, var(--bg-main) 0%, rgba(15,20,30,0.4) 50%, transparent 100%); }
 
-        .content-wrapper { position: relative; z-index: 10; margin-top: -120px; padding: 0 20px 40px; max-width: 900px; margin-inline: auto; }
-
+        /* المحتوى والبوستر */
+        .content-wrapper { position: relative; z-index: 10; padding: 0 20px 40px; max-width: 900px; margin-inline: auto; margin-top: -100px; }
+        
         .meta-header { display: flex; gap: 20px; align-items: flex-end; margin-bottom: 25px; }
-        .poster-container { width: 140px; border-radius: 12px; overflow: hidden; border: 2px solid var(--border-alt); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .poster-container { width: 130px; border-radius: 16px; overflow: hidden; border: 2px solid rgba(255,255,255,0.1); box-shadow: 0 15px 30px rgba(0,0,0,0.6), 0 0 20px var(--c-purple-glow); z-index: 2; }
         .poster-container img { width: 100%; display: block; }
-        .meta-info { flex-grow: 1; }
-        .manga-title { font-size: 28px; font-weight: 800; margin-bottom: 5px; }
         
-        .overall-rating { display: inline-flex; align-items: center; gap: 8px; background: var(--bg-card); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 10px; }
-        .overall-rating i { color: var(--c-orange); }
-        .overall-rating span { font-weight: 800; font-size: 16px; }
+        .meta-info { flex-grow: 1; padding-bottom: 10px; }
+        .manga-title { font-size: 26px; font-weight: 900; line-height: 1.2; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
+        
+        .overall-rating { display: inline-flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); padding: 6px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        .overall-rating i { color: var(--c-orange); font-size: 18px; }
+        .overall-rating span { font-weight: 800; font-size: 18px; }
 
+        /* التصنيفات والأزرار */
         .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; }
-        .tag { background: var(--bg-card-alt); border: 1px solid var(--border-alt); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--text-muted); }
+        .tag { background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #e2e8f0; }
 
-        .action-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 30px; }
-        .btn { padding: 14px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; transition: 0.3s; }
-        .btn-read { background-color: var(--c-purple); color: white; }
-        .btn-read:hover { background-color: #9333ea; }
-        .btn-fav { background: var(--bg-card); border: 1px solid var(--border-color); color: white; }
-        .btn-fav.active { background: rgba(244, 63, 94, 0.1); border-color: var(--c-red); color: var(--c-red); }
-
-        .tabs-header { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 25px; }
-        .tab-btn { flex: 1; background: none; border: none; color: var(--text-muted); padding: 15px 5px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.3s; border-bottom: 2px solid transparent; }
-        .tab-btn.active { color: white; border-bottom-color: var(--c-purple); }
+        .action-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 30px; }
+        .btn { padding: 15px; border-radius: 14px; font-size: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         
-        .tab-content { display: none; animation: fadeIn 0.3s ease; }
-        .tab-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-read { background: linear-gradient(45deg, var(--c-purple), #6366f1); color: white; box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3); }
+        .btn-read:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(168, 85, 247, 0.5); }
+        
+        .btn-fav { background: var(--bg-card); border: 1px solid var(--border-color); color: white; }
+        .btn-fav:hover { background: rgba(255,255,255,0.05); }
+        /* زر الحفظ لما يتفعل */
+        .btn-fav.active { background: rgba(168, 85, 247, 0.15); border-color: var(--c-purple); color: var(--c-purple); box-shadow: 0 0 15px var(--c-purple-glow); }
 
-        .section-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; color: white; }
-        .desc-text { color: var(--text-muted); line-height: 1.8; font-size: 14px; background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); }
-        .chapter-card { background: var(--bg-card-alt); border: 1px solid var(--border-alt); padding: 12px 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
-        .chapter-card.read { border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.05); }
+        /* التبويبات */
+        .tabs-header { display: flex; background: var(--bg-card); border-radius: 16px; padding: 5px; margin-bottom: 25px; border: 1px solid var(--border-color); }
+        .tab-btn { flex: 1; background: none; border: none; color: var(--text-muted); padding: 12px; font-size: 14px; font-weight: 800; cursor: pointer; transition: 0.3s; border-radius: 12px; }
+        .tab-btn.active { background: rgba(255,255,255,0.1); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        
+        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* الكروت الداخلية */
+        .section-title { font-size: 18px; font-weight: 800; margin-bottom: 15px; color: white; display: flex; align-items: center; gap: 8px; }
+        .section-title::before { content: ''; width: 4px; height: 18px; background: var(--c-purple); border-radius: 4px; }
+        
+        .desc-text { color: var(--text-muted); line-height: 1.9; font-size: 14px; background: var(--bg-card-alt); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); backdrop-filter: blur(10px); }
+        
+        .chapter-card { background: var(--bg-card); border: 1px solid var(--border-color); padding: 15px 20px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer; transition: 0.3s; }
+        .chapter-card:hover { border-color: var(--c-purple); transform: translateX(-5px); }
+        .chapter-card.read { border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05); }
         .chapter-card.read .chap-num { color: var(--c-green); text-decoration: line-through; }
 
-        .stats-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
-        .interactive-section { background: var(--bg-card-alt); border: 1px solid var(--border-alt); border-radius: 12px; padding: 15px; margin-bottom: 20px; }
-        .reading-status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
-        .status-card { border-radius: 8px; padding: 10px 5px; display: flex; flex-direction: column; align-items: center; background-color: var(--bg-main); border: 1px solid var(--border-color); cursor: pointer; transition: 0.2s; }
-        .status-card.active { transform: scale(1.05); }
-        .status-label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-top: 5px; }
+        /* قسم الإحصائيات */
+        .stats-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
         
-        .status-card[data-status="planned"].active { border-color: var(--c-red); background: rgba(244, 63, 94, 0.1); } .status-card[data-status="planned"].active .status-label { color: var(--c-red); }
-        .status-card[data-status="reading"].active { border-color: var(--c-green); background: rgba(16, 185, 129, 0.1); } .status-card[data-status="reading"].active .status-label { color: var(--c-green); }
-        .status-card[data-status="completed"].active { border-color: var(--c-purple); background: rgba(168, 85, 247, 0.1); } .status-card[data-status="completed"].active .status-label { color: var(--c-purple); }
-        .status-card[data-status="dropped"].active { border-color: var(--c-pink); background: rgba(236, 72, 153, 0.1); } .status-card[data-status="dropped"].active .status-label { color: var(--c-pink); }
+        .interactive-section { background: linear-gradient(145deg, var(--bg-card), #161c28); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 20px; position: relative; overflow: hidden; }
+        
+        .reading-status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
+        .status-card { border-radius: 12px; padding: 12px 5px; display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); cursor: pointer; transition: 0.3s; }
+        .status-card:hover { background: rgba(255,255,255,0.05); }
+        .status-label { font-size: 11px; font-weight: 800; color: var(--text-muted); margin-top: 8px; }
+        
+        .status-card[data-status="planned"].active { border-color: var(--c-red); background: rgba(244, 63, 94, 0.15); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(244, 63, 94, 0.2); } .status-card[data-status="planned"].active .status-label { color: var(--c-red); }
+        .status-card[data-status="reading"].active { border-color: var(--c-green); background: rgba(16, 185, 129, 0.15); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(16, 185, 129, 0.2); } .status-card[data-status="reading"].active .status-label { color: var(--c-green); }
+        .status-card[data-status="completed"].active { border-color: var(--c-purple); background: rgba(168, 85, 247, 0.15); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(168, 85, 247, 0.2); } .status-card[data-status="completed"].active .status-label { color: var(--c-purple); }
+        .status-card[data-status="dropped"].active { border-color: var(--c-pink); background: rgba(236, 72, 153, 0.15); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(236, 72, 153, 0.2); } .status-card[data-status="dropped"].active .status-label { color: var(--c-pink); }
 
-        .rating-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .rating-label { font-size: 13px; font-weight: 700; color: var(--text-main); }
-        .stars-group { display: flex; flex-direction: row-reverse; gap: 4px; }
-        .stars-group i { color: #333; font-size: 18px; cursor: pointer; transition: 0.2s; }
-        .stars-group i.active, .stars-group i:hover, .stars-group i:hover ~ i { color: var(--c-orange); }
+        .rating-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .rating-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .rating-label { font-size: 14px; font-weight: 800; color: var(--text-label); }
+        .stars-group { display: flex; flex-direction: row-reverse; gap: 5px; }
+        .stars-group i { color: #333; font-size: 20px; cursor: pointer; transition: 0.2s; text-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        .stars-group i.active, .stars-group i:hover, .stars-group i:hover ~ i { color: var(--c-orange); text-shadow: 0 0 10px rgba(249, 115, 22, 0.5); }
 
-        .chart-wrapper { position: relative; width: 100%; }
+        /* الدونات والمخططات */
         .doughnut-layout { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
         .doughnut-container { width: 50%; height: 180px; position: relative; }
-        .custom-legend { width: 50%; display: flex; flex-direction: column; gap: 10px; }
-        .legend-item { display: flex; align-items: center; justify-content: flex-start; font-size: 12px; font-weight: 700; color: var(--text-main); gap: 8px; }
-        .legend-dot { width: 12px; height: 12px; border-radius: 2px; }
+        .custom-legend { width: 50%; display: flex; flex-direction: column; gap: 12px; }
+        .legend-item { display: flex; align-items: center; justify-content: flex-start; font-size: 13px; font-weight: 700; color: var(--text-muted); gap: 10px; }
+        .legend-dot { width: 14px; height: 14px; border-radius: 4px; }
 
         @media (max-width: 600px) {
             .meta-header { flex-direction: column; align-items: center; text-align: center; }
+            .poster-container { margin-top: -60px; }
             .doughnut-layout { flex-direction: column; }
             .doughnut-container { width: 100%; height: 200px; }
-            .custom-legend { width: 100%; align-items: center; }
+            .custom-legend { width: 100%; justify-content: center; }
             .reading-status-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
@@ -378,11 +398,67 @@ function updateDashboardUI() {
 }
 
 // 2. دوال ضغطات المستخدم (User Interactions)
-function toggleFav() { 
-    userData.isFav = !userData.isFav; 
+// --- المتغير المسؤول عن جلب الأعمال المحفوظة في التطبيق بالكامل ---
+let globalSavedMangas = JSON.parse(localStorage.getItem('KLE_Saved_Mangas')) ||[];
+
+// الدالة المسؤولة عن تحديث الشاشة والجرافات (تعديل بسيط لقراءة الحالة)
+function updateDashboardUI() {
+    const favBtn = document.getElementById('favBtn');
     
-    // إرسال التحديث للسيرفر (نحاكيها بزيادة المتغير العام)
-    if(userData.isFav) dbStats.status.fav++; else dbStats.status.fav--;
+    // فحص هل المانجا دي موجودة في المصفوفة المحفوظة؟
+    if (globalSavedMangas.includes(currentMangaId.toString())) { 
+        userData.isFav = true;
+        favBtn.classList.add('active'); 
+        favBtn.innerHTML = '<i class="fas fa-bookmark"></i> محفوظ'; 
+    } else { 
+        userData.isFav = false;
+        favBtn.classList.remove('active'); 
+        favBtn.innerHTML = '<i class="far fa-bookmark"></i> حفظ'; 
+    }
+
+    // ... (باقي كود الدالة كما هو لتحديث التقييمات والحالات)
+    document.querySelectorAll('.status-card').forEach(card => card.classList.remove('active'));
+    if(userData.status) document.querySelector(`.status-card[data-status="${userData.status}"]`).classList.add('active');
+    
+    document.getElementById('val-fav').innerText = dbStats.status.fav;
+    document.getElementById('val-reading').innerText = dbStats.status.reading;
+    document.getElementById('val-planned').innerText = dbStats.status.planned;
+    document.getElementById('val-completed').innerText = dbStats.status.completed;
+    document.getElementById('val-dropped').innerText = dbStats.status.dropped;
+
+    let totalGlobalScore = 0; let totalGlobalVoters = 0;
+    for(let i=0; i<10; i++) { totalGlobalScore += dbStats.votes[i] * (i+1); totalGlobalVoters += dbStats.votes[i]; }
+    let globalAvg = totalGlobalVoters > 0 ? (totalGlobalScore / totalGlobalVoters).toFixed(1) : "0.0";
+    document.getElementById('global-rating-text').innerText = globalAvg;
+
+    if(doughnutChart) { doughnutChart.data.datasets[0].data =[dbStats.status.fav, dbStats.status.reading, dbStats.status.planned, dbStats.status.completed, dbStats.status.dropped]; doughnutChart.update(); }
+    if(barChart) { barChart.data.datasets[0].data = dbStats.votes; barChart.update(); }
+    if(radarChart) { radarChart.data.datasets[0].data =[dbStats.radarAvg.story, dbStats.radarAvg.art, dbStats.radarAvg.chars]; radarChart.update(); }
+    renderStars();
+}
+
+// الدالة الجديدة الخاصة بضغط زر الحفظ
+function toggleFav() { 
+    let idStr = currentMangaId.toString();
+    
+    if (globalSavedMangas.includes(idStr)) {
+        // لو محفوظة، شيلها
+        globalSavedMangas = globalSavedMangas.filter(id => id !== idStr);
+        dbStats.status.fav--; // تقليل الإحصائية
+        
+        // اهتزاز تليجرام لو شغال
+        if(window.Telegram && Telegram.WebApp) Telegram.WebApp.HapticFeedback.impactOccurred('light');
+    } else {
+        // لو مش محفوظة، ضيفها
+        globalSavedMangas.push(idStr);
+        dbStats.status.fav++; // زيادة الإحصائية
+        
+        // اهتزاز تأكيد الفيفوريت
+        if(window.Telegram && Telegram.WebApp) Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+    }
+
+    // حفظ المصفوفة في الجهاز عشان الصفحة الرئيسية تقرأها
+    localStorage.setItem('KLE_Saved_Mangas', JSON.stringify(globalSavedMangas));
     
     saveAndSync();
 }
