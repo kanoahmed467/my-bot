@@ -1286,84 +1286,53 @@ function uploadAvatar(event) {
 // ==========================================
 // 📚 عرض قائمة الأعمال المسجلة (المفضلة)
 // ==========================================
-// ==========================================
-// 📚 عرض قائمة الأعمال المسجلة (المفضلة) حقيقياً
-// ==========================================
-window.renderSavedList = async function() {
+function renderSavedList() {
     let savedGrid = document.getElementById('savedGrid');
     
-    // جلب الـ IDs المحفوظة من الذاكرة (اللي اتسجلت من صفحة التفاصيل)
-    // لو مفيش حاجة محفوظة، بنعمل مصفوفة فاضية []
-    let savedArray = JSON.parse(localStorage.getItem('KLE_Saved_Mangas')) || [];
+    // هنا المفروض بنجيب الـ IDs بتاعة المانجات اللي هو حفظها 
+    // (حالياً هنعمل مصفوفة وهمية للتجربة، بعدين هتربطها بالبوت بتاعك)
+    // مثلاً هو مسيف المانجات اللي الـ ID بتاعها 1 و 3 و 5
+    let userSavedIds = [1, 3, 5]; // << عدل دي لاحقاً عشان تيجي من البوت
+    
+    // بنفلتر كل المانجات ونجيب اللي الآي دي بتاعها موجود في المفضلة
+    let savedMangas = dataAll.filter(m => userSavedIds.includes(parseInt(m.id)));
 
-    // تنظيف الشبكة قبل إضافة الكروت الجديدة
-    savedGrid.innerHTML = '';
-
-    // لو المستخدم معندوش أعمال محفوظة
-    if (savedArray.length === 0) {
-        savedGrid.innerHTML = `
-            <div style="text-align: center; grid-column: 1 / -1; padding: 40px; color: #888;">
-                <i class="fas fa-bookmark" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i>
-                <h3>لا توجد أعمال مفضلة حتى الآن</h3>
-            </div>`;
+    if (savedMangas.length === 0) {
+        savedGrid.innerHTML = `<div style="text-align:center; width:100%; color:var(--text-muted); padding:20px;">لا توجد أعمال مسجلة حتى الآن.</div>`;
         return;
     }
 
-    try {
-        // جلب البيانات من ملف data.json
-        let response = await fetch('data.json');
-        let allMangas = await response.json();
+    savedGrid.innerHTML = '';
+    // رسم الكروت بنفس شكل الرئيسية
+    savedMangas.forEach(m => {
+        let live = m.status && m.status.includes('مستمر');
+        let rating = m.rating ? parseFloat(m.rating).toFixed(1) : "0.0";
 
-        // فلترة الأعمال عشان نجيب المانجات المحفوظة بس
-        let favoriteMangas = allMangas.filter(manga => savedArray.includes(manga.id));
+        let card = document.createElement('div');
+        card.className = 'card';
+        card.onclick = () => { window.location.href = `details.html?id=${m.id}`; };
 
-        // بناء الكروت الفخمة
-        favoriteMangas.forEach(manga => {
-            // التحقق إذا كان العمل جديداً (بناءً على التحديثات اللي هتنزل بعدين)
-            // الأعمال القديمة الحالية هتعتبر عادية، والجديدة هيتحط عليها بادج فخم
-            let badgeHTML = manga.is_new 
-                ? '<span class="premium-badge new-badge">✨ جديد</span>' 
-                : ''; 
-
-            let cardHTML = `
-            <div class="premium-manga-card">
-                <div class="card-image-container">
-                    <img src="${manga.cover_image}" alt="${manga.title}" class="manga-cover">
-                    ${badgeHTML}
-                    <div class="card-overlay">
-                        <button onclick="removeFromSaved('${manga.id}')" class="remove-bookmark-btn" title="إزالة من المفضلة">
-                            <i class="fas fa-bookmark"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="card-content">
-                    <h3 class="manga-title" title="${manga.title}">${manga.title}</h3>
-                    <div class="card-details">
-                        <span class="chapter-tag"><i class="fas fa-book-open"></i> الفصل ${manga.latest_chapter}</span>
-                        <span class="type-tag">${manga.type || 'مانهوا'}</span>
-                    </div>
-                </div>
+        card.innerHTML = `
+        <div class="poster">
+            <div class="status ${live ? 'live' : 'done'}">
+                ${live ? 'مستمر' : 'مكتمل'}
             </div>
-            `;
-            
-            savedGrid.innerHTML += cardHTML;
-        });
+            <img src="${m.image_url}" loading="lazy" alt="poster">
+        </div>
+        <div class="content">
+            <div class="title">${m.title}</div>
+            <div class="genres">
+                <span class="tag">محفوظ 🔖</span>
+            </div>
+            <div class="meta-footer">
+                <div class="stars"><i class="fa-solid fa-star"></i> ${rating}</div>
+            </div>
+        </div>
+        `;
+        savedGrid.appendChild(card);
+    });
+}
 
-    } catch (error) {
-        console.error("حدث خطأ أثناء جلب البيانات:", error);
-        savedGrid.innerHTML = '<p style="text-align:center; color:#ff4444;">عذراً، حدث خطأ في تحميل الأعمال المفضلة.</p>';
-    }
-};
-
-// دالة إزالة العمل من المفضلة وتحديث العرض
-window.removeFromSaved = function(mangaId) {
-    let savedArray = JSON.parse(localStorage.getItem('KLE_Saved_Mangas')) || [];
-    let updatedArray = savedArray.filter(id => id !== mangaId);
-    localStorage.setItem('KLE_Saved_Mangas', JSON.stringify(updatedArray));
-    
-    // إعادة بناء القائمة بعد الحذف
-    renderSavedList();
-};
 
 
 </script>
