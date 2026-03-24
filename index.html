@@ -1299,6 +1299,40 @@ function checkAuthAndShow(currentUser, targetPage, authPage, onSuccessCallback) 
     }
 }
 
+// دالة التنقل بين (تسجيل الدخول / إنشاء حساب / التفعيل)
+window.toggleAuthForm = function(formName) {
+    document.getElementById('register-form').style.display = 'none';
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('verify-form').style.display = 'none';
+    document.getElementById(`${formName}-form`).style.display = 'block';
+}
+
+/// ==========================================
+// 👤 بيانات الحساب الحقيقية من فايربيز
+// ==========================================
+window.loadUserProfileReal = function(user) {
+    // جلب الاسم (لو مفيش اسم نعرض أول جزء من الإيميل)
+    let emailPrefix = user.email ? user.email.split('@')[0] : "مستخدم النخبة";
+    let name = user.displayName || emailPrefix;
+    let userId = "UID: " + user.uid.substring(0, 8); // رقم تعريفي مميز
+
+    document.getElementById('userName').innerText = name;
+    document.getElementById('userId').innerText = userId;
+
+    // جلب الصورة (من جوجل أو من التخزين المحلي)
+    if (user.photoURL) {
+        document.getElementById('userAvatar').src = user.photoURL;
+    } else {
+        let savedAvatar = localStorage.getItem('userAvatar_KLE');
+        document.getElementById('userAvatar').src = savedAvatar ? savedAvatar : 'https://i.ibb.co/q1z6bL8/default-avatar.png'; 
+    }
+
+    // عرض الأعمال المحفوظة
+    if (typeof renderSavedList === "function") {
+        renderSavedList();
+    }
+}
+
 // ==========================================
 // 📸 رفع وتغيير الصورة الشخصية
 // ==========================================
