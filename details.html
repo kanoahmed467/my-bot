@@ -362,51 +362,16 @@ function initCharts() {
 // 🚀 نظام التحديث والتفاعل (Real-Time Logic)
 // ==========================================
 
-// 1. الدالة المسؤولة عن تحديث الشاشة والجرافات
-function updateDashboardUI() {
-    // تحديث أزرار المستخدم الشخصية
-    const favBtn = document.getElementById('favBtn');
-    if (userData.isFav) { favBtn.classList.add('active'); favBtn.innerHTML = '<i class="fas fa-bookmark"></i> محفوظ'; }
-    else { favBtn.classList.remove('active'); favBtn.innerHTML = '<i class="far fa-bookmark"></i> حفظ'; }
-
-    document.querySelectorAll('.status-card').forEach(card => card.classList.remove('active'));
-    if(userData.status) document.querySelector(`.status-card[data-status="${userData.status}"]`).classList.add('active');
-
-    // تحديث أرقام الدونات للجميع
-    document.getElementById('val-fav').innerText = dbStats.status.fav;
-    document.getElementById('val-reading').innerText = dbStats.status.reading;
-    document.getElementById('val-planned').innerText = dbStats.status.planned;
-    document.getElementById('val-completed').innerText = dbStats.status.completed;
-    document.getElementById('val-dropped').innerText = dbStats.status.dropped;
-
-    // تحديث متوسط التقييم العام بالأعلى
-    let totalGlobalScore = 0;
-    let totalGlobalVoters = 0;
-    for(let i=0; i<10; i++) {
-        totalGlobalScore += dbStats.votes[i] * (i+1);
-        totalGlobalVoters += dbStats.votes[i];
-    }
-    let globalAvg = totalGlobalVoters > 0 ? (totalGlobalScore / totalGlobalVoters).toFixed(1) : "0.0";
-    document.getElementById('global-rating-text').innerText = globalAvg;
-
-    // تحديث الجرافات بالبيانات الحقيقية
-    if(doughnutChart) { doughnutChart.data.datasets[0].data =[dbStats.status.fav, dbStats.status.reading, dbStats.status.planned, dbStats.status.completed, dbStats.status.dropped]; doughnutChart.update(); }
-    if(barChart) { barChart.data.datasets[0].data = dbStats.votes; barChart.update(); }
-    if(radarChart) { radarChart.data.datasets[0].data =[dbStats.radarAvg.story, dbStats.radarAvg.art, dbStats.radarAvg.chars]; radarChart.update(); }
-
-    renderStars();
-}
-
-// 2. دوال ضغطات المستخدم (User Interactions)
 // --- المتغير المسؤول عن جلب الأعمال المحفوظة في التطبيق بالكامل ---
 let globalSavedMangas = JSON.parse(localStorage.getItem('KLE_Saved_Mangas')) ||[];
 
-// الدالة المسؤولة عن تحديث الشاشة والجرافات (تعديل بسيط لقراءة الحالة)
+// 1. الدالة المسؤولة عن تحديث الشاشة والجرافات
 function updateDashboardUI() {
     const favBtn = document.getElementById('favBtn');
+    let idStr = currentMangaId.toString();
     
-    // فحص هل المانجا دي موجودة في المصفوفة المحفوظة؟
-    if (globalSavedMangas.includes(currentMangaId.toString())) { 
+    // فحص حقيقي هل المانجا دي محفوظة؟
+    if (globalSavedMangas.includes(idStr)) { 
         userData.isFav = true;
         favBtn.classList.add('active'); 
         favBtn.innerHTML = '<i class="fas fa-bookmark"></i> محفوظ'; 
@@ -416,50 +381,58 @@ function updateDashboardUI() {
         favBtn.innerHTML = '<i class="far fa-bookmark"></i> حفظ'; 
     }
 
-    // ... (باقي كود الدالة كما هو لتحديث التقييمات والحالات)
+    // تحديث أزرار الحالة
     document.querySelectorAll('.status-card').forEach(card => card.classList.remove('active'));
     if(userData.status) document.querySelector(`.status-card[data-status="${userData.status}"]`).classList.add('active');
     
+    // تحديث أرقام الدونات للجميع
     document.getElementById('val-fav').innerText = dbStats.status.fav;
     document.getElementById('val-reading').innerText = dbStats.status.reading;
     document.getElementById('val-planned').innerText = dbStats.status.planned;
     document.getElementById('val-completed').innerText = dbStats.status.completed;
     document.getElementById('val-dropped').innerText = dbStats.status.dropped;
 
+    // تحديث متوسط التقييم العام بالأعلى
     let totalGlobalScore = 0; let totalGlobalVoters = 0;
-    for(let i=0; i<10; i++) { totalGlobalScore += dbStats.votes[i] * (i+1); totalGlobalVoters += dbStats.votes[i]; }
+    for(let i=0; i<10; i++) { 
+        totalGlobalScore += dbStats.votes[i] * (i+1); 
+        totalGlobalVoters += dbStats.votes[i]; 
+    }
     let globalAvg = totalGlobalVoters > 0 ? (totalGlobalScore / totalGlobalVoters).toFixed(1) : "0.0";
     document.getElementById('global-rating-text').innerText = globalAvg;
 
     if(doughnutChart) { doughnutChart.data.datasets[0].data =[dbStats.status.fav, dbStats.status.reading, dbStats.status.planned, dbStats.status.completed, dbStats.status.dropped]; doughnutChart.update(); }
     if(barChart) { barChart.data.datasets[0].data = dbStats.votes; barChart.update(); }
     if(radarChart) { radarChart.data.datasets[0].data =[dbStats.radarAvg.story, dbStats.radarAvg.art, dbStats.radarAvg.chars]; radarChart.update(); }
+    
     renderStars();
 }
 
-// الدالة الجديدة الخاصة بضغط زر الحفظ
-function toggleFav() { 
-    let idStr = currentMangaId.toString();
-    
+// 2. دوال ضغطات المستخدم (User Interactions)
+function toggleFav() {
+    let idStr = currentMangaId.toString(); // تحويل الـ ID لنص عشان نتجنب أي مشاكل
+
+    // هل المانجا دي محفوظة قبل كده؟
     if (globalSavedMangas.includes(idStr)) {
-        // لو محفوظة، شيلها
+        // لو محفوظة -> احذفها من المصفوفة (إلغاء الحفظ)
         globalSavedMangas = globalSavedMangas.filter(id => id !== idStr);
-        dbStats.status.fav--; // تقليل الإحصائية
+        userData.isFav = false;
+        if(dbStats.status.fav > 0) dbStats.status.fav--; // تقليل الإحصائية
         
-        // اهتزاز تليجرام لو شغال
         if(window.Telegram && Telegram.WebApp) Telegram.WebApp.HapticFeedback.impactOccurred('light');
     } else {
-        // لو مش محفوظة، ضيفها
+        // لو مش محفوظة -> ضيفها للمصفوفة (حفظ جديد)
         globalSavedMangas.push(idStr);
+        userData.isFav = true;
         dbStats.status.fav++; // زيادة الإحصائية
         
-        // اهتزاز تأكيد الفيفوريت
         if(window.Telegram && Telegram.WebApp) Telegram.WebApp.HapticFeedback.notificationOccurred('success');
     }
 
-    // حفظ المصفوفة في الجهاز عشان الصفحة الرئيسية تقرأها
+    // تحديث الذاكرة العامة عشان صفحة "حسابي" تقرأها
     localStorage.setItem('KLE_Saved_Mangas', JSON.stringify(globalSavedMangas));
-    
+
+    // حفظ البيانات الشخصية وتحديث الشاشة
     saveAndSync();
 }
 
