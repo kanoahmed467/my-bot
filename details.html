@@ -318,39 +318,40 @@
     </div>
 
     <!-- أزرار الإضافة للقائمة -->
+<!-- أزرار الإضافة للقائمة -->
 <div class="user-actions">
     <!-- زر الحفظ (المفضلة) -->
     <button id="favBtn" class="fav-btn" onclick="toggleFavorite()">
         <i class="fa-regular fa-bookmark"></i>
     </button>
 
-    <!-- قائمة اختيار الحالة -->
     <!-- قائمة اختيار الحالة المخصصة (Elite Dropdown) -->
-<div class="status-selector" id="custom-dropdown">
-    <div class="dropdown-header" onclick="toggleDropdown()">
-        <span id="dropdown-text">أضف إلى قائمتي...</span>
-        <i class="fas fa-chevron-down chevron-icon"></i>
+    <div class="status-selector" id="custom-dropdown">
+        <div class="dropdown-header" onclick="toggleDropdown()">
+            <span id="dropdown-text">أضف إلى قائمتي...</span>
+            <i class="fas fa-chevron-down chevron-icon"></i>
+        </div>
+        <div class="dropdown-list">
+            <div class="dropdown-item" onclick="selectStatus('none', 'أضف إلى قائمتي...')">
+                <i class="fas fa-list" style="color: var(--text-muted);"></i> أضف إلى قائمتي...
+            </div>
+            <div class="dropdown-item" onclick="selectStatus('reading', '📖 أقرأها حالياً')">
+                <i class="fas fa-book-reader" style="color: var(--c-green);"></i> أقرأها حالياً
+            </div>
+            <div class="dropdown-item" onclick="selectStatus('planned', '⏳ أرغب بقراءتها')">
+                <i class="fas fa-clock" style="color: var(--c-red);"></i> أرغب بقراءتها
+            </div>
+            <div class="dropdown-item" onclick="selectStatus('completed', '✅ أكملتها')">
+                <i class="fas fa-check-circle" style="color: var(--c-purple);"></i> أكملتها
+            </div>
+            <div class="dropdown-item" onclick="selectStatus('dropped', '❌ تركتها')">
+                <i class="fas fa-times-circle" style="color: var(--c-pink);"></i> تركتها
+            </div>
+        </div>
     </div>
-    <div class="dropdown-list">
-        <div class="dropdown-item" onclick="selectStatus('none', 'أضف إلى قائمتي...')">
-            <i class="fas fa-list" style="color: var(--text-muted);"></i> أضف إلى قائمتي...
-        </div>
-        <div class="dropdown-item" onclick="selectStatus('reading', '📖 أقرأها حالياً')">
-            <i class="fas fa-book-reader" style="color: var(--c-green);"></i> أقرأها حالياً
-        </div>
-        <div class="dropdown-item" onclick="selectStatus('planned', '⏳ أرغب بقراءتها')">
-            <i class="fas fa-clock" style="color: var(--c-red);"></i> أرغب بقراءتها
-        </div>
-        <div class="dropdown-item" onclick="selectStatus('completed', '✅ أكملتها')">
-            <i class="fas fa-check-circle" style="color: var(--c-purple);"></i> أكملتها
-        </div>
-        <div class="dropdown-item" onclick="selectStatus('dropped', '❌ تركتها')">
-            <i class="fas fa-times-circle" style="color: var(--c-pink);"></i> تركتها
-        </div>
-    </div>
-</div>
+</div> <!-- 🔥 دي القفلة السحرية اللي كانت ناقصة وبوظت الدنيا 🔥 -->
 
-    <div class="tags-container" id="genres-container"></div>
+<div class="tags-container" id="genres-container"></div>
 
     <div class="action-grid">
         <button class="btn btn-read" onclick="switchTab('tab-chapters', document.querySelectorAll('.tab-btn')[1])"><i class="fas fa-book-open"></i> الفصول</button>
@@ -451,7 +452,7 @@
     const firebaseConfig = {
         apiKey: "AIzaSyCEecz0x8SnEckiBNxDqI-jGe8p5-fKfsw",
         authDomain: "manga-kingdom.firebaseapp.com",
-        databaseURL: "https://manga-kingdom-default-rtdb.firebaseio.com", // رابط الداتابيز بتاعتك
+        databaseURL: "https://manga-kingdom-default-rtdb.firebaseio.com", 
         projectId: "manga-kingdom",
         storageBucket: "manga-kingdom.firebasestorage.app",
         messagingSenderId: "531742563780",
@@ -505,10 +506,9 @@
     // حفظ في قائمة (أقرأها، متروكة، إلخ...)
     window.changeMangaStatus = async function(status) {
         const user = window.currentFirebaseUser;
-        
         if (!user) {
             alert("يجب تسجيل الدخول أولاً من الصفحة الرئيسية!");
-            document.getElementById('mangaStatusSelect').value = 'none'; 
+            document.getElementById('dropdown-text').innerText = 'أضف إلى قائمتي...';
             return;
         }
 
@@ -568,7 +568,25 @@
         btn.classList.add('active');
     };
 
-    // جلب حالة الأزرار لما المستخدم يدخل الصفحة
+    // --- دوال القائمة المنسدلة الحركية ---
+    window.toggleDropdown = function() {
+        document.getElementById('custom-dropdown').classList.toggle('open');
+    }
+
+    window.selectStatus = function(value, text) {
+        document.getElementById('dropdown-text').innerText = text;
+        document.getElementById('custom-dropdown').classList.remove('open');
+        window.changeMangaStatus(value);
+    }
+
+    document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('custom-dropdown');
+        if (dropdown && !dropdown.contains(e.target)) {
+            dropdown.classList.remove('open');
+        }
+    });
+
+    // جلب حالة الأزرار والقائمة المنسدلة
     onAuthStateChanged(auth, async (user) => {
         window.currentFirebaseUser = user;
         
@@ -579,7 +597,16 @@
                     const data = snapshot.val();
                     
                     if (data.mangaStatus && data.mangaStatus[currentMangaId]) {
-                        document.getElementById('mangaStatusSelect').value = data.mangaStatus[currentMangaId];
+                        const statusVal = data.mangaStatus[currentMangaId];
+                        const statusTexts = {
+                            'reading': '📖 أقرأها حالياً',
+                            'planned': '⏳ أرغب بقراءتها',
+                            'completed': '✅ أكملتها',
+                            'dropped': '❌ تركتها'
+                        };
+                        if (statusTexts[statusVal]) {
+                            document.getElementById('dropdown-text').innerText = statusTexts[statusVal];
+                        }
                     }
 
                     if (data.savedMangas && data.savedMangas.includes(currentMangaId)) {
@@ -594,71 +621,6 @@
             }
         }
     });
-
-// --- دوال القائمة المنسدلة الحركية ---
-
-// دالة لفتح وقفل القائمة
-window.toggleDropdown = function() {
-    document.getElementById('custom-dropdown').classList.toggle('open');
-}
-
-// دالة لما المستخدم يختار حاجة من القائمة
-window.selectStatus = function(value, text) {
-    // 1. تغيير النص المعروض
-    document.getElementById('dropdown-text').innerText = text;
-    // 2. قفل القائمة
-    document.getElementById('custom-dropdown').classList.remove('open');
-    // 3. إرسال القيمة لفايربيز (باستخدام الدالة القديمة اللي بتسجل الداتا)
-    window.changeMangaStatus(value);
-}
-
-// دالة لقفل القائمة لو داس في أي مكان فاضي في الشاشة
-document.addEventListener('click', function(e) {
-    const dropdown = document.getElementById('custom-dropdown');
-    if (dropdown && !dropdown.contains(e.target)) {
-        dropdown.classList.remove('open');
-    }
-});
-
-// --- تعديل صغير في دالة onAuthStateChanged ---
-// عشان لما المستخدم يفتح الصفحة، القائمة تاخد الاسم الصح من الداتابيز
-onAuthStateChanged(auth, async (user) => {
-    window.currentFirebaseUser = user;
-    
-    if (user && currentMangaId) {
-        try {
-            const snapshot = await get(child(ref(database), `users/${user.uid}`));
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                
-                // التعديل هنا: تحديث شكل القائمة المخصصة
-                if (data.mangaStatus && data.mangaStatus[currentMangaId]) {
-                    const statusVal = data.mangaStatus[currentMangaId];
-                    // نصوص مطابقة للقيمة
-                    const statusTexts = {
-                        'reading': '📖 أقرأها حالياً',
-                        'planned': '⏳ أرغب بقراءتها',
-                        'completed': '✅ أكملتها',
-                        'dropped': '❌ تركتها'
-                    };
-                    if (statusTexts[statusVal]) {
-                        document.getElementById('dropdown-text').innerText = statusTexts[statusVal];
-                    }
-                }
-
-                // تحديث زر المحفوظات (كما هو)
-                if (data.savedMangas && data.savedMangas.includes(currentMangaId)) {
-                    document.querySelectorAll('.fav-btn, .fav-btn-bottom').forEach(btn => {
-                        btn.classList.add('active');
-                        btn.innerHTML = btn.classList.contains('fav-btn-bottom') ? '<i class="fa-solid fa-bookmark"></i> محفوظ' : '<i class="fa-solid fa-bookmark"></i>';
-                    });
-                }
-            }
-        } catch (error) {
-            console.error("خطأ في جلب بيانات المستخدم:", error);
-        }
-    }
-});
 </script>
 
 </body>
