@@ -1411,8 +1411,7 @@ function renderSavedList() {
 
 </script>
 <script type="module">
-  // 1. استدعاء مكتبات فايربيز (استخدمنا إصدار 10.12.0 الموثوق)
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
   import { 
     getAuth, 
@@ -1423,8 +1422,11 @@ function renderSavedList() {
     signOut,
     GoogleAuthProvider,
     signInWithPopup,
-    updateProfile  // <--- هذا ما قمنا بإضافته
+    updateProfile
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  
+  // 🔥 السطر ده اللي ضفناه عشان قاعدة البيانات
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   // 2. إعدادات قاعدة البيانات بتاعتك
   const firebaseConfig = {
@@ -1442,6 +1444,10 @@ function renderSavedList() {
   const analytics = getAnalytics(app);
   const auth = getAuth(app);
   const googleProvider = new GoogleAuthProvider();
+  
+  // 🔥 تعريف قاعدة البيانات وربطها بالويندو عشان كل الدوال تشوفها
+  const db = getFirestore(app);
+  window.db = db;
 
   // 4. مراقب حالة المستخدم (بيشتغل تلقائي أول ما الموقع يفتح)
   onAuthStateChanged(auth, (user) => {
@@ -1546,73 +1552,108 @@ window.filterMyList = function(type, btn) {
 }
 
 // دالة رسم المانجات في قسم "قائمتي" بناءً على الفلتر
-window.renderMyListUI = function(filterType = 'all') {
+// دالة رسم المانجات في قسم "قائمتي" بناءً على الفلتر (مربوطة بفايربيز)
+window.renderMyListUI = async function(filterType = 'all') {
     let listGrid = document.getElementById('myListGrid');
-    
-    // جلب البيانات من الذاكرة المحلية (LocalStorage)
-    let savedIds = JSON.parse(localStorage.getItem('KLE_Saved_Mangas')) ||[];
-    let statusObj = JSON.parse(localStorage.getItem('KLE_Manga_Status')) || {}; 
-    // ^ statusObj شكلها هيكون كذا: { "1": "reading", "2": "completed", "5": "planned" }
+    const user = window.currentFirebaseUser;
 
-    let filteredMangas =[];
-
-    // فلترة الأعمال بناءً على التبويب المختار
-    if(filterType === 'all') {
-        // عرض أي مانجا تم التفاعل معها (سواء محفوظة أو لها حالة قراءة)
-        let allInteractedIds = new Set([...savedIds, ...Object.keys(statusObj)]);
-        filteredMangas = dataAll.filter(m => allInteractedIds.has(m.id.toString()));
-    } else if (filterType === 'fav') {
-        filteredMangas = dataAll.filter(m => savedIds.includes(m.id.toString()));
-    } else {
-        // فلترة حالات القراءة (reading, planned, completed, dropped)
-        let idsWithThisStatus = Object.keys(statusObj).filter(id => statusObj[id] === filterType);
-        filteredMangas = dataAll.filter(m => idsWithThisStatus.includes(m.id.toString()));
-    }
-
-    // لو القائمة فارغة
-    if(filteredMangas.length === 0) {
-         listGrid.innerHTML = `
-         <div style="text-align:center; width:100%; color:var(--text-muted); padding:40px 20px;">
-            <i class="fa-solid fa-folder-open" style="font-size:40px; margin-bottom:15px; color:var(--border-color);"></i><br>
-            لا توجد أعمال في هذه القائمة حتى الآن.
+    // 1. لو مفيش مستخدم (كإجراء أمني إضافي رغم إننا حاميين الصفحة)
+    if (!user) {
+        listGrid.innerHTML = `
+        <div style="text-align:center; width:100%; color:var(--text-muted); padding:40px 20px;">
+            <i class="fa-solid fa-lock" style="font-size:40px; margin-bottom:15px; color:var(--border-color);"></i><br>
+            يجب تسجيل الدخول لعرض قائمتك.
         </div>`;
         return;
     }
 
-    // رسم الكروت
-    listGrid.innerHTML = '';
-    filteredMangas.forEach(m => {
-        let live = m.status && m.status.includes('مستمر');
-        let rating = m.rating ? parseFloat(m.rating).toFixed(1) : "0.0";
-        
-        // تحديد التاج (الوسم) الذي سيظهر على الكارت بناءً على القائمة
-        const tags = { 
-            'fav': 'محفوظ 🔖', 'reading': 'أقرأها 📖', 
-            'planned': 'أرغب ⏳', 'completed': 'مكتملة ✅', 'dropped': 'متروكة ❌' 
-        };
-        let tagText = tags[filterType] || 'في قائمتي 📚';
+    // 2. إظهار تأثير التحميل لحد ما البيانات تيجي من السيرفر
+    listGrid.innerHTML = `
+    <div style="text-align:center; width:100%; color:var(--primary); padding:40px 20px;">
+        <i class="fas fa-spinner fa-spin" style="font-size:30px; margin-bottom:10px;"></i><br>
+        جاري جلب مكتبتك الخاصة...
+    </div>`;
 
-        let card = document.createElement('div');
-        card.className = 'card';
-        card.onclick = () => { window.location.href = `details.html?id=${m.id}`; };
-        
-        card.innerHTML = `
-        <div class="poster">
-            <div class="status ${live ? 'live' : 'done'}">${live ? 'مستمر' : 'مكتمل'}</div>
-            <img src="${m.image_url}" loading="lazy" alt="poster">
-        </div>
-        <div class="content">
-            <div class="title">${m.title}</div>
-            <div class="genres">
-                <span class="tag" style="background: rgba(168, 85, 247, 0.2); color: var(--primary); border: 1px solid var(--primary); font-weight: 800;">${tagText}</span>
+    try {
+        // 3. جلب بيانات المستخدم ده تحديداً من قاعدة البيانات
+        const userDocRef = window.doc(window.db, "users", user.uid);
+        const userDoc = await window.getDoc(userDocRef);
+
+        let savedIds =[];
+        let statusObj = {};
+
+        // لو المستخدم ليه بيانات متسجلة قبل كده، هاتها
+        if (userDoc.exists()) {
+            const data = userDoc.data();
+            savedIds = data.savedMangas ||[]; // مصفوفة للأعمال المفضلة
+            statusObj = data.mangaStatus || {}; // كائن لحالات القراءة
+        }
+
+        let filteredMangas =[];
+
+        // 4. فلترة الأعمال بناءً على التبويب المختار
+        if(filterType === 'all') {
+            let allInteractedIds = new Set([...savedIds, ...Object.keys(statusObj)]);
+            filteredMangas = dataAll.filter(m => allInteractedIds.has(m.id.toString()));
+        } else if (filterType === 'fav') {
+            filteredMangas = dataAll.filter(m => savedIds.includes(m.id.toString()));
+        } else {
+            let idsWithThisStatus = Object.keys(statusObj).filter(id => statusObj[id] === filterType);
+            filteredMangas = dataAll.filter(m => idsWithThisStatus.includes(m.id.toString()));
+        }
+
+        // 5. لو القائمة فارغة ومفيش أعمال
+        if(filteredMangas.length === 0) {
+             listGrid.innerHTML = `
+             <div style="text-align:center; width:100%; color:var(--text-muted); padding:40px 20px;">
+                <i class="fa-solid fa-folder-open" style="font-size:40px; margin-bottom:15px; color:var(--border-color);"></i><br>
+                قائمتك فارغة! ابدأ بإضافة بعض الأعمال.
+            </div>`;
+            return;
+        }
+
+        // 6. رسم الكروت لو فيه أعمال
+        listGrid.innerHTML = '';
+        filteredMangas.forEach(m => {
+            let live = m.status && m.status.includes('مستمر');
+            let rating = m.rating ? parseFloat(m.rating).toFixed(1) : "0.0";
+            
+            const tags = { 
+                'fav': 'محفوظ 🔖', 'reading': 'أقرأها 📖', 
+                'planned': 'أرغب ⏳', 'completed': 'مكتملة ✅', 'dropped': 'متروكة ❌' 
+            };
+            let tagText = tags[filterType] || 'في قائمتي 📚';
+
+            let card = document.createElement('div');
+            card.className = 'card';
+            card.onclick = () => { window.location.href = `details.html?id=${m.id}`; };
+            
+            card.innerHTML = `
+            <div class="poster">
+                <div class="status ${live ? 'live' : 'done'}">${live ? 'مستمر' : 'مكتمل'}</div>
+                <img src="${m.image_url}" loading="lazy" alt="poster">
             </div>
-            <div class="meta-footer">
-                <div class="stars"><i class="fa-solid fa-star"></i> ${rating}</div>
+            <div class="content">
+                <div class="title">${m.title}</div>
+                <div class="genres">
+                    <span class="tag" style="background: rgba(168, 85, 247, 0.2); color: var(--primary); border: 1px solid var(--primary); font-weight: 800;">${tagText}</span>
+                </div>
+                <div class="meta-footer">
+                    <div class="stars"><i class="fa-solid fa-star"></i> ${rating}</div>
+                </div>
             </div>
-        </div>
-        `;
-        listGrid.appendChild(card);
-    });
+            `;
+            listGrid.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error("خطأ في جلب البيانات:", error);
+        listGrid.innerHTML = `
+        <div style="text-align:center; width:100%; color:#ef4444; padding:40px 20px;">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size:40px; margin-bottom:15px;"></i><br>
+            حدث خطأ أثناء جلب القائمة، تأكد من اتصالك بالإنترنت.
+        </div>`;
+    }
 }
 
 // ⚠️ ملحوظة: قم بتعديل دالة window.switchTab في كودك الأصلي، 
