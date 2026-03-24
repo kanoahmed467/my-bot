@@ -591,6 +591,142 @@ header {
 .auth-divider:not(:empty)::before { margin-left: 10px; }
 .auth-divider:not(:empty)::after { margin-right: 10px; }
 
+/* =========================================
+   🔐 تنسيقات صفحة تسجيل الدخول وإنشاء الحساب
+========================================= */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 120px); /* ضبط الارتفاع ليتوسط الشاشة */
+    padding: 20px;
+}
+
+.auth-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 30px 20px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    text-align: center;
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.auth-card h2 {
+    color: var(--text-main);
+    font-size: 22px;
+    margin-bottom: 25px;
+    font-weight: 800;
+}
+
+.auth-input {
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 15px;
+    background: var(--bg-header);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-main);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.3s ease;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.auth-input::placeholder {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.auth-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 12px var(--primary-glow);
+    background: rgba(168, 85, 247, 0.05);
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(45deg, var(--primary), #6366f1);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 5px;
+}
+
+.auth-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px var(--primary-glow);
+}
+
+.auth-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.auth-switch {
+    margin-top: 25px;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.auth-switch span {
+    color: var(--primary);
+    font-weight: 800;
+    transition: 0.3s;
+}
+
+.auth-switch span:hover {
+    text-decoration: underline;
+    text-shadow: 0 0 10px var(--primary-glow);
+}
+
+/* =========================================
+   🚪 زر تسجيل الخروج (Profile Page)
+========================================= */
+.logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: calc(100% - 40px);
+    margin: 30px auto;
+    padding: 14px;
+    background: rgba(239, 68, 68, 0.1); /* خلفية حمراء شفافة */
+    color: #ef4444; /* أحمر */
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.logout-btn:hover {
+    background: #ef4444;
+    color: white;
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+    transform: translateY(-2px);
+}
+
 </style>
 </head>
 
@@ -654,12 +790,20 @@ header {
         </div>
 
         <!-- 2. نموذج إنشاء حساب (مخفي في البداية) -->
+        <!-- 2. نموذج إنشاء حساب (مخفي في البداية) -->
         <div id="register-form" class="auth-card" style="display: none;">
             <h2>إنشاء حساب جديد 🌟</h2>
             <input type="email" id="reg-email" class="auth-input" placeholder="البريد الإلكتروني">
             <input type="password" id="reg-pass" class="auth-input" placeholder="كلمة المرور (6 أحرف على الأقل)">
             <button class="auth-btn" id="reg-btn" onclick="startRegistration()">إنشاء حساب</button>
             
+            <!-- زر تسجيل الدخول بجوجل الذي طلبته -->
+            <div class="auth-divider">أو</div>
+            <button class="google-btn" onclick="loginWithGoogle()">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
+                المتابعة باستخدام جوجل
+            </button>
+
             <div class="auth-switch" onclick="toggleAuthForm('login')">لدي حساب بالفعل؟ <span>تسجيل الدخول</span></div>
         </div>
 
