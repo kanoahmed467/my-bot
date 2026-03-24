@@ -637,49 +637,39 @@ header {
 <div id="auth-page" style="display: none;">
     <div class="auth-container">
         
-        <!-- نموذج إنشاء حساب -->
-        <div id="register-form" class="auth-card">
-            <h2>إنشاء حساب جديد 🌟</h2>
-            <input type="email" id="reg-email" class="auth-input" placeholder="البريد الإلكتروني">
-            <input type="password" id="reg-pass" class="auth-input" placeholder="كلمة المرور (6 أحرف على الأقل)">
-            <button class="auth-btn" id="reg-btn" onclick="startRegistration()">إنشاء حساب</button>
-            <div class="auth-switch" onclick="toggleAuthForm('login')">لدي حساب بالفعل؟ <span>تسجيل الدخول</span></div>
-        </div>
-
-        <!-- نموذج تسجيل الدخول -->
-        <div id="login-form" class="auth-card" style="display: none;">
+        <!-- 1. نموذج تسجيل الدخول (هو اللي يظهر في البداية) -->
+        <div id="login-form" class="auth-card">
             <h2>مرحباً بعودتك 👋</h2>
             <input type="email" id="log-email" class="auth-input" placeholder="البريد الإلكتروني">
             <input type="password" id="log-pass" class="auth-input" placeholder="كلمة المرور">
             <button class="auth-btn" id="log-btn" onclick="loginUser()">دخول</button>
             
-            <!-- ====== الفاصل وزرار جوجل ====== -->
             <div class="auth-divider">أو</div>
             <button class="google-btn" onclick="loginWithGoogle()">
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
                 المتابعة باستخدام جوجل
             </button>
-            <!-- =============================== -->
 
             <div class="auth-switch" onclick="toggleAuthForm('register')">ليس لديك حساب؟ <span>إنشاء حساب</span></div>
         </div>
 
-        <!-- شاشة رسالة تأكيد البريد -->
+        <!-- 2. نموذج إنشاء حساب (مخفي في البداية) -->
+        <div id="register-form" class="auth-card" style="display: none;">
+            <h2>إنشاء حساب جديد 🌟</h2>
+            <input type="email" id="reg-email" class="auth-input" placeholder="البريد الإلكتروني">
+            <input type="password" id="reg-pass" class="auth-input" placeholder="كلمة المرور (6 أحرف على الأقل)">
+            <button class="auth-btn" id="reg-btn" onclick="startRegistration()">إنشاء حساب</button>
+            
+            <div class="auth-switch" onclick="toggleAuthForm('login')">لدي حساب بالفعل؟ <span>تسجيل الدخول</span></div>
+        </div>
+
+        <!-- 3. شاشة تأكيد البريد (مخفية) -->
         <div id="verify-form" class="auth-card" style="display: none;">
             <h2>تأكيد البريد 📩</h2>
             <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
                 لقد أرسلنا رابط تأكيد إلى بريدك الإلكتروني. الرجاء فتح بريدك والضغط على الرابط لتفعيل حسابك، ثم قم بتسجيل الدخول.
             </p>
             <button class="auth-btn" onclick="toggleAuthForm('login')">الذهاب لتسجيل الدخول</button>
-        </div>
-
-        <!-- نموذج تسجيل الدخول -->
-        <div id="login-form" class="auth-card" style="display: none;">
-            <h2>مرحباً بعودتك 👋</h2>
-            <input type="email" id="log-email" class="auth-input" placeholder="البريد الإلكتروني">
-            <input type="password" id="log-pass" class="auth-input" placeholder="كلمة المرور">
-            <button class="auth-btn" id="log-btn" onclick="loginUser()">دخول</button>
-            <div class="auth-switch" onclick="toggleAuthForm('register')">ليس لديك حساب؟ <span>إنشاء حساب</span></div>
         </div>
 
     </div>
@@ -689,10 +679,7 @@ header {
 <div id="account-page" style="display: none;">
     <div class="profile-header">
         <div class="avatar-container">
-            <!-- الصورة الافتراضية، لو المستخدم رفع صورة هتتغير -->
             <img id="userAvatar" src="https://via.placeholder.com/100" class="avatar" alt="User">
-            
-            <!-- زر تغيير الصورة -->
             <label for="avatarUpload" class="edit-avatar">
                 <i class="fa-solid fa-camera"></i>
             </label>
@@ -707,17 +694,15 @@ header {
         <i class="fa-solid fa-bookmark" style="color: var(--primary);"></i> أعمالي المسجلة
     </div>
     
-    <!-- شبكة لعرض الأعمال المفضلة (زي الشبكة العادية بالظبط) -->
     <div id="savedGrid" class="grid">
         <div style="text-align:center; width:100%; color:var(--text-muted); padding:20px;">
             لا توجد أعمال مسجلة حتى الآن.
         </div>
     </div>
-</div>
 
-<!-- زر تسجيل الخروج -->
+    <!-- زر تسجيل الخروج متضاف هنا جوه قسم حسابي عشان يختفي تماماً لو مش مسجل دخول -->
     <button class="logout-btn" onclick="logoutUser()"><i class="fa-solid fa-right-from-bracket"></i> تسجيل الخروج</button>
-
+</div>
 
 <!-- ================== شريط التنقل السفلي ================== -->
 <nav class="bottom-nav">
