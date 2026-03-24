@@ -828,6 +828,21 @@ header {
     box-shadow: 0 0 10px var(--primary-glow);
 }
 
+/* =========================================
+   توسيط الرسائل في منتصف الشاشة
+========================================= */
+.center-message {
+    grid-column: 1 / -1 !important; /* دي بتجبره ياخد عرض الشاشة كله */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 50vh; /* دي بتخليه ينزل في نص الشاشة بالطول */
+    width: 100%;
+    text-align: center;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
 </style>
 </head>
 
@@ -1516,11 +1531,10 @@ window.renderMyListUI = async function(filterType = 'all') {
 
     if (!user) {
     listGrid.innerHTML = `
-    <div style="text-align:center; width:100%; color:var(--text-muted); padding:60px 20px; grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px dashed var(--border-color);">
-        <i class="fa-solid fa-lock" style="font-size:50px; margin-bottom:15px; color: rgba(255,255,255,0.1);"></i>
-        <span style="font-size: 16px; font-weight: 800; color: var(--text-label);">يجب تسجيل الدخول لعرض قائمتك</span>
-        <button onclick="switchTab('account')" style="margin-top: 15px; background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 800; font-family: 'Cairo', sans-serif; cursor: pointer; box-shadow: 0 5px 15px var(--primary-glow);">تسجيل الدخول</button>
-    </div>`;
+<div class="center-message">
+    <i class="fas fa-spinner fa-spin" style="font-size:45px; color: var(--primary); margin-bottom:15px; text-shadow: 0 0 15px var(--primary-glow);"></i>
+    <span style="font-size: 16px; font-weight: 800; color: var(--primary);">جاري جلب مكتبتك...</span>
+</div>`;
     return;
 }
 
