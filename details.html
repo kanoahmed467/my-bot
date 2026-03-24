@@ -252,7 +252,7 @@
 
     <div class="action-grid">
         <button class="btn btn-read" onclick="switchTab('tab-chapters', document.querySelectorAll('.tab-btn')[1])"><i class="fas fa-book-open"></i> الفصول</button>
-        <button class="btn btn-fav" id="favBtn" onclick="toggleFav()"><i class="fas fa-bookmark"></i> حفظ</button>
+        <button class="btn btn-fav fav-btn-bottom" onclick="window.toggleFavorite()"><i class="far fa-bookmark"></i> حفظ</button>
     </div>
 
     <div class="tabs-header">
@@ -392,6 +392,13 @@
                 if(manga.genre) {
                     const genres = manga.genre.split('•');
                     document.getElementById('genres-container').innerHTML = genres.map(g => `<span class="tag">${g.trim()}</span>`).join('');
+                    // رسم الفصول
+                let chaptersHtml = '';
+                let count = manga.chapters_count || 10; // لو مفيش عدد فصول في الداتا، هيحط 10 افتراضي
+                for(let i = count; i >= 1; i--) {
+                    chaptersHtml += `<div class="chapter-card"><span class="chap-num" style="font-weight: 700;">الفصل ${i}</span></div>`;
+                }
+                document.getElementById('chapters-list').innerHTML = chaptersHtml;
                 }
             }
         } catch (error) {
@@ -433,23 +440,27 @@
         const user = window.currentFirebaseUser;
         if (!user) return alert("يجب تسجيل الدخول أولاً!");
 
-        const btn = document.getElementById('favBtn');
-        const isActive = btn.classList.contains('active');
+        // هنجيب كل زراير الحفظ اللي في الصفحة
+        const favBtns = document.querySelectorAll('.fav-btn, .fav-btn-bottom');
+        const isActive = favBtns[0].classList.contains('active');
         
         // جلب قائمة المفضلة القديمة من فايربيز
         const snapshot = await get(child(ref(database), `users/${user.uid}/savedMangas`));
         let savedMangas = snapshot.exists() ? snapshot.val() : [];
 
-        if (isActive) {
-            // لو كانت محفوظة -> احذفها
+       if (isActive) {
             savedMangas = savedMangas.filter(id => id !== currentMangaId);
-            btn.classList.remove('active');
-            btn.innerHTML = '<i class="fa-regular fa-bookmark"></i>';
+            favBtns.forEach(btn => {
+                btn.classList.remove('active');
+                // لو الزرار اللي تحت حط كلمة حفظ، لو اللي فوق سيبه أيقونة بس
+                btn.innerHTML = btn.classList.contains('fav-btn-bottom') ? '<i class="far fa-bookmark"></i> حفظ' : '<i class="fa-regular fa-bookmark"></i>';
+            });
         } else {
-            // لو مش محفوظة -> ضيفها
             if (!savedMangas.includes(currentMangaId)) savedMangas.push(currentMangaId);
-            btn.classList.add('active');
-            btn.innerHTML = '<i class="fa-solid fa-bookmark"></i>';
+            favBtns.forEach(btn => {
+                btn.classList.add('active');
+                btn.innerHTML = btn.classList.contains('fav-btn-bottom') ? '<i class="fa-solid fa-bookmark"></i> محفوظ' : '<i class="fa-solid fa-bookmark"></i>';
+            });
         }
 
         // رفع القائمة الجديدة لفايربيز
