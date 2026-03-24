@@ -470,9 +470,9 @@ window.renderSavedList = function() {
 </script>
 
 <!-- ================== سكريبت الفايربيز الأساسي ================== -->
+<!-- ================== سكريبت الفايربيز الأساسي والنهائي ================== -->
 <script type="module">
-  // 1. استيراد المكتبات (بما فيها جوجل)
- import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
   import { 
     getAuth, 
@@ -482,11 +482,10 @@ window.renderSavedList = function() {
     onAuthStateChanged, 
     signOut,
     GoogleAuthProvider,
-    signInWithRedirect,   // تغيير هنا
-    getRedirectResult     // وتغيير هنا
+    signInWithRedirect,
+    getRedirectResult
   } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
-  // ... (بيانات الكونفيج بتاعتك زي ما هي متتغيرش) ...
   const firebaseConfig = {
     apiKey: "AIzaSyCEecz0x8SnEckiBNxDqI-jGe8p5-fKfsw",
     authDomain: "manga-kingdom.firebaseapp.com",
@@ -502,42 +501,67 @@ window.renderSavedList = function() {
   const auth = getAuth(app);
   const googleProvider = new GoogleAuthProvider();
 
-  // ====== الكود الجديد لاصطياد المستخدم بعد ما يرجع من صفحة جوجل ======
+  // 1. الدالة اللي اتمسحت: المراقبة التلقائية لحالة المستخدم
+  onAuthStateChanged(auth, (user) => {
+    const authPage = document.getElementById('auth-page');
+    const accountPage = document.getElementById('account-page');
+
+    if (document.getElementById('nav-account').classList.contains('active')) {
+        if (user) {
+            if (user.emailVerified || (user.providerData.length > 0 && user.providerData[0].providerId === 'google.com')) {
+                authPage.style.display = 'none';
+                accountPage.style.display = 'block';
+                window.loadUserProfileReal(user);
+            } else {
+                authPage.style.display = 'block';
+                accountPage.style.display = 'none';
+                window.toggleAuthForm('verify');
+            }
+        } else {
+            authPage.style.display = 'block';
+            accountPage.style.display = 'none';
+            window.toggleAuthForm('login');
+        }
+    }
+  });
+
+  // 2. معالجة الرجوع من جوجل
   getRedirectResult(auth).then((result) => {
       if (result) {
-          // لو رجع بنجاح، وديه لصفحة الحساب
           window.switchTab('account');
       }
   }).catch((error) => {
-      // لو حصل خطأ وهو راجع مش بنطلع alert مزعج لو كان مجرد إلغاء
       if(error.code !== 'auth/cancelled-popup-request') {
           console.error("Redirect Error: ", error);
       }
   });
 
-  // ====== دالة التسجيل بجوجل (المعدلة للموبايل وتليجرام) ======
+  // 3. الدالة اللي اتمسحت: التنقل بين شاشة الدخول وإنشاء حساب
+  window.toggleAuthForm = function(formName) {
+      document.getElementById('register-form').style.display = 'none';
+      document.getElementById('login-form').style.display = 'none';
+      document.getElementById('verify-form').style.display = 'none';
+      document.getElementById(`${formName}-form`).style.display = 'block';
+  }
+
+  // 4. الدخول بجوجل
   window.loginWithGoogle = async function(btn) {
-      // 1. تعطيل الزرار عشان ميضغطش مرتين
       if(btn) {
           btn.disabled = true;
           btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحويل...';
       }
-
       try {
-          // 2. استخدام طريقة الـ Redirect بدلاً من الـ Popup
           await signInWithRedirect(auth, googleProvider);
       } catch (error) {
           if(btn) {
               btn.disabled = false;
               btn.innerHTML = '<img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google"> المتابعة باستخدام جوجل';
           }
-          console.error(error);
           alert("حدث خطأ أثناء الاتصال بجوجل: " + error.message);
       }
   }
 
-
-  // إنشاء حساب بالإيميل
+  // 5. إنشاء حساب بالإيميل
   window.startRegistration = async function() {
       const email = document.getElementById('reg-email').value.trim();
       const pass = document.getElementById('reg-pass').value;
@@ -563,7 +587,7 @@ window.renderSavedList = function() {
       }
   }
 
-  // الدخول بالإيميل
+  // 6. تسجيل الدخول بالإيميل
   window.loginUser = async function() {
       const email = document.getElementById('log-email').value.trim();
       const pass = document.getElementById('log-pass').value;
@@ -587,7 +611,7 @@ window.renderSavedList = function() {
       }
   }
 
-  // تسجيل الخروج
+  // 7. تسجيل الخروج
   window.logoutUser = async function() {
       if(confirm("هل أنت متأكد من تسجيل الخروج؟")) {
           await signOut(auth);
@@ -595,14 +619,13 @@ window.renderSavedList = function() {
       }
   }
 
-  // تحميل بيانات البروفايل
-  function loadUserProfileReal(user) {
+  // 8. تحميل بيانات البروفايل
+  window.loadUserProfileReal = function(user) {
       let name = user.displayName || user.email.split('@')[0];
       let userId = "UID: " + user.uid.substring(0, 8);
       document.getElementById('userName').innerText = name;
       document.getElementById('userId').innerText = userId;
 
-      // لو سجل بجوجل ليه صورة، نعرضها
       if (user.photoURL) {
           document.getElementById('userAvatar').src = user.photoURL;
       } else {
@@ -613,7 +636,7 @@ window.renderSavedList = function() {
       if (typeof window.renderSavedList === "function") window.renderSavedList();
   }
 
-  // دالة التنقل بين الصفحات (المسئولة عن فتح شاشة التسجيل أو البروفايل)
+  // 9. التنقل بين الصفحات
   window.switchTab = function(tab) {
       const homePage = document.getElementById('home-page');
       const accountPage = document.getElementById('account-page');
@@ -631,10 +654,10 @@ window.renderSavedList = function() {
           document.getElementById('nav-account').classList.add('active');
           
           const currentUser = auth.currentUser;
-          if (currentUser && (currentUser.emailVerified || currentUser.providerData[0].providerId === 'google.com')) {
+          if (currentUser && (currentUser.emailVerified || (currentUser.providerData.length > 0 && currentUser.providerData[0].providerId === 'google.com'))) {
               authPage.style.display = 'none';
               accountPage.style.display = 'block';
-              loadUserProfileReal(currentUser);
+              window.loadUserProfileReal(currentUser);
           } else {
               accountPage.style.display = 'none';
               authPage.style.display = 'block';
