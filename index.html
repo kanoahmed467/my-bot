@@ -1454,66 +1454,65 @@ function renderSavedList() {
   }
 
 // 9. دالة تغيير اسم المستخدم (تدعم الزخرفة)
-  // 9. دالة تغيير اسم المستخدم (تدعم الزخرفة والحركات)
-  window.editUserName = async function() {
-      const user = window.currentFirebaseUser;
-      if (!user) return alert("يجب تسجيل الدخول أولاً!");
+  // ==========================================
+// 📚 عرض قائمة الأعمال المسجلة (المفضلة) حقيقياً
+// ==========================================
+function renderSavedList() {
+    let savedGrid = document.getElementById('savedGrid');
+    
+    // جلب الـ IDs المحفوظة من الذاكرة (اللي اتسجلت من صفحة التفاصيل)
+    let savedArray = JSON.parse(localStorage.getItem('KLE_Saved_Mangas')) ||[];
 
-      const userNameEl = document.getElementById('userName');
-      
-      // جلب الاسم الحالي لوضع كقيمة افتراضية
-      let currentName = userNameEl.innerText;
-      if (currentName === "جاري التحميل..." || currentName.includes("مستخدم النخبة")) {
-          currentName = "";
-      }
+    // لو مفيش أي أعمال محفوظة
+    if (savedArray.length === 0) {
+        savedGrid.innerHTML = `<div style="text-align:center; width:100%; color:var(--text-muted); padding:30px 20px; font-weight:700; font-size:14px;">
+            <i class="fa-solid fa-folder-open" style="font-size:30px; margin-bottom:10px; color:var(--border-color);"></i><br>
+            لا توجد أعمال مسجلة حتى الآن.<br>قم بالدخول لأي عمل واضغط على "حفظ" ليظهر هنا!
+        </div>`;
+        return;
+    }
 
-      // إظهار نافذة منبثقة للمستخدم لكتابة الاسم
-      const newName = prompt("أدخل اسمك الجديد (الأسماء المزخرفة مقبولة ✨):", currentName);
+    // فلترة المانجات كلها (dataAll) ونجيب بس اللي الـ ID بتاعها موجود في مصفوفة الحفظ
+    // حولنا الـ id لـ String عشان نتأكد إن المطابقة هتكون صحيحة 100%
+    let savedMangas = dataAll.filter(m => savedArray.includes(m.id.toString()));
 
-      // لو ضغط "إلغاء" أو ترك المربع فارغاً
-      if (newName === null || newName.trim() === "") return;
+    // لو حصل خطأ والمصفوفة طلعت فاضية (مثلاً المانجا اتمسحت من السيرفر)
+    if (savedMangas.length === 0) {
+        savedGrid.innerHTML = `<div style="text-align:center; width:100%; color:var(--text-muted); padding:20px; font-weight:700;">لا توجد أعمال مسجلة حتى الآن.</div>`;
+        return;
+    }
 
-      if (newName.length > 25) {
-          return alert("الاسم طويل جداً! الحد الأقصى 25 حرف.");
-      }
+    // تفريغ الشبكة ورسم الكروت المحفوظة
+    savedGrid.innerHTML = '';
+    
+    savedMangas.forEach(m => {
+        let live = m.status && m.status.includes('مستمر');
+        let rating = m.rating ? parseFloat(m.rating).toFixed(1) : "0.0";
 
-      try {
-          // 🚀 الحركات والتكات هنا: نشغل الأنيميشن ونحط أيقونة بتلف
-          userNameEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i> جاري التحديث...`;
-          userNameEl.classList.add('updating-name');
-          
-          // إخفاء زر القلم مؤقتاً عشان ميضغطش عليه تاني وهو بيحمل
-          const editBtn = document.querySelector('.edit-name-btn');
-          if(editBtn) editBtn.style.display = 'none';
+        let card = document.createElement('div');
+        card.className = 'card';
+        card.onclick = () => { window.location.href = `details.html?id=${m.id}`; };
 
-          // تحديث الاسم في سيرفرات فايربيز
-          await updateProfile(user, {
-              displayName: newName.trim()
-          });
-
-          // 🛑 نوقف الحركات والتكات ونعرض الاسم الجديد
-          userNameEl.classList.remove('updating-name');
-          userNameEl.innerText = newName.trim();
-          
-          // إظهار زر القلم تاني
-          if(editBtn) editBtn.style.display = 'flex';
-
-          // تأثير اهتزاز خفيف لتليجرام
-          if(window.Telegram && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
-              Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-          }
-
-      } catch (error) {
-          console.error(error);
-          alert("حدث خطأ أثناء تغيير الاسم. تأكد من اتصالك بالإنترنت.");
-          
-          // إرجاع الوضع القديم لو حصل خطأ
-          userNameEl.classList.remove('updating-name');
-          userNameEl.innerText = currentName;
-          const editBtn = document.querySelector('.edit-name-btn');
-          if(editBtn) editBtn.style.display = 'flex';
-      }
-  }
+        card.innerHTML = `
+        <div class="poster">
+            <div class="status ${live ? 'live' : 'done'}">
+                ${live ? 'مستمر' : 'مكتمل'}
+            </div>
+            <img src="${m.image_url}" loading="lazy" alt="poster">
+        </div>
+        <div class="content">
+            <div class="title">${m.title}</div>
+            <div class="genres">
+                <span class="tag" style="background: rgba(168, 85, 247, 0.2); color: var(--primary); border: 1px solid var(--primary);">محفوظ 🔖</span>
+            </div>
+            <div class="meta-footer">
+                <div class="stars"><i class="fa-solid fa-star"></i> ${rating}</div>
+            </div>
+        </div>
+        `;
+        savedGrid.appendChild(card);
+    });
+}
   
 </script>
 
