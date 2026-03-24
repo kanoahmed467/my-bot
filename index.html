@@ -1398,7 +1398,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   
   // 🔥 السطر ده اللي ضفناه عشان قاعدة البيانات
-  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+ import { getDatabase, ref, get, child, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// تعريف Realtime Database وربطها بالويندو
+  
 
   // 2. إعدادات قاعدة البيانات بتاعتك
   const firebaseConfig = {
@@ -1416,6 +1419,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
   const analytics = getAnalytics(app);
   const auth = getAuth(app);
   const googleProvider = new GoogleAuthProvider();
+
+  const database = getDatabase(app);
+  window.database = database;
+  window.dbRef = ref(database);
+  window.get = get;
+  window.child = child;
   
   // 🔥 تعريف قاعدة البيانات وربطها بالويندو عشان كل الدوال تشوفها
   const db = getFirestore(app);
@@ -1523,22 +1532,25 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 // ==========================================
 
 // دالة التنقل بين تبويبات قائمتي
+// ==========================================
+// 📚 تشغيل نظام "قائمتي" بالكامل وربطها بفايربيز
+// ==========================================
+
+// دالة التنقل بين تبويبات قائمتي
 window.filterMyList = function(type, btn) {
     // 1. إزالة التفعيل من كل الأزرار وإضافته للزر المضغوط
     document.querySelectorAll('.list-tabs .list-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 
     // 2. تحديث الشبكة بناءً على النوع
-    renderMyListUI(type);
+    window.renderMyListUI(type);
 }
 
-// دالة رسم المانجات في قسم "قائمتي" بناءً على الفلتر
 // دالة رسم المانجات في قسم "قائمتي" بناءً على الفلتر (مربوطة بفايربيز)
 window.renderMyListUI = async function(filterType = 'all') {
     let listGrid = document.getElementById('myListGrid');
     const user = window.currentFirebaseUser;
 
-    // 1. لو مفيش مستخدم (كإجراء أمني إضافي رغم إننا حاميين الصفحة)
     if (!user) {
         listGrid.innerHTML = `
         <div style="text-align:center; width:100%; color:var(--text-muted); padding:40px 20px;">
@@ -1548,44 +1560,38 @@ window.renderMyListUI = async function(filterType = 'all') {
         return;
     }
 
-    // 2. إظهار تأثير التحميل لحد ما البيانات تيجي من السيرفر
     listGrid.innerHTML = `
     <div style="text-align:center; width:100%; color:var(--primary); padding:40px 20px;">
         <i class="fas fa-spinner fa-spin" style="font-size:30px; margin-bottom:10px;"></i><br>
-        جاري جلب مكتبتك الخاصة...
+        جاري جلب مكتبتك من السيرفر...
     </div>`;
 
     try {
-        // 3. جلب بيانات المستخدم ده تحديداً من قاعدة البيانات
-        // الكود الصحيح بدون window.
-        const userDocRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userDocRef);
+        // جلب البيانات من Realtime Database
+        const snapshot = await window.get(window.child(window.dbRef, `users/${user.uid}`));
+        
+        let savedIds = []; 
+        let statusObj = {}; 
 
-        let savedIds =[];
-        let statusObj = {};
-
-        // لو المستخدم ليه بيانات متسجلة قبل كده، هاتها
-        if (userDoc.exists()) {
-            const data = userDoc.data();
-            savedIds = data.savedMangas ||[]; // مصفوفة للأعمال المفضلة
-            statusObj = data.mangaStatus || {}; // كائن لحالات القراءة
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            savedIds = data.savedMangas || []; 
+            statusObj = data.mangaStatus || {}; 
         }
 
-        let filteredMangas =[];
+        let filteredMangas = [];
 
-        // 4. فلترة الأعمال بناءً على التبويب المختار
-        // استبدل dataAll بـ window.dataAll في الـ filters
-if(filterType === 'all') {
-    let allInteractedIds = new Set([...savedIds, ...Object.keys(statusObj)]);
-    filteredMangas = window.dataAll.filter(m => allInteractedIds.has(m.id.toString()));
-} else if (filterType === 'fav') {
-    filteredMangas = window.dataAll.filter(m => savedIds.includes(m.id.toString()));
-} else {
-    let idsWithThisStatus = Object.keys(statusObj).filter(id => statusObj[id] === filterType);
-    filteredMangas = window.dataAll.filter(m => idsWithThisStatus.includes(m.id.toString()));
-}
+        // فلترة الأعمال بناءً على التبويب المختار
+        if(filterType === 'all') {
+            let allInteractedIds = new Set([...savedIds, ...Object.keys(statusObj)]);
+            filteredMangas = window.dataAll.filter(m => allInteractedIds.has(m.id.toString()));
+        } else if (filterType === 'fav') {
+            filteredMangas = window.dataAll.filter(m => savedIds.includes(m.id.toString()));
+        } else {
+            let idsWithThisStatus = Object.keys(statusObj).filter(id => statusObj[id] === filterType);
+            filteredMangas = window.dataAll.filter(m => idsWithThisStatus.includes(m.id.toString()));
+        }
 
-        // 5. لو القائمة فارغة ومفيش أعمال
         if(filteredMangas.length === 0) {
              listGrid.innerHTML = `
              <div style="text-align:center; width:100%; color:var(--text-muted); padding:40px 20px;">
@@ -1595,17 +1601,27 @@ if(filterType === 'all') {
             return;
         }
 
-        // 6. رسم الكروت لو فيه أعمال
         listGrid.innerHTML = '';
         filteredMangas.forEach(m => {
             let live = m.status && m.status.includes('مستمر');
             let rating = m.rating ? parseFloat(m.rating).toFixed(1) : "0.0";
             
-            const tags = { 
-                'fav': 'محفوظ 🔖', 'reading': 'أقرأها 📖', 
-                'planned': 'أرغب ⏳', 'completed': 'مكتملة ✅', 'dropped': 'متروكة ❌' 
-            };
-            let tagText = tags[filterType] || 'في قائمتي 📚';
+            // تحديد التاج المناسب
+            let tagText = 'في قائمتي 📚';
+            if (filterType !== 'all') {
+                const tags = { 
+                    'fav': 'محفوظ 🔖', 'reading': 'أقرأها 📖', 
+                    'planned': 'أرغب ⏳', 'completed': 'مكتملة ✅', 'dropped': 'متروكة ❌' 
+                };
+                tagText = tags[filterType];
+            } else {
+                let mId = m.id.toString();
+                if (statusObj[mId] === 'reading') tagText = 'أقرأها 📖';
+                else if (statusObj[mId] === 'planned') tagText = 'أرغب ⏳';
+                else if (statusObj[mId] === 'completed') tagText = 'مكتملة ✅';
+                else if (statusObj[mId] === 'dropped') tagText = 'متروكة ❌';
+                else if (savedIds.includes(mId)) tagText = 'محفوظ 🔖';
+            }
 
             let card = document.createElement('div');
             card.className = 'card';
@@ -1634,7 +1650,7 @@ if(filterType === 'all') {
         listGrid.innerHTML = `
         <div style="text-align:center; width:100%; color:#ef4444; padding:40px 20px;">
             <i class="fa-solid fa-triangle-exclamation" style="font-size:40px; margin-bottom:15px;"></i><br>
-            حدث خطأ أثناء جلب القائمة، تأكد من اتصالك بالإنترنت.
+            حدث خطأ أثناء جلب القائمة من السيرفر.
         </div>`;
     }
 }
