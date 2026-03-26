@@ -490,6 +490,41 @@
     transform: translateY(-2px);
 }
 
+/* =========================================
+   👑 تنسيقات رفع الفصول (GitHub Admin Panel)
+========================================= */
+.admin-file-wrapper {
+    position: relative;
+    width: 100%;
+    margin-top: 10px;
+}
+.admin-file-input {
+    width: 100%;
+    padding: 12px;
+    background: var(--bg-card-alt);
+    border: 2px dashed var(--c-red);
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    transition: 0.3s;
+}
+.admin-file-input:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+.admin-file-input::-webkit-file-upload-button {
+    background: var(--c-red);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    margin-left: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: 'Cairo', sans-serif;
+}
+
     </style>
 </head>
 <body>
@@ -574,16 +609,28 @@
 
         <!-- 🔥 لوحة الإدارة السرية (هتظهر ليك أنت بس) 🔥 -->
        <!-- 🔥 لوحة الإدارة السرية (هتظهر ليك أنت بس) 🔥 -->
+<!-- 🔥 لوحة الرفع المباشر لـ GitHub (سرية للأدمن فقط) 🔥 -->
 <div id="admin-panel" class="admin-panel">
     <div class="admin-title">
-        <i class="fas fa-user-shield"></i> لوحة الإدارة السريعة
+        <i class="fab fa-github"></i> رفع الفصول المباشر إلى GitHub
     </div>
-    <div class="admin-controls">
-        <input type="number" id="admin-chap-num" class="admin-input" placeholder="رقم الفصل (مثال: 15)">
-        <button class="admin-btn" onclick="addChapterToDB()"><i class="fas fa-plus"></i> نشر</button>
+    
+    <div class="admin-controls" style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; gap: 10px;">
+            <input type="number" id="admin-chap-num" class="admin-input" placeholder="رقم الفصل (مثال: 39)">
+            <!-- خانة التوكن دي عشان محدش يسرق حسابك لو فتح الكود -->
+            <input type="password" id="github-token" class="admin-input" placeholder="GitHub Token السري">
+        </div>
+
+        <div class="admin-file-wrapper">
+            <input type="file" id="admin-chap-file" accept=".html" class="admin-file-input">
+        </div>
+
+        <button class="admin-btn" id="upload-btn" onclick="uploadToGitHubAndDB()" style="width: 100%; padding: 12px; margin-top: 5px;">
+            <i class="fas fa-cloud-upload-alt"></i> رفع إلى جيت هاب ونشر
+        </button>
     </div>
 </div>
-
 
         <!-- شريط البحث والترتيب -->
         <div class="chapters-controls">
@@ -993,7 +1040,93 @@ window.renderChapters = async function(searchQuery = '') {
     // وفي دالة loadMangaData() تذكر أن تستدعي renderChapters() بدلاً من الكود القديم:
     // window.isDescending = true;
     // renderChapters();
+// 👑 الدالة الخارقة: الرفع إلى مستودع GitHub مباشرة ثم الحفظ في Firebase
+window.uploadToGitHubAndDB = async function() {
+    const chapInput = document.getElementById('admin-chap-num');
+    const tokenInput = document.getElementById('github-token');
+    const fileInput = document.getElementById('admin-chap-file');
+    
+    const chapNum = chapInput.value.trim();
+    const token = tokenInput.value.trim();
+    const file = fileInput.files[0];
 
+    // التأكد من إدخال البيانات
+    if (!chapNum || !token || !file) {
+        return alert("⚠️ يرجى إدخال رقم الفصل، الـ Token السري، واختيار ملف الـ HTML!");
+    }
+
+    const btn = document.getElementById('upload-btn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الرفع إلى GitHub...';
+    btn.style.pointerEvents = 'none';
+
+    try {
+        // 1. قراءة الملف وتحويله إلى Base64 (عشان GitHub يقبله)
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            const base64Content = e.target.result.split(',')[1]; // استخراج الكود فقط
+
+            // 2. إعدادات مسار GitHub
+            const repoOwner = "kanoahmed467"; // اسم حسابك
+            const repoName = "my-bot";        // اسم المستودع
+            // المسار السحري اللي بيعمل الفولدرات لوحده: chapters/manga_id/chapter_number.html
+            const path = `chapters/${currentMangaId}/${chapNum}.html`;
+            const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`;
+
+            // 3. إرسال الملف لـ GitHub عبر API
+            const response = await fetch(apiUrl, {
+                method: "PUT",
+                headers: {
+                    "Authorization": `token ${token}`,
+                    "Accept": "application/vnd.github.v3+json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    message: `Upload Chapter ${chapNum} for Manga ${currentMangaId} via Web Admin Panel`,
+                    content: base64Content
+                })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.message || "فشل الرفع لجيت هاب، تأكد من الـ Token والصلاحيات.");
+            }
+
+            // 4. الرفع لـ GitHub نجح! الآن نسجل الفصل في Firebase عشان يظهر للناس
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري النشر في الموقع...';
+
+            const updates = {};
+            updates[`mangas_chapters/${currentMangaId}/${chapNum}`] = true;
+            await update(ref(database), updates);
+
+            // 5. نجاح العملية بالكامل
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> تم الرفع والنشر بنجاح!';
+            btn.style.background = 'var(--c-green)';
+            
+            // تفريغ الحقول ما عدا التوكن عشان لو هترفع فصل تاني ورا بعض
+            chapInput.value = '';
+            fileInput.value = '';
+
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> رفع إلى جيت هاب ونشر';
+                btn.style.background = 'var(--c-red)';
+                btn.style.pointerEvents = 'auto';
+            }, 3000);
+
+            // إعادة رسم الفصول
+            renderChapters();
+        };
+
+        // تشغيل عملية القراءة
+        reader.readAsDataURL(file);
+
+    } catch (error) {
+        console.error(error);
+        alert("❌ حدث خطأ: " + error.message);
+        btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> إعادة المحاولة';
+        btn.style.background = 'var(--c-red)';
+        btn.style.pointerEvents = 'auto';
+    }
+};
 </script>
 
 </body>
