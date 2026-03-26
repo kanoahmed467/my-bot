@@ -417,6 +417,79 @@
     box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
 }
 
+/* =========================================
+   📚 تصميم الفصول الفخم (قراءة + تحميل)
+========================================= */
+.chapters-grid {
+    display: flex; /* غيرناها عشان الكروت تيجي تحت بعض بشكل فخم */
+    flex-direction: column;
+    gap: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.chapter-card-fancy {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(145deg, var(--bg-card), #161c28);
+    border: 1px solid var(--border-color);
+    padding: 12px 20px;
+    border-radius: 14px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.chapter-card-fancy:hover {
+    border-color: var(--c-purple);
+    transform: translateX(-5px);
+    box-shadow: 0 5px 15px var(--c-purple-glow);
+}
+
+.chap-read-btn {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 800;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.chap-read-btn i {
+    color: var(--c-purple);
+    font-size: 20px;
+}
+
+.chap-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.chap-dl-btn {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--c-green);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    transition: 0.3s;
+    text-decoration: none;
+}
+
+.chap-dl-btn:hover {
+    background: var(--c-green);
+    color: white;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+    transform: translateY(-2px);
+}
+
     </style>
 </head>
 <body>
@@ -500,15 +573,16 @@
     <div id="tab-chapters" class="tab-content">
 
         <!-- 🔥 لوحة الإدارة السرية (هتظهر ليك أنت بس) 🔥 -->
-        <div id="admin-panel" class="admin-panel">
-            <div class="admin-title">
-                <i class="fas fa-user-shield"></i> لوحة الإدارة السريعة
-            </div>
-            <div class="admin-controls">
-                <input type="number" id="admin-chap-num" class="admin-input" placeholder="رقم الفصل (مثال: 15)">
-                <button class="admin-btn" onclick="addChapterToDB()"><i class="fas fa-plus"></i> نشر</button>
-            </div>
-        </div>
+       <!-- 🔥 لوحة الإدارة السرية (هتظهر ليك أنت بس) 🔥 -->
+<div id="admin-panel" class="admin-panel">
+    <div class="admin-title">
+        <i class="fas fa-user-shield"></i> لوحة الإدارة السريعة
+    </div>
+    <div class="admin-controls">
+        <input type="number" id="admin-chap-num" class="admin-input" placeholder="رقم الفصل (مثال: 15)">
+        <button class="admin-btn" onclick="addChapterToDB()"><i class="fas fa-plus"></i> نشر</button>
+    </div>
+</div>
 
 
         <!-- شريط البحث والترتيب -->
@@ -840,72 +914,86 @@
     };
 
 // 👑 دالة الإدارة: إضافة فصل جديد لقاعدة البيانات
-    window.addChapterToDB = async function() {
-        const chapInput = document.getElementById('admin-chap-num');
-        const chapNum = chapInput.value.trim();
+    // 👑 دالة الإدارة: إضافة فصل جديد لقاعدة البيانات
+window.addChapterToDB = async function() {
+    const chapInput = document.getElementById('admin-chap-num');
+    const chapNum = chapInput.value.trim();
 
-        if (!chapNum) return alert("أدخل رقم الفصل أولاً!");
+    if (!chapNum) return alert("أدخل رقم الفصل أولاً!");
 
-        const btn = document.querySelector('.admin-btn');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    const btn = document.querySelector('.admin-btn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-        try {
-            const updates = {};
-            // بنحفظ رقم الفصل جوه المانجا دي (القيمة true يعني الفصل موجود)
-            updates[`mangas_chapters/${currentMangaId}/${chapNum}`] = true;
-            
-            await update(ref(database), updates);
-            
-            chapInput.value = '';
-            btn.innerHTML = '<i class="fas fa-check"></i> تم';
-            setTimeout(() => btn.innerHTML = '<i class="fas fa-plus"></i> نشر', 2000);
-
-            // إعادة رسم الفصول عشان يظهر الفصل الجديد فوراً!
-            renderChapters();
-
-        } catch (error) {
-            alert("حدث خطأ أثناء الإضافة!");
-            btn.innerHTML = '<i class="fas fa-plus"></i> نشر';
-        }
-    };
-
-    // 📚 دالة رسم الفصول من قاعدة البيانات (ديناميكية 100%)
-    window.renderChapters = async function(searchQuery = '') {
-        let chaptersContainer = document.getElementById('chapters-list');
+    try {
+        const updates = {};
+        // بنحفظ رقم الفصل في الداتا بيز عشان يظهر للمستخدمين
+        updates[`mangas_chapters/${currentMangaId}/${chapNum}`] = true;
         
-        try {
-            const snapshot = await get(child(ref(database), `mangas_chapters/${currentMangaId}`));
-            
-            if (!snapshot.exists()) {
-                chaptersContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 20px;">لا توجد فصول متاحة حالياً.</div>';
-                return;
-            }
+        await update(ref(database), updates);
+        
+        chapInput.value = '';
+        btn.innerHTML = '<i class="fas fa-check"></i> تم';
+        setTimeout(() => btn.innerHTML = '<i class="fas fa-plus"></i> نشر', 2000);
 
-            // جلب أرقام الفصول المسجلة
-            const chaptersData = snapshot.val();
-            let chaptersArray = Object.keys(chaptersData).map(num => parseInt(num)).sort((a, b) => a - b);
+        // إعادة رسم الفصول عشان يظهر الفصل الجديد فوراً!
+        renderChapters();
 
-            if (window.isDescending) chaptersArray.reverse();
-            if (searchQuery) chaptersArray = chaptersArray.filter(num => num.toString().includes(searchQuery));
+    } catch (error) {
+        alert("حدث خطأ أثناء الإضافة!");
+        btn.innerHTML = '<i class="fas fa-plus"></i> نشر';
+    }
+};
 
-            let chaptersHtml = '';
-            chaptersArray.forEach(num => {
-                // مسار ملفك على Github (البوت هيعملك 15.html، أنت هترفعه في فولدر chapters/manga_id)
-                let chapterUrl = `chapters/${currentMangaId}/${num}.html`; 
-                chaptersHtml += `<a href="${chapterUrl}" class="chapter-btn">${num}</a>`;
-            });
-
-            chaptersContainer.innerHTML = chaptersHtml || '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 20px;">لم يتم العثور على هذا الفصل.</div>';
-
-        } catch (error) {
-            chaptersContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #ef4444; padding: 20px;">حدث خطأ في جلب الفصول.</div>';
+// 📚 دالة رسم الفصول من قاعدة البيانات (الشكل الفخم + زر التحميل)
+window.renderChapters = async function(searchQuery = '') {
+    let chaptersContainer = document.getElementById('chapters-list');
+    
+    try {
+        const snapshot = await get(child(ref(database), `mangas_chapters/${currentMangaId}`));
+        
+        if (!snapshot.exists()) {
+            chaptersContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">لا توجد فصول متاحة حالياً.</div>';
+            return;
         }
-    };
 
+        // جلب أرقام الفصول المسجلة
+        const chaptersData = snapshot.val();
+        let chaptersArray = Object.keys(chaptersData).map(num => parseInt(num)).sort((a, b) => a - b);
+
+        if (window.isDescending) chaptersArray.reverse();
+        if (searchQuery) chaptersArray = chaptersArray.filter(num => num.toString().includes(searchQuery));
+
+        let chaptersHtml = '';
+        chaptersArray.forEach(num => {
+            // ⚠️ مسار جيت هاب المظبوط زي ما البوت بيعمله ⚠️
+            let chapterUrl = `chapters/${currentMangaId}/${num}.html`; 
+
+            // الكارت الفخم الجديد (زر قراءة + زر تحميل)
+            chaptersHtml += `
+            <div class="chapter-card-fancy">
+                <a href="${chapterUrl}" class="chap-read-btn">
+                    <i class="fas fa-book-open"></i>
+                    الفصل ${num}
+                </a>
+                <div class="chap-actions">
+                    <!-- زر التحميل بيحمل ملف الـ html من جيت هاب مباشرة -->
+                    <a href="${chapterUrl}" download="Chapter_${num}.html" class="chap-dl-btn" title="تحميل الفصل (بدون إنترنت)">
+                        <i class="fas fa-download"></i>
+                    </a>
+                </div>
+            </div>`;
+        });
+
+        chaptersContainer.innerHTML = chaptersHtml || '<div style="text-align: center; color: var(--text-muted); padding: 20px;">لم يتم العثور على هذا الفصل.</div>';
+
+    } catch (error) {
+        chaptersContainer.innerHTML = '<div style="text-align: center; color: #ef4444; padding: 20px;">حدث خطأ في جلب الفصول.</div>';
+    }
+};
     // وفي دالة loadMangaData() تذكر أن تستدعي renderChapters() بدلاً من الكود القديم:
     // window.isDescending = true;
     // renderChapters();
-    
+
 </script>
 
 </body>
