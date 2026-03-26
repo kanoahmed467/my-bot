@@ -354,6 +354,69 @@
     box-shadow: 0 5px 10px rgba(168, 85, 247, 0.2);
 }
 
+/* =========================================
+   👑 لوحة تحكم الإدارة السرية (Admin Panel)
+========================================= */
+.admin-panel {
+    display: none; /* مخفية افتراضياً عن كل الناس */
+    background: linear-gradient(145deg, rgba(239, 68, 68, 0.1), rgba(15, 20, 30, 0.9));
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 25px;
+    animation: fadeIn 0.5s ease;
+}
+
+.admin-title {
+    color: var(--c-red);
+    font-size: 16px;
+    font-weight: 900;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.admin-input {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: white;
+    padding: 12px 15px;
+    border-radius: 12px;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;
+    outline: none;
+}
+
+.admin-input:focus {
+    border-color: var(--c-red);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+}
+
+.admin-btn {
+    background: var(--c-red);
+    color: white;
+    border: none;
+    padding: 0 20px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-family: 'Cairo', sans-serif;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.admin-btn:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+}
+
     </style>
 </head>
 <body>
@@ -435,6 +498,19 @@
 
     <!-- تبويب الفصول الجديد -->
     <div id="tab-chapters" class="tab-content">
+
+        <!-- 🔥 لوحة الإدارة السرية (هتظهر ليك أنت بس) 🔥 -->
+        <div id="admin-panel" class="admin-panel">
+            <div class="admin-title">
+                <i class="fas fa-user-shield"></i> لوحة الإدارة السريعة
+            </div>
+            <div class="admin-controls">
+                <input type="number" id="admin-chap-num" class="admin-input" placeholder="رقم الفصل (مثال: 15)">
+                <button class="admin-btn" onclick="addChapterToDB()"><i class="fas fa-plus"></i> نشر</button>
+            </div>
+        </div>
+
+
         <!-- شريط البحث والترتيب -->
         <div class="chapters-controls">
             <input type="number" id="chapter-search" class="chapter-search" placeholder="🔍 ابحث عن رقم الفصل..." oninput="filterChapters()">
@@ -659,37 +735,46 @@
     });
 
     // جلب حالة الأزرار والقائمة المنسدلة
+    // الـ UID السري بتاعك (من صورتك)
+    const ADMIN_UID = "ECvOeDOoPkZUEsCwXMo1Wmvnemb2";
+
+    // جلب حالة الأزرار وكشف الإدارة
     onAuthStateChanged(auth, async (user) => {
         window.currentFirebaseUser = user;
         
-        if (user && currentMangaId) {
-            try {
-                const snapshot = await get(child(ref(database), `users/${user.uid}`));
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    
-                    if (data.mangaStatus && data.mangaStatus[currentMangaId]) {
-                        const statusVal = data.mangaStatus[currentMangaId];
-                        const statusTexts = {
-                            'reading': '📖 أقرأها حالياً',
-                            'planned': '⏳ أرغب بقراءتها',
-                            'completed': '✅ أكملتها',
-                            'dropped': '❌ تركتها'
-                        };
-                        if (statusTexts[statusVal]) {
-                            document.getElementById('dropdown-text').innerText = statusTexts[statusVal];
+        if (user) {
+            // 👑 لو المستخدم هو الأدمن (أنت)، أظهر اللوحة السرية
+            if (user.uid === ADMIN_UID) {
+                document.getElementById('admin-panel').style.display = 'block';
+            }
+
+            if (currentMangaId) {
+                try {
+                    const snapshot = await get(child(ref(database), `users/${user.uid}`));
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        
+                        // تحديث القائمة المنسدلة
+                        if (data.mangaStatus && data.mangaStatus[currentMangaId]) {
+                            const statusVal = data.mangaStatus[currentMangaId];
+                            const statusTexts = {
+                                'reading': '📖 أقرأها حالياً', 'planned': '⏳ أرغب بقراءتها',
+                                'completed': '✅ أكملتها', 'dropped': '❌ تركتها'
+                            };
+                            if (statusTexts[statusVal]) document.getElementById('dropdown-text').innerText = statusTexts[statusVal];
+                        }
+
+                        // تحديث زر المحفوظات
+                        if (data.savedMangas && data.savedMangas.includes(currentMangaId)) {
+                            document.querySelectorAll('.fav-btn, .fav-btn-bottom').forEach(btn => {
+                                btn.classList.add('active');
+                                btn.innerHTML = btn.classList.contains('fav-btn-bottom') ? '<i class="fa-solid fa-bookmark"></i> محفوظ' : '<i class="fa-solid fa-bookmark"></i>';
+                            });
                         }
                     }
-
-                    if (data.savedMangas && data.savedMangas.includes(currentMangaId)) {
-                        document.querySelectorAll('.fav-btn, .fav-btn-bottom').forEach(btn => {
-                            btn.classList.add('active');
-                            btn.innerHTML = btn.classList.contains('fav-btn-bottom') ? '<i class="fa-solid fa-bookmark"></i> محفوظ' : '<i class="fa-solid fa-bookmark"></i>';
-                        });
-                    }
+                } catch (error) {
+                    console.error("خطأ:", error);
                 }
-            } catch (error) {
-                console.error("خطأ في جلب بيانات المستخدم:", error);
             }
         }
     });
@@ -753,6 +838,74 @@
         }
         filterChapters(); // إعادة الرسم مع الحفاظ على البحث لو موجود
     };
+
+// 👑 دالة الإدارة: إضافة فصل جديد لقاعدة البيانات
+    window.addChapterToDB = async function() {
+        const chapInput = document.getElementById('admin-chap-num');
+        const chapNum = chapInput.value.trim();
+
+        if (!chapNum) return alert("أدخل رقم الفصل أولاً!");
+
+        const btn = document.querySelector('.admin-btn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        try {
+            const updates = {};
+            // بنحفظ رقم الفصل جوه المانجا دي (القيمة true يعني الفصل موجود)
+            updates[`mangas_chapters/${currentMangaId}/${chapNum}`] = true;
+            
+            await update(ref(database), updates);
+            
+            chapInput.value = '';
+            btn.innerHTML = '<i class="fas fa-check"></i> تم';
+            setTimeout(() => btn.innerHTML = '<i class="fas fa-plus"></i> نشر', 2000);
+
+            // إعادة رسم الفصول عشان يظهر الفصل الجديد فوراً!
+            renderChapters();
+
+        } catch (error) {
+            alert("حدث خطأ أثناء الإضافة!");
+            btn.innerHTML = '<i class="fas fa-plus"></i> نشر';
+        }
+    };
+
+    // 📚 دالة رسم الفصول من قاعدة البيانات (ديناميكية 100%)
+    window.renderChapters = async function(searchQuery = '') {
+        let chaptersContainer = document.getElementById('chapters-list');
+        
+        try {
+            const snapshot = await get(child(ref(database), `mangas_chapters/${currentMangaId}`));
+            
+            if (!snapshot.exists()) {
+                chaptersContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 20px;">لا توجد فصول متاحة حالياً.</div>';
+                return;
+            }
+
+            // جلب أرقام الفصول المسجلة
+            const chaptersData = snapshot.val();
+            let chaptersArray = Object.keys(chaptersData).map(num => parseInt(num)).sort((a, b) => a - b);
+
+            if (window.isDescending) chaptersArray.reverse();
+            if (searchQuery) chaptersArray = chaptersArray.filter(num => num.toString().includes(searchQuery));
+
+            let chaptersHtml = '';
+            chaptersArray.forEach(num => {
+                // مسار ملفك على Github (البوت هيعملك 15.html، أنت هترفعه في فولدر chapters/manga_id)
+                let chapterUrl = `chapters/${currentMangaId}/${num}.html`; 
+                chaptersHtml += `<a href="${chapterUrl}" class="chapter-btn">${num}</a>`;
+            });
+
+            chaptersContainer.innerHTML = chaptersHtml || '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 20px;">لم يتم العثور على هذا الفصل.</div>';
+
+        } catch (error) {
+            chaptersContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #ef4444; padding: 20px;">حدث خطأ في جلب الفصول.</div>';
+        }
+    };
+
+    // وفي دالة loadMangaData() تذكر أن تستدعي renderChapters() بدلاً من الكود القديم:
+    // window.isDescending = true;
+    // renderChapters();
+    
 </script>
 
 </body>
