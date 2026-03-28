@@ -1,0 +1,504 @@
+
+        <!DOCTYPE html>
+        <html lang="ar" dir="rtl">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+            <title>Solo_Leveling_Ragnarok_ch37 | قاريء المانجا</title>
+            <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+            <style>
+                :root {
+                    --bg-main: #0f141e;
+                    --bg-card: rgba(26, 34, 53, 0.85);
+                    --c-purple: #a855f7;
+                    --text-main: #ffffff;
+                }
+                * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+                body { background-color: var(--bg-main); color: var(--text-main); display: flex; flex-direction: column; align-items: center; }
+
+                /* شريط التمرير (Scrollbar) */
+                ::-webkit-scrollbar { width: 8px; }
+                ::-webkit-scrollbar-track { background: var(--bg-main); }
+                ::-webkit-scrollbar-thumb { background: var(--c-purple); border-radius: 10px; }
+
+                /* الهيدر الزجاجي */
+                .top-bar {
+                    position: fixed; top: 0; width: 100%; z-index: 1000;
+                    background: var(--bg-card); backdrop-filter: blur(15px);
+                    border-bottom: 1px solid rgba(168, 85, 247, 0.3);
+                    display: flex; justify-content: space-between; align-items: center;
+                    padding: 15px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+                }
+                .title { font-weight: 900; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+                .title i { color: var(--c-purple); }
+
+                .actions-btn {
+                    background: none; border: none; color: white; font-size: 20px; cursor: pointer; transition: 0.3s;
+                }
+                .actions-btn:hover { color: var(--c-purple); transform: scale(1.1); }
+
+                /* شريط التقدم */
+                .progress-container { width: 100%; height: 4px; background: rgba(255,255,255,0.1); position: absolute; bottom: 0; left: 0; }
+                .progress-bar { height: 4px; background: var(--c-purple); width: 0%; box-shadow: 0 0 10px var(--c-purple); }
+
+                /* حاوية الصور */
+                .reader-container { max-width: 800px; width: 100%; margin-top: 60px; display: flex; flex-direction: column; }
+
+                /* تأثير النبض أثناء التحميل */
+                @keyframes pulse {
+                    0% { background-color: #1a2235; }
+                    50% { background-color: #2d3748; }
+                    100% { background-color: #1a2235; }
+                }
+                .img-wrapper { width: 100%; min-height: 80vh; animation: pulse 1.5s infinite; position: relative; }
+
+                img { 
+                    width: 100%; display: block; object-fit: contain; opacity: 0; transition: opacity 0.5s ease;
+                }
+                img.loaded { opacity: 1; animation: none; }
+
+                /* الفوتر */
+                .footer {
+                    margin-top: 20px; width: 100%; max-width: 800px; padding: 40px 20px; text-align: center;
+                    background: linear-gradient(to top, var(--bg-card), transparent);
+                    border-top: 1px solid rgba(168, 85, 247, 0.2);
+                }
+                .footer h3 { color: var(--c-purple); margin-bottom: 5px; }
+                .footer p { font-size: 13px; color: #888; }
+
+                /* زر الرجوع للأعلى */
+                #scrollTopBtn {
+                    display: none; position: fixed; bottom: 30px; right: 30px; z-index: 99;
+                    background: var(--c-purple); color: white; border: none; outline: none;
+                    width: 50px; height: 50px; border-radius: 50%; cursor: pointer;
+                    font-size: 20px; box-shadow: 0 5px 15px rgba(168, 85, 247, 0.4); transition: 0.3s;
+                }
+                #scrollTopBtn:hover { background: #9333ea; transform: translateY(-3px); }
+            </style>
+        </head>
+        <body>
+
+            <!-- الهيدر وشريط التقدم -->
+            <div class="top-bar">
+                <div class="title"><i class="fas fa-book-open"></i> Solo_Leveling_Ragnarok_ch37</div>
+                <button class="actions-btn" onclick="toggleFullScreen()" title="ملء الشاشة">
+                    <i class="fas fa-expand"></i>
+                </button>
+                <div class="progress-container">
+                    <div class="progress-bar" id="myBar"></div>
+                </div>
+            </div>
+
+            <!-- المانجا -->
+            <div class="reader-container">
+        
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/i4wwsd.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/ckkayh.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/0np24s.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/xniqae.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/w4syvz.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/2i2mv2.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/sm854m.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/0y0r1t.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/jho89f.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/uetro7.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/fe0qj0.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/rxwgd8.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/izseqr.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/pgqvzu.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/zyrkb8.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/e9jkw6.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/bto4q0.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/bg5qge.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/w0d39j.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/t1ovt5.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/hyqge3.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/r46das.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/drl9u3.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/oi0np4.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/odw6uk.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/7z0ahp.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/y9s30f.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/omluty.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/7h3c0b.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/97jx9h.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/ub5gbz.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/ykwcll.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/c1cigz.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/gkx3gu.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/xnkr6y.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/7batid.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/e643eb.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/p6biyf.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/9cdfrx.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/v6resm.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/00srgu.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/jtmtdf.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/9rjja8.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/0g7zf8.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/jydbmr.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/40wh2v.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/p8mtnf.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/mw8l97.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/z5q4px.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/n4tanz.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/llmcai.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/3o64jd.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/rfxuf1.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/jydbmr.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/lqimdg.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/cb567n.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/pgjufy.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/yvzuhc.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/997kay.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/amtjea.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/lzcgyb.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/tmc7kq.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/emwkrb.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/zyrmzz.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/jwxef5.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/ijpt7m.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/wi5cbo.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/4gdqrj.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/kwcje1.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/gv6u2d.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/2i2mv2.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/kan367.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/uaq1cz.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/49ibxk.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/zxkumg.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/5l2n7m.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/e01a5g.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/vw9b9c.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/pd28rk.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/nfiuvg.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/fmfdzz.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/48f9gs.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/xuyzws.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/i9suvx.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/wkfxn4.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/d9k16n.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/2yj4dw.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+                <div class="img-wrapper">
+                    <img src="https://files.catbox.moe/58j0kr.jpg" loading="lazy" onload="this.classList.add('loaded'); this.parentElement.style.animation='none'; this.parentElement.style.minHeight='auto';">
+                </div>
+            
+            </div>
+
+            <!-- الفوتر -->
+            <div class="footer">
+                <h3><i class="fas fa-check-circle"></i> نهاية الفصل</h3>
+                <p>تم المعالجة والرفع بواسطة نظام الإدارة</p>
+            </div>
+
+            <!-- زر الرجوع للأعلى -->
+            <button onclick="scrollToTop()" id="scrollTopBtn" title="العودة للأعلى">
+                <i class="fas fa-arrow-up"></i>
+            </button>
+
+            <!-- سكربتات التفاعل -->
+            <script>
+                // 1. شريط التقدم وزر الصعود
+                window.onscroll = function() {
+                    let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                    let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                    let scrolled = (winScroll / height) * 100;
+                    document.getElementById("myBar").style.width = scrolled + "%";
+
+                    let topBtn = document.getElementById("scrollTopBtn");
+                    if (document.body.scrollTop > 500 || document.documentElement.scrollTop > 500) {
+                        topBtn.style.display = "block";
+                    } else {
+                        topBtn.style.display = "none";
+                    }
+                };
+
+                function scrollToTop() {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+
+                // 2. وضع ملء الشاشة
+                function toggleFullScreen() {
+                    let elem = document.documentElement;
+                    let icon = document.querySelector('.actions-btn i');
+
+                    if (!document.fullscreenElement) {
+                        if (elem.requestFullscreen) { elem.requestFullscreen(); }
+                        else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } // Safari
+                        else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); } // IE11
+                        icon.classList.remove('fa-expand');
+                        icon.classList.add('fa-compress');
+                    } else {
+                        if (document.exitFullscreen) { document.exitFullscreen(); }
+                        else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+                        else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+                        icon.classList.remove('fa-compress');
+                        icon.classList.add('fa-expand');
+                    }
+                }
+            </script>
+        </body>
+        </html>
+        
