@@ -8,7 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    <!-- مكتبات التحميل والضغط المباشر -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
 /* --- التصميم الفخم المحدث (Elite UI) --- */
         :root {
@@ -1059,6 +1061,7 @@ window.renderChapters = async function(searchQuery = '') {
             let chapterUrl = `chapters/${currentMangaId}/${num}.html`; 
 
             // الكارت الفخم (زر قراءة + زر تحميل + زر حذف للأدمن)
+           // الكارت الفخم (زر قراءة + زر تحميل متطور + زر حذف للأدمن)
             chaptersHtml += `
             <div class="chapter-card-fancy">
                 <a href="${chapterUrl}" class="chap-read-btn">
@@ -1066,12 +1069,12 @@ window.renderChapters = async function(searchQuery = '') {
                     الفصل ${num}
                 </a>
                 <div class="chap-actions">
-                    <!-- زر التحميل بيحمل ملف الـ html من جيت هاب مباشرة -->
-                    <a href="${chapterUrl}" download="Chapter_${num}.html" class="chap-dl-btn" title="تحميل الفصل">
+                    <!-- 📥 زر التحميل السحري (أوفلاين) 📥 -->
+                    <button class="chap-dl-btn" id="dl-btn-${num}" onclick="downloadChapterOffline('${num}')" title="تحميل الفصل للقراءة بدون إنترنت">
                         <i class="fas fa-download"></i>
-                    </a>
+                    </button>
                     
-                    <!-- 🗑️ زر الحذف (مخفي للزوار، بيظهر للأدمن بس) 🗑️ -->
+                    <!-- 🗑️ زر الحذف (للأدمن) 🗑️ -->
                     <button class="chap-delete-btn" onclick="deleteChapter('${num}')" title="حذف الفصل نهائياً">
                         <i class="fas fa-trash-alt"></i>
                     </button>
@@ -1293,6 +1296,88 @@ window.renderChapters = async function(searchQuery = '') {
         } catch (error) {
             console.error(error);
             alert(`❌ حدث خطأ أثناء الحذف:\n${error.message}`);
+        }
+    };
+
+// 📥 الدالة الخارقة: تحميل وتجميع الفصل في ملف ZIP للقراءة أوفلاين (بدون استهلاك مساحة Github)
+    window.downloadChapterOffline = async function(chapNum) {
+        const btn = document.getElementById(`dl-btn-${chapNum}`);
+        const originalHtml = btn.innerHTML;
+        
+        // تغيير شكل الزرار عشان الزائر يعرف إن التحميل شغال
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        btn.style.pointerEvents = 'none';
+        btn.style.background = 'var(--c-orange)';
+        btn.style.color = '#fff';
+        btn.title = "جاري تجميع الصور... الرجاء الانتظار";
+
+        try {
+            // 1. جلب ملف الـ HTML بتاع الفصل من Github
+            const htmlRes = await fetch(`chapters/${currentMangaId}/${chapNum}.html`);
+            if (!htmlRes.ok) throw new Error("لا يمكن الوصول لملف الفصل!");
+            const htmlText = await htmlRes.text();
+
+            // 2. استخراج روابط الصور من كود الـ HTML باستخدام Regex
+            const imgRegex = /<img[^>]+src="([^">]+)"/g;
+            let match;
+            const imgUrls = [];
+            while ((match = imgRegex.exec(htmlText)) !== null) {
+                imgUrls.push(match[1]); // اللينكات بتاعت Catbox
+            }
+
+            if (imgUrls.length === 0) throw new Error("لم يتم العثور على صور في هذا الفصل!");
+
+            // 3. إنشاء ملف ZIP جديد في الرامات
+            const zip = new JSZip();
+            const folder = zip.folder(`Manga_${currentMangaId}_Chapter_${chapNum}`);
+
+            // 4. تحميل الصور واحدة واحدة وإضافتها للـ ZIP
+            for (let i = 0; i < imgUrls.length; i++) {
+                // بنستخدم بروكسي مجاني عشان نتخطى مشكلة الـ CORS اللي بتمنع المتصفح من تحميل صور خارجية مباشرة
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(imgUrls[i])}`;
+                
+                try {
+                    const imgBlob = await fetch(proxyUrl).then(r => r.blob());
+                    // تسمية الصور بالترتيب: 001.jpg, 002.jpg عشان تترتب صح في القارئ
+                    const fileName = `${String(i + 1).padStart(3, '0')}.jpg`;
+                    folder.file(fileName, imgBlob);
+                    
+                    // تحديث الزرار بنسبة مئوية
+                    const percent = Math.round(((i + 1) / imgUrls.length) * 100);
+                    btn.innerHTML = `<span style="font-size:10px; font-weight:900;">${percent}%</span>`;
+                } catch (e) {
+                    console.error(`فشل تحميل الصورة رقم ${i+1}`);
+                }
+            }
+
+            // 5. توليد ملف الـ ZIP النهائي وتنزيله للزائر
+            btn.innerHTML = '<i class="fas fa-cog fa-spin"></i>'; // جاري ضغط الملف
+            const zipBlob = await zip.generateAsync({ type: "blob" });
+            
+            saveAs(zipBlob, `Manga_${currentMangaId}_Chapter_${chapNum}.zip`);
+
+            // 6. إرجاع الزرار لشكله الطبيعي مع رسالة نجاح
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            btn.style.background = 'var(--c-green)';
+            setTimeout(() => {
+                btn.innerHTML = originalHtml;
+                btn.style.background = '';
+                btn.style.color = '';
+                btn.style.pointerEvents = 'auto';
+                btn.title = "تحميل الفصل";
+            }, 3000);
+
+        } catch (error) {
+            console.error(error);
+            alert(`❌ حدث خطأ أثناء التحميل:\n${error.message}`);
+            btn.innerHTML = '<i class="fas fa-times"></i>';
+            btn.style.background = 'var(--c-red)';
+            setTimeout(() => {
+                btn.innerHTML = originalHtml;
+                btn.style.background = '';
+                btn.style.color = '';
+                btn.style.pointerEvents = 'auto';
+            }, 3000);
         }
     };
 
