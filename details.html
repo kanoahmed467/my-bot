@@ -525,6 +525,34 @@
     font-family: 'Cairo', sans-serif;
 }
 
+
+/* زر الحذف الخاص بالأدمن فقط */
+.chap-delete-btn {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--c-red);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: none; /* مخفي افتراضياً عن كل الناس */
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.chap-delete-btn:hover {
+    background: var(--c-red);
+    color: white;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+    transform: scale(1.1);
+}
+
+/* لما الموقع يكتشف إنك الأدمن، هيحط الكلاس ده عشان يظهر الزراير */
+.admin-mode-active .chap-delete-btn {
+    display: flex !important;
+}
     </style>
 </head>
 <body>
@@ -878,7 +906,11 @@
             // 👑 لو المستخدم هو الأدمن (أنت)، أظهر اللوحة السرية
             if (user.uid === ADMIN_UID) {
                 document.getElementById('admin-panel').style.display = 'block';
+                // تفعيل وضع الأدمن على صندوق الفصول عشان زراير الحذف تظهرلك
+                document.getElementById('chapters-list').classList.add('admin-mode-active');
             }
+
+            
 
             if (currentMangaId) {
                 try {
@@ -1023,10 +1055,10 @@ window.renderChapters = async function(searchQuery = '') {
 
         let chaptersHtml = '';
         chaptersArray.forEach(num => {
-            // ⚠️ مسار جيت هاب المظبوط زي ما البوت بيعمله ⚠️
+            // مسار جيت هاب المظبوط
             let chapterUrl = `chapters/${currentMangaId}/${num}.html`; 
 
-            // الكارت الفخم الجديد (زر قراءة + زر تحميل)
+            // الكارت الفخم (زر قراءة + زر تحميل + زر حذف للأدمن)
             chaptersHtml += `
             <div class="chapter-card-fancy">
                 <a href="${chapterUrl}" class="chap-read-btn">
@@ -1035,9 +1067,14 @@ window.renderChapters = async function(searchQuery = '') {
                 </a>
                 <div class="chap-actions">
                     <!-- زر التحميل بيحمل ملف الـ html من جيت هاب مباشرة -->
-                    <a href="${chapterUrl}" download="Chapter_${num}.html" class="chap-dl-btn" title="تحميل الفصل (بدون إنترنت)">
+                    <a href="${chapterUrl}" download="Chapter_${num}.html" class="chap-dl-btn" title="تحميل الفصل">
                         <i class="fas fa-download"></i>
                     </a>
+                    
+                    <!-- 🗑️ زر الحذف (مخفي للزوار، بيظهر للأدمن بس) 🗑️ -->
+                    <button class="chap-delete-btn" onclick="deleteChapter('${num}')" title="حذف الفصل نهائياً">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
                 </div>
             </div>`;
         });
@@ -1198,7 +1235,67 @@ window.renderChapters = async function(searchQuery = '') {
         }, 1000);
     });
 
-    
+
+// 🗑️ الدالة الخارقة: حذف الفصل نهائياً (للأدمن فقط)
+    window.deleteChapter = async function(chapNum) {
+        // رسالة تأكيد مرعبة عشان متمسحش حاجة بالغلط
+        if (!confirm(`⚠️ تحذير خطير!\nهل أنت متأكد من حذف الفصل رقم ${chapNum} نهائياً؟\nسيتم مسحه من الموقع ومن سيرفرات Github ولا يمكن استرجاعه!`)) {
+            return;
+        }
+
+        const token = localStorage.getItem('KLE_GitHub_Token');
+        if (!token) return alert("❌ يرجى إدخال GitHub Token في لوحة الرفع بالأعلى أولاً لتمكين الحذف!");
+
+        const repoOwner = "kanoahmed467"; // حسابك
+        const repoName = "my-bot";        // مستودعك
+        const path = `chapters/${currentMangaId}/${chapNum}.html`;
+        const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`;
+
+        try {
+            // 1. جلب الـ SHA بتاع الملف من Github (عشان نقدر نمسحه)
+            const getRes = await fetch(apiUrl, {
+                headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" }
+            });
+            
+            if (getRes.ok) {
+                const fileData = await getRes.json();
+                const fileSha = fileData.sha;
+
+                // 2. أمر الحذف لـ Github
+                const deleteRes = await fetch(apiUrl, {
+                    method: "DELETE",
+                    headers: {
+                        "Authorization": `token ${token}`,
+                        "Accept": "application/vnd.github.v3+json",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        message: `Admin deleted Chapter ${chapNum} for Manga ${currentMangaId}`,
+                        sha: fileSha
+                    })
+                });
+
+                if (!deleteRes.ok) throw new Error("فشل الحذف من Github.");
+            } else if (getRes.status !== 404) {
+                // لو الخطأ مش 404 (يعني الملف مش موجود أصلاً)، ارمي إيرور
+                throw new Error("فشل الوصول للملف على Github.");
+            }
+
+            // 3. حذف الفصل من Firebase (عشان يختفي من الموقع للزوار)
+            const updates = {};
+            updates[`mangas_chapters/${currentMangaId}/${chapNum}`] = null; // null بتمسح البيانات
+            await update(ref(database), updates);
+
+            // 4. إشعار النجاح وإعادة رسم الفصول
+            alert(`✅ تم مسح الفصل ${chapNum} بنجاح من الموقع ومن سيرفرات Github!`);
+            renderChapters(); // هيحدث الشاشة والفصل هيختفي قدام عينك
+
+        } catch (error) {
+            console.error(error);
+            alert(`❌ حدث خطأ أثناء الحذف:\n${error.message}`);
+        }
+    };
+
 </script>
 
 </body>
