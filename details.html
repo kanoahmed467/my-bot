@@ -609,28 +609,39 @@
 
         <!-- 🔥 لوحة الإدارة السرية (هتظهر ليك أنت بس) 🔥 -->
        <!-- 🔥 لوحة الإدارة السرية (هتظهر ليك أنت بس) 🔥 -->
-<!-- 🔥 لوحة الرفع المباشر لـ GitHub (سرية للأدمن فقط) 🔥 -->
-<div id="admin-panel" class="admin-panel">
-    <div class="admin-title">
-        <i class="fab fa-github"></i> رفع الفصول المباشر إلى GitHub
-    </div>
-    
-    <div class="admin-controls" style="display: flex; flex-direction: column; gap: 10px;">
-        <div style="display: flex; gap: 10px;">
-            <input type="number" id="admin-chap-num" class="admin-input" placeholder="رقم الفصل (مثال: 39)">
-            <!-- خانة التوكن دي عشان محدش يسرق حسابك لو فتح الكود -->
-            <input type="password" id="github-token" class="admin-input" placeholder="GitHub Token السري">
-        </div>
+<!-- 🔥 مركز الرفع المتعدد (Bulk Upload Center) 🔥 -->
+        <div id="admin-panel" class="admin-panel">
+            <div class="admin-title">
+                <i class="fas fa-rocket"></i> مركز الرفع المتعدد (قراءة ذكية للأسماء)
+            </div>
+            
+            <div style="margin-bottom: 10px;">
+                <input type="password" id="github-token" class="admin-input" placeholder="GitHub Token (سيتم حفظه تلقائياً)" style="width: 100%;">
+            </div>
+            
+            <div class="admin-file-wrapper">
+                <!-- لاحظ إضافة كلمة multiple لاختيار أكثر من ملف -->
+                <input type="file" id="admin-chap-files" class="admin-file-input" accept=".html" multiple title="اختر ملفات HTML (مثال: manga_ch10.html)">
+            </div>
+            
+            <button id="upload-btn" class="admin-btn" style="width: 100%; margin-top: 15px; padding: 12px;" onclick="uploadBulkToGitHub()">
+                <i class="fas fa-cloud-upload-alt"></i> بدء الرفع التلقائي للكل
+            </button>
 
-        <div class="admin-file-wrapper">
-            <input type="file" id="admin-chap-file" accept=".html" class="admin-file-input">
+            <!-- شاشة متابعة الرفع (شريط التقدم والسجل) -->
+            <div id="upload-progress-container" style="display: none; margin-top: 15px;">
+                <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; color: var(--text-label); font-weight: bold;">
+                    <span id="progress-text">جاري الرفع: 0 / 0</span>
+                    <span id="progress-percent">0%</span>
+                </div>
+                <div style="width: 100%; background: rgba(0,0,0,0.5); border-radius: 10px; overflow: hidden; height: 8px;">
+                    <div id="progress-bar" style="width: 0%; height: 100%; background: var(--c-green); transition: 0.3s;"></div>
+                </div>
+                <!-- شاشة اللوج (Log) -->
+                <div id="upload-log" style="margin-top: 10px; max-height: 120px; overflow-y: auto; font-size: 11px; color: var(--c-green); background: #000; border: 1px solid #333; padding: 10px; border-radius: 8px; font-family: monospace; text-align: left; direction: ltr;">
+                </div>
+            </div>
         </div>
-
-        <button class="admin-btn" id="upload-btn" onclick="uploadToGitHubAndDB()" style="width: 100%; padding: 12px; margin-top: 5px;">
-            <i class="fas fa-cloud-upload-alt"></i> رفع إلى جيت هاب ونشر
-        </button>
-    </div>
-</div>
 
         <!-- شريط البحث والترتيب -->
         <div class="chapters-controls">
@@ -1041,92 +1052,153 @@ window.renderChapters = async function(searchQuery = '') {
     // window.isDescending = true;
     // renderChapters();
 // 👑 الدالة الخارقة: الرفع إلى مستودع GitHub مباشرة ثم الحفظ في Firebase
-window.uploadToGitHubAndDB = async function() {
-    const chapInput = document.getElementById('admin-chap-num');
-    const tokenInput = document.getElementById('github-token');
-    const fileInput = document.getElementById('admin-chap-file');
-    
-    const chapNum = chapInput.value.trim();
-    const token = tokenInput.value.trim();
-    const file = fileInput.files[0];
-
-    // التأكد من إدخال البيانات
-    if (!chapNum || !token || !file) {
-        return alert("⚠️ يرجى إدخال رقم الفصل، الـ Token السري، واختيار ملف الـ HTML!");
+// 🧠 دالة لاستخراج رقم الفصل من اسم الملف (مهما كان شكله)
+    function extractChapterNumber(filename) {
+        // بتبحث عن كلمة ch أو chapter أو c وبعدها رقم، أو بتاخد آخر رقم قبل .html
+        const match = filename.match(/(?:ch|chapter|c)?\s*[-_]?\s*(\d+(?:\.\d+)?)[^\d]*\.html$/i);
+        if (match) return match[1];
+        
+        // لو ملقاش صيغة معروفة، هياخد أي أرقام موجودة في الاسم
+        const numbers = filename.match(/\d+(?:\.\d+)?/g);
+        return numbers ? numbers[numbers.length - 1] : null;
     }
 
-    const btn = document.getElementById('upload-btn');
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الرفع إلى GitHub...';
-    btn.style.pointerEvents = 'none';
+    // إضافة سطر لكتابة الأحداث في شاشة اللوج
+    function logMessage(msg, type = "info") {
+        const logBox = document.getElementById('upload-log');
+        const color = type === "error" ? "#ef4444" : (type === "success" ? "#10b981" : "#a855f7");
+        logBox.innerHTML += `<div style="color: ${color}; margin-bottom: 3px;">> ${msg}</div>`;
+        logBox.scrollTop = logBox.scrollHeight; // النزول لأسفل أوتوماتيك
+    }
 
-    try {
-        // 1. قراءة الملف وتحويله إلى Base64 (عشان GitHub يقبله)
-        const reader = new FileReader();
-        reader.onload = async function(e) {
-            const base64Content = e.target.result.split(',')[1]; // استخراج الكود فقط
+    // 🚀 الدالة الخارقة: الرفع المتعدد (Bulk Upload)
+    window.uploadBulkToGitHub = async function() {
+        const tokenInput = document.getElementById('github-token');
+        const fileInput = document.getElementById('admin-chap-files');
+        const files = fileInput.files;
+        let token = tokenInput.value.trim();
 
-            // 2. إعدادات مسار GitHub
-            const repoOwner = "kanoahmed467"; // اسم حسابك
-            const repoName = "my-bot";        // اسم المستودع
-            // المسار السحري اللي بيعمل الفولدرات لوحده: chapters/manga_id/chapter_number.html
-            const path = `chapters/${currentMangaId}/${chapNum}.html`;
-            const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`;
+        if (!token) token = localStorage.getItem('KLE_GitHub_Token');
 
-            // 3. إرسال الملف لـ GitHub عبر API
-            const response = await fetch(apiUrl, {
-                method: "PUT",
-                headers: {
-                    "Authorization": `token ${token}`,
-                    "Accept": "application/vnd.github.v3+json",
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    message: `Upload Chapter ${chapNum} for Manga ${currentMangaId} via Web Admin Panel`,
-                    content: base64Content
-                })
-            });
+        if (!token || files.length === 0) {
+            return alert("⚠️ يرجى إدخال الـ Token السري واختيار ملفات الـ HTML!");
+        }
 
-            if (!response.ok) {
-                const errData = await response.json();
-                throw new Error(errData.message || "فشل الرفع لجيت هاب، تأكد من الـ Token والصلاحيات.");
+        // حفظ التوكن عشان متكتبوش كل مرة
+        localStorage.setItem('KLE_GitHub_Token', token);
+        tokenInput.value = token;
+
+        const btn = document.getElementById('upload-btn');
+        const progressContainer = document.getElementById('upload-progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const progressPercent = document.getElementById('progress-percent');
+        
+        btn.style.display = 'none'; // إخفاء الزر أثناء الرفع
+        progressContainer.style.display = 'block';
+        document.getElementById('upload-log').innerHTML = ''; // تنظيف اللوج
+
+        const repoOwner = "kanoahmed467"; // حسابك
+        const repoName = "my-bot";        // مستودعك
+        let successCount = 0;
+        let errorCount = 0;
+
+        logMessage(`Starting bulk upload for ${files.length} files...`, "info");
+
+        // هنمشي على الملفات واحد واحد بالدور عشان Github ميعملش حظر
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const chapNum = extractChapterNumber(file.name);
+
+            if (!chapNum) {
+                logMessage(`[SKIP] Could not find chapter number in: ${file.name}`, "error");
+                errorCount++;
+                continue;
             }
 
-            // 4. الرفع لـ GitHub نجح! الآن نسجل الفصل في Firebase عشان يظهر للناس
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري النشر في الموقع...';
+            try {
+                logMessage(`Processing Ch ${chapNum} (${file.name})...`, "info");
 
-            const updates = {};
-            updates[`mangas_chapters/${currentMangaId}/${chapNum}`] = true;
-            await update(ref(database), updates);
+                // 1. قراءة الملف كـ Base64
+                const base64Content = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+                    reader.readAsDataURL(file);
+                });
 
-            // 5. نجاح العملية بالكامل
-            btn.innerHTML = '<i class="fas fa-check-circle"></i> تم الرفع والنشر بنجاح!';
-            btn.style.background = 'var(--c-green)';
-            
-            // تفريغ الحقول ما عدا التوكن عشان لو هترفع فصل تاني ورا بعض
-            chapInput.value = '';
-            fileInput.value = '';
+                // 2. الرفع لـ GitHub
+                const path = `chapters/${currentMangaId}/${chapNum}.html`;
+                const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`;
 
-            setTimeout(() => {
-                btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> رفع إلى جيت هاب ونشر';
-                btn.style.background = 'var(--c-red)';
-                btn.style.pointerEvents = 'auto';
-            }, 3000);
+                const response = await fetch(apiUrl, {
+                    method: "PUT",
+                    headers: {
+                        "Authorization": `token ${token}`,
+                        "Accept": "application/vnd.github.v3+json",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        message: `Auto-upload Chapter ${chapNum} for Manga ${currentMangaId}`,
+                        content: base64Content
+                    })
+                });
 
-            // إعادة رسم الفصول
-            renderChapters();
-        };
+                if (!response.ok) {
+                    const errData = await response.json();
+                    // لو الخطأ إن الملف موجود أصلاً (محتاج sha للتحديث)، هنتجاهله مؤقتاً في الرفع الجماعي
+                    throw new Error(errData.message); 
+                }
 
-        // تشغيل عملية القراءة
-        reader.readAsDataURL(file);
+                // 3. التسجيل في Firebase
+                const updates = {};
+                updates[`mangas_chapters/${currentMangaId}/${chapNum}`] = true;
+                await update(ref(database), updates);
 
-    } catch (error) {
-        console.error(error);
-        alert("❌ حدث خطأ: " + error.message);
-        btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> إعادة المحاولة';
-        btn.style.background = 'var(--c-red)';
-        btn.style.pointerEvents = 'auto';
-    }
-};
+                successCount++;
+                logMessage(`[OK] Chapter ${chapNum} uploaded & linked!`, "success");
+
+            } catch (error) {
+                logMessage(`[ERROR] Ch ${chapNum} failed: ${error.message}`, "error");
+                errorCount++;
+            }
+
+            // تحديث شريط التقدم
+            const percent = Math.round(((i + 1) / files.length) * 100);
+            progressBar.style.width = `${percent}%`;
+            progressText.innerText = `جاري الرفع: ${i + 1} / ${files.length}`;
+            progressPercent.innerText = `${percent}%`;
+
+            // ⚠️ تأخير متعمد (نصف ثانية) بين كل ملف والتاني عشان نحمي حسابك في GitHub من الحظر ⚠️
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        // النهاية
+        logMessage(`Done! Success: ${successCount} | Failed: ${errorCount}`, "info");
+        btn.innerHTML = '<i class="fas fa-check-double"></i> اكتمل الرفع!';
+        btn.style.background = 'var(--c-green)';
+        btn.style.display = 'block';
+        
+        fileInput.value = ''; // تفريغ الملفات
+        renderChapters(); // تحديث الفصول في الصفحة فوراً
+
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> بدء الرفع التلقائي للكل';
+            btn.style.background = 'var(--c-red)';
+            progressContainer.style.display = 'none';
+        }, 5000);
+    };
+
+    // كود لاسترجاع التوكن المحفوظ أول ما الأدمن يفتح الصفحة
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            const savedToken = localStorage.getItem('KLE_GitHub_Token');
+            if (savedToken && document.getElementById('github-token')) {
+                document.getElementById('github-token').value = savedToken;
+            }
+        }, 1000);
+    });
+
+    
 </script>
 
 </body>
