@@ -266,6 +266,15 @@
                 </div>
             </div>
 
+
+            <!-- قائمة أعمالي المفضلة (لايف من البوت) -->
+            <div class="mt-6 mb-8">
+                <h3 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 border-purple-500 pr-2">أعمالي المفضلة</h3>
+                <!-- هنا هتترسم المانجات بتاعتك -->
+                <div id="user-favorites-list" class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                    <!-- سيتم إضافة الأعمال هنا بواسطة الجافاسكريبت -->
+                </div>
+            </div>
             <!-- أزرار التحكم السفلية -->
             <div class="space-y-3">
                 <button onclick="tg.showAlert('للحصول على VIP، تواصل مع الإدارة في البوت.')" class="w-full bg-[#11141b] flex items-center justify-between p-4 rounded-xl hover:bg-slate-800 transition border border-white/5 shadow-sm">
@@ -319,9 +328,13 @@
         // ==========================================
         // 🚀 جلب البيانات الفورية من الـ API (السحر هنا)
         // ==========================================
+        // ==========================================
+        // 🚀 جلب البيانات وقائمة الأعمال من السيرفر
+        // ==========================================
         async function fetchRealtimeUserData() {
             if (!currentUser.id) return;
             try {
+                // 1. جلب الإحصائيات
                 const response = await fetch(`${API_BASE_URL}/api/user/${currentUser.id}`);
                 const dbData = await response.json();
                 if (dbData.success) {
@@ -338,7 +351,45 @@
                         badge.className = "absolute -bottom-2 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] font-bold px-4 py-1 rounded-full border border-[#11141b] tracking-widest uppercase shadow-md";
                     }
                 }
-            } catch (error) { console.error("API Error:", error); }
+
+                // 2. جلب الأعمال المفضلة (قائمتي) 🌟
+                const favResponse = await fetch(`${API_BASE_URL}/api/user/${currentUser.id}/favorites`);
+                const favData = await favResponse.json();
+                const favBox = document.getElementById('user-favorites-list');
+                
+                if (favData.success && favData.favorites.length > 0) {
+                    favBox.innerHTML = ''; // تفريغ الصندوق
+                    
+                    const statusMap = {
+                        'reading': { text: '📖 يقرأ', color: 'bg-blue-600/90' },
+                        'plan': { text: '⏳ يخطط', color: 'bg-yellow-600/90' },
+                        'completed': { text: '✅ اكتمل', color: 'bg-green-600/90' },
+                        'dropped': { text: '❌ متوقف', color: 'bg-red-600/90' }
+                    };
+
+                    favData.favorites.forEach(m => {
+                        const sInfo = statusMap[m.status] || { text: m.status, color: 'bg-gray-600/90' };
+                        
+                        favBox.innerHTML += `
+                            <div class="relative w-full aspect-[2/3] rounded-lg overflow-hidden cursor-pointer shadow-lg border border-white/10" onclick="openMangaDetails(${m.id})">
+                                <img src="${m.image_url}?t=${new Date().getTime()}" class="absolute inset-0 w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
+                                
+                                <div class="absolute top-1 right-1 ${sInfo.color} backdrop-blur-md px-1.5 py-0.5 rounded text-[9px] font-bold text-white shadow-sm">
+                                    ${sInfo.text}
+                                </div>
+                                
+                                <div class="absolute bottom-0 left-0 right-0 p-1.5 text-center">
+                                    <h3 class="text-[10px] font-bold text-white line-clamp-1 drop-shadow-md">${m.title}</h3>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    favBox.innerHTML = `<p class="col-span-full text-center text-gray-500 text-sm py-6 bg-white/5 rounded-xl border border-white/5">قائمتك فارغة حالياً 📭</p>`;
+                }
+
+            } catch (error) { console.error("User API Error:", error); }
         }
 
         // ==========================================
