@@ -198,7 +198,8 @@ function openChapter(c, md) {
   lastRead = { c, m: md };
   store.set('sm_last_' + manga.id, lastRead);
   try { tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
-  openLink(chapterLink(manga, c, md));
+  if (md === 'normal') location.href = `reader.html?id=${manga.id}&c=${encodeURIComponent(c)}`;
+  else openLink(chapterLink(manga, c, md));
 }
 
 /* ---------- الرسم ---------- */
@@ -225,7 +226,6 @@ function render() {
   // الوصف
   const text = (m.description || '').trim() || 'لا يوجد وصف متاح.';
   $('desc').innerText = text;
-  if (text.length > 180) $('desc-toggle').classList.remove('hidden');
 
   // التصنيفات
   const flag = /[\u{1F1E6}-\u{1F1FF}]/u;
@@ -251,6 +251,8 @@ function render() {
   renderSimilar();
 
   $('page').classList.remove('hidden');
+  requestAnimationFrame(updateDescToggle);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(updateDescToggle);
   $('splash').style.opacity = '0';
   setTimeout(() => $('splash').style.display = 'none', 300);
 }
@@ -260,6 +262,13 @@ function toggleDesc() {
   const collapsed = el.classList.toggle('line-clamp-4');
   $('desc-toggle').innerText = collapsed ? 'عرض المزيد' : 'عرض أقل';
 }
+
+function updateDescToggle() {
+  const el = $('desc'), btn = $('desc-toggle');
+  if (!el.classList.contains('line-clamp-4')) return; // النص مفتوح، سيب الزرار عشان يقفله
+  btn.classList.toggle('hidden', el.scrollHeight <= el.clientHeight + 1);
+}
+window.addEventListener('resize', updateDescToggle);
 
 /* ---------- الفصول ---------- */
 function currentList() {
