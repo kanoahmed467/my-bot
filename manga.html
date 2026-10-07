@@ -198,8 +198,13 @@ function openChapter(c, md) {
   lastRead = { c, m: md };
   store.set('sm_last_' + manga.id, lastRead);
   try { tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
-  if (md === 'normal') location.href = `reader.html?id=${manga.id}&c=${encodeURIComponent(c)}`;
-  else openLink(chapterLink(manga, c, md));
+  if (md === 'normal') {
+    try {
+      sessionStorage.setItem('sm_chs_' + manga.id, JSON.stringify(chap.normal));
+      sessionStorage.setItem('sm_bot_' + manga.id, manga.telegram_link || '');
+    } catch(e) {}
+    location.href = `reader.html?id=${manga.id}&c=${encodeURIComponent(c)}`;
+  } else openLink(chapterLink(manga, c, md));
 }
 
 /* ---------- الرسم ---------- */
