@@ -123,8 +123,8 @@ body.hide .bot{transform:translateY(100%)}
 <script>
 /* ============ إعدادات ============ */
 const API = "https://apispeedmanga.hidenplay.net";
-// اختياري: رابط البوت لزرار "فتح في البوت" (مثال: "https://t.me/YourBot"). سيبه فاضي لو مش عايز الزرار.
-const BOT_URL = "";
+// رابط البوت لزرار "فتح في البوت": manga.html بيحفظه تلقائي (sm_bot_<id>)، وده قيمة احتياطية لو مش موجود.
+let BOT_URL = "";
 
 /* ============ أدوات ============ */
 const tg = window.Telegram && Telegram.WebApp;
@@ -137,6 +137,7 @@ const qs = new URLSearchParams(location.search);
 const mangaId = qs.get("id") || "";
 const chapter = (qs.get("c") || "").trim();
 const $ = (id) => document.getElementById(id);
+try { BOT_URL = sessionStorage.getItem("sm_bot_" + mangaId) || BOT_URL; } catch (e) {}
 
 const num = (v) => { const m = String(v).match(/\d+(?:\.\d+)?/); return m ? parseFloat(m[0]) : NaN; };
 const goChapter = (c) => { try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {} location.replace(`reader.html?id=${encodeURIComponent(mangaId)}&c=${encodeURIComponent(c)}`); };
@@ -316,6 +317,8 @@ document.addEventListener("click", (e) => {
 async function init() {
   if (!mangaId || !chapter) { showError("رابط الفصل ناقص."); return; }
   buildBars();
+  // آخر فصل اتقرى (نفس صيغة manga.html) عشان زرار "تابع من" يفضل صح حتى لو انتقلت بالتالي/السابق
+  try { localStorage.setItem("sm_last_" + mangaId, JSON.stringify({ c: chapter, m: "normal" })); } catch (e) {}
   try {
     const ctl = new AbortController();
     const t = setTimeout(() => ctl.abort(), 60000);
