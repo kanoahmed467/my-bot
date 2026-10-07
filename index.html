@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Speed Manga - Mini App</title>
+    <title>Speed Manga - Kingdom</title>
     
     <!-- خطوط جوجل -->
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
     
-    <!-- مكتبات الأيقونات والسحب (Swiper) -->
+    <!-- مكتبات الأيقونات والسحب -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
     
@@ -18,226 +18,460 @@
 
     <style>
         :root {
-            --tg-bg: #0f1115; /* لون خلفية مظلم جداً وفخم */
+            --bg-base: #0a0c10;
+            --bg-panel: #11141b;
             --primary: #3b82f6;
+            --accent: #8b5cf6;
         }
         body {
-            background-color: var(--tg-bg);
+            background-color: var(--bg-base);
             color: white;
             font-family: 'Tajawal', sans-serif;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
         }
-        
-        /* تدرج البانر الرئيسي */
+
+        /* التدرجات اللونية وتأثيرات الزجاج */
+        .glass-panel {
+            background: rgba(17, 20, 27, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
         .hero-gradient {
-            background: linear-gradient(0deg, #0f1115 0%, rgba(15,17,21,0.7) 40%, rgba(15,17,21,0.1) 100%);
+            background: linear-gradient(0deg, var(--bg-base) 0%, rgba(10,12,16,0.6) 50%, transparent 100%);
+        }
+        .hero-vignette {
+            box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
         }
 
-        /* إخفاء شريط التمرير للسلايدرات مع الحفاظ على السحب */
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* شاشة التحميل الأولية */
-        #splash-screen {
-            position: fixed; inset: 0; z-index: 9999;
-            background-color: #0f1115;
-            display: flex; justify-content: center; items-center; flex-direction: column;
-            transition: opacity 0.5s ease;
+        /* أنيميشن الظهور السلس */
+        .fade-in-up {
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(20px);
         }
-        .loader {
-            width: 50px; height: 50px;
-            border: 4px solid rgba(59, 130, 246, 0.3);
-            border-top-color: #3b82f6;
-            border-radius: 50%;
-            animation: spin 1s infinite linear;
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* تعديلات السلايدر (Swiper) */
+        .swiper-wrapper { direction: rtl; } /* حل مشكلة اللاب توب */
         .swiper-slide {
-            width: 140px !important; /* عرض الكارت في الموبايل */
-            transition: transform 0.3s ease;
+            width: 130px !important;
+            transition: all 0.3s ease;
         }
-        @media (min-width: 768px) {
-            .swiper-slide { width: 180px !important; } /* عرض الكارت في التابلت واللاب */
+        @media (min-width: 768px) { .swiper-slide { width: 170px !important; } }
+        
+        .manga-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.5);
+            z-index: 10;
         }
-        .swiper-slide:hover { transform: translateY(-5px); }
+
+        /* إخفاء شريط التمرير */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-base); }
+        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
     </style>
 </head>
-<body class="pb-20"> <!-- pb-20 عشان القائمة السفلية متغطيش على المحتوى -->
+<body class="flex pb-20 md:pb-0">
 
     <!-- شاشة التحميل -->
-    <div id="splash-screen" class="flex items-center justify-center h-screen">
-        <div class="loader mb-4"></div>
-        <h1 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 tracking-wider">
-            SPEED MANGA
+    <div id="splash-screen" class="fixed inset-0 z-[9999] bg-[#0a0c10] flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+        <h1 class="text-3xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 animate-pulse">
+            المملكة
         </h1>
     </div>
 
-    <!-- البانر الرئيسي (Hero Section) - سيتم تعبئته بالجافاسكربت -->
-    <div id="hero-section" class="relative w-full h-[60vh] md:h-[75vh] bg-gray-900 hidden">
-        <!-- الصورة الخلفية -->
-        <img id="hero-img" src="" class="absolute inset-0 w-full h-full object-cover opacity-80" alt="Hero">
-        <!-- التدرج اللوني -->
-        <div class="absolute inset-0 hero-gradient"></div>
+    <!-- القائمة الجانبية للكمبيوتر والتابلت (Sidebar) -->
+    <aside class="hidden md:flex flex-col w-64 h-screen fixed right-0 top-0 bg-[#0d1017] border-l border-white/5 z-40 p-6">
+        <div class="flex items-center gap-3 mb-10">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center text-xl shadow-lg shadow-blue-500/20">👑</div>
+            <h1 class="text-2xl font-black tracking-wide">سبيد مانجا</h1>
+        </div>
+
+        <nav class="flex-1 space-y-2">
+            <a href="#" onclick="closeAllModals()" class="flex items-center gap-4 px-4 py-3 rounded-xl bg-blue-600/10 text-blue-400 font-bold transition">
+                <i class="fa-solid fa-house text-lg w-5"></i> الرئيسية
+            </a>
+            <a href="#" onclick="openSearch()" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
+                <i class="fa-solid fa-magnifying-glass text-lg w-5"></i> البحث المتقدم
+            </a>
+            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mt-8 mb-4 px-4">المكتبة والأقسام</h3>
+            <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
+                <i class="fa-solid fa-fire text-lg w-5 text-orange-500"></i> حصريات المملكة
+            </a>
+            <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
+                <span class="text-lg w-5">🇰🇷</span> مانهوا كورية
+            </a>
+            <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
+                <span class="text-lg w-5">🇯🇵</span> مانجا يابانية
+            </a>
+            <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
+                <i class="fa-solid fa-bookmark text-lg w-5"></i> قائمتي
+            </a>
+        </nav>
+
+        <div class="mt-auto pt-6 border-t border-white/5">
+            <div onclick="openProfile()" class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 cursor-pointer transition">
+                <div class="w-10 h-10 rounded-full bg-slate-700 overflow-hidden border-2 border-blue-500/50">
+                    <img id="side-user-avatar" src="https://ui-avatars.com/api/?name=Guest&background=random" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <h4 id="side-user-name" class="text-sm font-bold">ضيف</h4>
+                    <p class="text-xs text-blue-400">حسابي والإعدادات</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- المحتوى الرئيسي (Main Content) -->
+    <main class="w-full md:pr-64 min-h-screen relative">
         
-        <!-- محتوى البانر -->
-        <div class="absolute bottom-0 left-0 right-0 p-6 md:p-12 flex flex-col justify-end h-full">
-            <span id="hero-genre" class="text-blue-400 font-bold text-sm tracking-wider mb-2 drop-shadow-lg"></span>
-            <h1 id="hero-title" class="text-3xl md:text-5xl font-black mb-3 leading-tight drop-shadow-2xl line-clamp-2 text-white"></h1>
-            <p id="hero-desc" class="text-gray-300 text-sm md:text-base line-clamp-2 md:line-clamp-3 mb-6 max-w-2xl drop-shadow-md"></p>
+        <!-- البانر الرئيسي (Hero) -->
+        <div id="hero-section" class="relative w-full h-[55vh] md:h-[70vh] bg-slate-900 hidden hero-vignette">
+            <img id="hero-img" src="" class="absolute inset-0 w-full h-full object-cover opacity-60" alt="Hero">
+            <div class="absolute inset-0 hero-gradient"></div>
             
-            <div class="flex gap-3">
-                <button onclick="playHero()" class="bg-white text-black px-6 py-2.5 rounded-md font-bold flex items-center gap-2 hover:bg-gray-200 transition">
-                    <i class="fa-solid fa-play"></i> قراءة الآن
+            <div class="absolute inset-0 flex flex-col justify-end p-5 md:p-12 z-10 fade-in-up">
+                <div class="flex items-center gap-2 mb-3">
+                    <span id="hero-origin" class="bg-white/10 backdrop-blur px-2 py-0.5 rounded text-xs font-bold border border-white/10"></span>
+                    <span id="hero-genre" class="text-blue-400 font-bold text-sm tracking-widest drop-shadow-lg"></span>
+                </div>
+                <h1 id="hero-title" class="text-3xl md:text-6xl font-black mb-4 leading-tight text-white drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)] line-clamp-2 md:line-clamp-none"></h1>
+                <p id="hero-desc" class="text-gray-300 text-sm md:text-lg line-clamp-2 md:line-clamp-3 mb-6 max-w-3xl drop-shadow-md"></p>
+                
+                <div class="flex gap-3 md:gap-4">
+                    <button onclick="playHero()" class="bg-white text-black px-6 md:px-10 py-2.5 md:py-3 rounded-lg font-bold flex items-center gap-2 hover:bg-gray-200 hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+                        <i class="fa-solid fa-play"></i> قراءة الآن
+                    </button>
+                    <button onclick="tg.showAlert('تمت الإضافة للقائمة!')" class="glass-panel text-white px-6 py-2.5 md:py-3 rounded-lg font-bold flex items-center gap-2 hover:bg-white/20 transition-all">
+                        <i class="fa-solid fa-plus"></i> قائمتي
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- القوائم الأفقية (Carousels) -->
+        <div id="main-content" class="px-4 md:px-8 -mt-6 relative z-20 hidden space-y-10 pb-10">
+            
+            <!-- قسم 1 -->
+            <div class="fade-in-up" style="animation-delay: 0.2s;">
+                <h2 class="text-lg md:text-xl font-bold mb-4 flex items-center gap-2">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full block"></span> أحدث الحلقات والفصول
+                </h2>
+                <div class="swiper mySwiper overflow-visible">
+                    <div class="swiper-wrapper" id="latest-mangas"></div>
+                </div>
+            </div>
+
+            <!-- قسم 2 -->
+            <div class="fade-in-up" style="animation-delay: 0.4s;">
+                <h2 class="text-lg md:text-xl font-bold mb-4 flex items-center gap-2">
+                    <span class="w-1 h-6 bg-purple-500 rounded-full block"></span> 🇰🇷 المانهوا الكورية (نظام وأبراج)
+                </h2>
+                <div class="swiper mySwiper overflow-visible">
+                    <div class="swiper-wrapper" id="korean-mangas"></div>
+                </div>
+            </div>
+
+            <!-- قسم 3 -->
+            <div class="fade-in-up" style="animation-delay: 0.6s;">
+                <h2 class="text-lg md:text-xl font-bold mb-4 flex items-center gap-2">
+                    <span class="w-1 h-6 bg-red-500 rounded-full block"></span> ⚔️ أكشن وإثارة
+                </h2>
+                <div class="swiper mySwiper overflow-visible">
+                    <div class="swiper-wrapper" id="action-mangas"></div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- شريط التنقل السفلي للموبايل -->
+    <nav class="fixed bottom-0 w-full glass-panel border-t-0 border-white/5 flex justify-around items-center p-3 pb-safe z-50 md:hidden shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+        <a href="#" onclick="closeAllModals()" class="flex flex-col items-center text-blue-500">
+            <i class="fa-solid fa-house text-xl mb-1"></i>
+            <span class="text-[10px] font-bold">الرئيسية</span>
+        </a>
+        <a href="#" onclick="openSearch()" class="flex flex-col items-center text-gray-400 hover:text-white transition">
+            <i class="fa-solid fa-magnifying-glass text-xl mb-1"></i>
+            <span class="text-[10px] font-bold">بحث</span>
+        </a>
+        <a href="#" class="flex flex-col items-center text-gray-400 hover:text-white transition">
+            <i class="fa-solid fa-bookmark text-xl mb-1"></i>
+            <span class="text-[10px] font-bold">قائمتي</span>
+        </a>
+        <a href="#" onclick="openProfile()" class="flex flex-col items-center text-gray-400 hover:text-white transition">
+            <i class="fa-solid fa-user text-xl mb-1"></i>
+            <span class="text-[10px] font-bold">حسابي</span>
+        </a>
+    </nav>
+
+    <!-- ========================================= -->
+    <!-- شاشة البحث المنبثقة (Search Modal) -->
+    <!-- ========================================= -->
+    <div id="search-modal" class="fixed inset-0 z-[100] bg-[#0a0c10] hidden flex-col transition-transform transform translate-y-full duration-300">
+        <div class="glass-panel p-4 flex items-center gap-3">
+            <button onclick="closeAllModals()" class="text-gray-400 hover:text-white p-2">
+                <i class="fa-solid fa-arrow-right text-xl"></i>
+            </button>
+            <div class="flex-1 relative">
+                <i class="fa-solid fa-search absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="search-input" placeholder="ابحث عن مانجا، مانهوا، شخصية..." 
+                       class="w-full bg-[#1c212c] text-white rounded-full py-3 pr-12 pl-4 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-white/5 font-semibold">
+            </div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4 hide-scrollbar">
+            <div id="search-results" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <!-- نتائج البحث ستظهر هنا -->
+                <div class="col-span-full flex flex-col items-center justify-center h-64 text-gray-500">
+                    <i class="fa-solid fa-compass text-5xl mb-3 opacity-50"></i>
+                    <p>ابدأ الكتابة للبحث في مكتبة المملكة...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- شاشة حسابي (Profile Modal) -->
+    <!-- ========================================= -->
+    <div id="profile-modal" class="fixed inset-0 z-[100] bg-[#0a0c10] hidden flex-col transition-transform transform translate-y-full duration-300">
+        <div class="glass-panel p-4 flex items-center justify-between">
+            <h2 class="text-xl font-bold">هوية المغامر</h2>
+            <button onclick="closeAllModals()" class="text-gray-400 hover:text-white w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-6 hide-scrollbar">
+            <!-- كارت العضوية -->
+            <div class="relative bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 border border-white/10 shadow-2xl overflow-hidden mb-8">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl"></div>
+                <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl"></div>
+                
+                <div class="relative z-10 flex items-center gap-5">
+                    <div class="w-20 h-20 rounded-full border-4 border-slate-700 overflow-hidden shadow-lg">
+                        <img id="prof-avatar" src="" class="w-full h-full object-cover" alt="Profile">
+                    </div>
+                    <div>
+                        <h2 id="prof-name" class="text-2xl font-black mb-1">...</h2>
+                        <span class="inline-block bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1 rounded-full text-xs font-bold">
+                            👑 ملك المملكة (VIP)
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4 mt-8 text-center relative z-10">
+                    <div class="bg-black/30 rounded-xl p-3 border border-white/5">
+                        <p class="text-gray-400 text-xs mb-1">النقاط</p>
+                        <p class="text-xl font-bold text-yellow-400">1,250</p>
+                    </div>
+                    <div class="bg-black/30 rounded-xl p-3 border border-white/5">
+                        <p class="text-gray-400 text-xs mb-1">المقروءة</p>
+                        <p class="text-xl font-bold text-white">42</p>
+                    </div>
+                    <div class="bg-black/30 rounded-xl p-3 border border-white/5">
+                        <p class="text-gray-400 text-xs mb-1">القائمة</p>
+                        <p class="text-xl font-bold text-white">15</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- القوائم -->
+            <div class="space-y-3">
+                <button class="w-full glass-panel flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-lg bg-yellow-500/10 text-yellow-500 flex items-center justify-center"><i class="fa-solid fa-crown"></i></div>
+                        <span class="font-bold text-lg">ترقية الحساب لـ VIP</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-left text-gray-500"></i>
                 </button>
-                <button onclick="tg.showAlert('تمت الإضافة للقائمة!')" class="bg-gray-600/60 backdrop-blur text-white px-6 py-2.5 rounded-md font-bold flex items-center gap-2 hover:bg-gray-600 border border-gray-500/30 transition">
-                    <i class="fa-solid fa-plus"></i> قائمتي
+                <button class="w-full glass-panel flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                        <span class="font-bold text-lg">سجل القراءة</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-left text-gray-500"></i>
+                </button>
+                <button class="w-full glass-panel flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center"><i class="fa-solid fa-gear"></i></div>
+                        <span class="font-bold text-lg">الإعدادات</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-left text-gray-500"></i>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- المحتوى (القوائم الأفقية) -->
-    <main id="main-content" class="px-4 md:px-12 mt-6 hidden">
-        
-        <!-- القسم الأول: أحدث الإضافات -->
-        <div class="mb-8">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold border-r-4 border-blue-500 pr-2">🔥 أحدث الأعمال</h2>
-                <a href="#" class="text-sm text-gray-400 hover:text-white">عرض الكل</a>
-            </div>
-            
-            <!-- Swiper Container -->
-            <div class="swiper mySwiper overflow-visible">
-                <div class="swiper-wrapper" id="latest-mangas">
-                    <!-- الكروت هتتضاف هنا -->
-                </div>
-            </div>
-        </div>
-
-        <!-- القسم الثاني: المانهوا الكورية -->
-        <div class="mb-8">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold border-r-4 border-purple-500 pr-2">🇰🇷 مانهوا وتصنيف نظام</h2>
-            </div>
-            <div class="swiper mySwiper overflow-visible">
-                <div class="swiper-wrapper" id="korean-mangas">
-                    <!-- الكروت هتتضاف هنا -->
-                </div>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- قائمة سفلية (Navigation Bar) للموبايل -->
-    <nav class="fixed bottom-0 w-full bg-[#161920]/95 backdrop-blur border-t border-gray-800 flex justify-around items-center p-3 pb-safe z-50 md:hidden">
-        <a href="#" class="flex flex-col items-center text-blue-500">
-            <i class="fa-solid fa-house text-lg"></i>
-            <span class="text-[10px] mt-1 font-bold">الرئيسية</span>
-        </a>
-        <a href="#" class="flex flex-col items-center text-gray-400 hover:text-white transition">
-            <i class="fa-solid fa-magnifying-glass text-lg"></i>
-            <span class="text-[10px] mt-1 font-bold">بحث</span>
-        </a>
-        <a href="#" class="flex flex-col items-center text-gray-400 hover:text-white transition">
-            <i class="fa-solid fa-bookmark text-lg"></i>
-            <span class="text-[10px] mt-1 font-bold">قائمتي</span>
-        </a>
-        <a href="#" class="flex flex-col items-center text-gray-400 hover:text-white transition">
-            <i class="fa-solid fa-user text-lg"></i>
-            <span class="text-[10px] mt-1 font-bold">حسابي</span>
-        </a>
-    </nav>
-
-    <!-- سكربت Swiper -->
+    <!-- السكربتات -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.setHeaderColor('#0f1115');
+        tg.setHeaderColor('#0d1017');
+        tg.setBackgroundColor('#0a0c10');
 
-        // متغير لحفظ الـ ID بتاع المانجا اللي في البانر
+        let allMangasData = []; // لحفظ الداتا عشان البحث
         let heroMangaId = null;
 
-        function playHero() {
-            if(heroMangaId) {
-                // هنا هنربط الإعلان لاحقاً
-                tg.showAlert(`سيتم تشغيل المانجا رقم ${heroMangaId}`);
-            }
-        }
+        // تهيئة بيانات المستخدم
+        const user = tg.initDataUnsafe?.user;
+        const userName = user ? user.first_name : "ضيف المملكة";
+        const userAvatar = user && user.photo_url ? user.photo_url : `https://ui-avatars.com/api/?name=${userName}&background=3b82f6&color=fff&bold=true`;
+        
+        document.getElementById('side-user-name').innerText = userName;
+        document.getElementById('side-user-avatar').src = userAvatar;
+        document.getElementById('prof-name').innerText = userName;
+        document.getElementById('prof-avatar').src = userAvatar;
 
+        // دالة إنشاء كارت المانجا (التصميم الجديد المضاد للصور التالفة)
+        const createMangaCard = (manga) => {
+            const fallbackImg = `https://ui-avatars.com/api/?name=${encodeURIComponent(manga.title)}&background=11141b&color=3b82f6&size=300&font-size=0.1`;
+            return `
+                <div class="swiper-slide manga-card rounded-xl overflow-hidden bg-[#11141b] border border-white/5" onclick="openMangaDetails(${manga.id})">
+                    <div class="relative w-full aspect-[2/3]">
+                        <img src="${manga.image_url}" class="w-full h-full object-cover" alt="${manga.title}" onerror="this.onerror=null;this.src='${fallbackImg}';">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#0a0c10] via-transparent to-transparent opacity-90"></div>
+                        
+                        <div class="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded flex items-center gap-1 text-[10px] font-bold text-yellow-400 border border-white/10">
+                            <i class="fa-solid fa-star text-[8px]"></i> ${manga.rating || 'N/A'}
+                        </div>
+                    </div>
+                    <div class="p-2.5 absolute bottom-0 left-0 right-0">
+                        <h3 class="text-xs font-bold text-white line-clamp-2 drop-shadow-md leading-tight">${manga.title}</h3>
+                    </div>
+                </div>
+            `;
+        };
+
+        // جلب البيانات
         const dataUrl = 'https://raw.githubusercontent.com/kanoahmed467/my-bot/main/data.json';
 
         async function loadApp() {
             try {
                 const response = await fetch(`${dataUrl}?t=${new Date().getTime()}`);
                 const data = await response.json();
-                const mangas = data.mangas;
+                allMangasData = data.mangas;
 
-                if (mangas && mangas.length > 0) {
-                    // 1. إعداد البانر الرئيسي (ناخد أول مانجا)
-                    const hero = mangas[0];
+                if (allMangasData.length > 0) {
+                    // البانر
+                    const hero = allMangasData[0];
                     heroMangaId = hero.id;
                     document.getElementById('hero-img').src = hero.image_url;
+                    document.getElementById('hero-img').onerror = function() { this.src='https://via.placeholder.com/800x600?text=No+Cover'; };
                     document.getElementById('hero-title').innerText = hero.title;
                     document.getElementById('hero-desc').innerText = hero.description || "لا يوجد وصف متاح.";
                     document.getElementById('hero-genre').innerText = (hero.genre || "أكشن").split('•')[0].trim();
+                    document.getElementById('hero-origin').innerText = hero.origin || 'مانهوا';
                     
                     document.getElementById('hero-section').classList.remove('hidden');
 
-                    // 2. دالة لإنشاء الكروت
-                    const createCard = (manga) => {
-                        const statusColor = manga.status.includes("مستمر") ? "text-green-400" : "text-gray-400";
-                        return `
-                            <div class="swiper-slide cursor-pointer group" onclick="tg.showAlert('فتح تفاصيل: ${manga.title}')">
-                                <div class="relative w-full aspect-[2/3] rounded-lg overflow-hidden mb-2">
-                                    <img src="${manga.image_url}" class="w-full h-full object-cover transition duration-300 group-hover:scale-110" alt="${manga.title}" onerror="this.src='https://via.placeholder.com/200x300?text=No+Cover'">
-                                    <div class="absolute top-1 right-1 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-bold text-yellow-500 backdrop-blur">
-                                        ★ ${manga.rating || 'N/A'}
-                                    </div>
-                                    <div class="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/90 to-transparent"></div>
-                                </div>
-                                <h3 class="text-sm font-bold text-gray-100 line-clamp-1 group-hover:text-blue-400 transition">${manga.title}</h3>
-                                <p class="text-[11px] font-semibold ${statusColor} mt-0.5">${manga.status || 'غير محدد'}</p>
-                            </div>
-                        `;
+                    // تعبئة الأقسام
+                    const latestBox = document.getElementById('latest-mangas');
+                    allMangasData.slice(1, 12).forEach(m => latestBox.innerHTML += createMangaCard(m));
+
+                    const krBox = document.getElementById('korean-mangas');
+                    allMangasData.filter(m => m.origin === 'مانهوا').slice(0, 10).forEach(m => krBox.innerHTML += createMangaCard(m));
+
+                    const actionBox = document.getElementById('action-mangas');
+                    allMangasData.filter(m => m.genre && m.genre.includes('أكشن')).slice(0, 10).forEach(m => actionBox.innerHTML += createMangaCard(m));
+
+                    // تفعيل Swiper (مع تفعيل RTL)
+                    const swiperConfig = {
+                        slidesPerView: "auto", spaceBetween: 12, freeMode: true, grabCursor: true,
+                        // إضافة كود خاص لدعم RTL لو اللاب توب كان بيخرف
+                        rtl: true
                     };
+                    document.querySelectorAll('.mySwiper').forEach(s => new Swiper(s, swiperConfig));
 
-                    // 3. تعبئة السلايدر الأول (كل الأعمال)
-                    const latestContainer = document.getElementById('latest-mangas');
-                    mangas.slice(1, 10).forEach(m => {
-                        latestContainer.innerHTML += createCard(m);
-                    });
-
-                    // 4. تعبئة السلايدر الثاني (فلترة وهمية للمانهوا أو الأكشن)
-                    const koreanContainer = document.getElementById('korean-mangas');
-                    mangas.slice(0).reverse().slice(0, 8).forEach(m => {
-                        koreanContainer.innerHTML += createCard(m);
-                    });
-
-                    // 5. تفعيل Swiper.js للسحب الناعم
-                    new Swiper(".mySwiper", {
-                        slidesPerView: "auto",
-                        spaceBetween: 16,
-                        freeMode: true,
-                        grabCursor: true,
-                    });
-
-                    // إظهار المحتوى وإخفاء شاشة التحميل
+                    // إظهار المحتوى وإخفاء التحميل
                     document.getElementById('main-content').classList.remove('hidden');
                     document.getElementById('splash-screen').style.opacity = '0';
-                    setTimeout(() => { document.getElementById('splash-screen').style.display = 'none'; }, 500);
-
+                    setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 500);
                 }
             } catch (error) {
-                console.error("Error:", error);
-                document.getElementById('splash-screen').innerHTML = `<p class="text-red-500 font-bold text-xl">حدث خطأ في الاتصال بالخادم!</p>`;
+                console.error(error);
+                document.getElementById('splash-screen').innerHTML = `<p class="text-red-500 font-bold text-xl">حدث خطأ في الاتصال بالسيرفر!</p>`;
             }
         }
 
-        // بدء التشغيل
+        // ================== نظام الـ Modals ==================
+        function openSearch() {
+            const modal = document.getElementById('search-modal');
+            modal.classList.remove('hidden');
+            // تأخير بسيط للسماح للمتصفح بالرسم قبل الأنيميشن
+            setTimeout(() => {
+                modal.classList.remove('translate-y-full');
+                document.getElementById('search-input').focus();
+            }, 10);
+        }
+
+        function openProfile() {
+            const modal = document.getElementById('profile-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('translate-y-full'), 10);
+        }
+
+        function closeAllModals() {
+            const searchModal = document.getElementById('search-modal');
+            const profileModal = document.getElementById('profile-modal');
+            
+            searchModal.classList.add('translate-y-full');
+            profileModal.classList.add('translate-y-full');
+            
+            setTimeout(() => {
+                searchModal.classList.add('hidden');
+                profileModal.classList.add('hidden');
+            }, 300);
+        }
+
+        // محرك البحث اللايف
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const resultsBox = document.getElementById('search-results');
+            
+            if(query.length < 2) {
+                resultsBox.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center justify-center h-64 text-gray-500">
+                        <i class="fa-solid fa-compass text-5xl mb-3 opacity-50"></i>
+                        <p>ابدأ الكتابة للبحث في مكتبة المملكة...</p>
+                    </div>`;
+                return;
+            }
+
+            const results = allMangasData.filter(m => 
+                m.title.toLowerCase().includes(query) || 
+                (m.alt_titles && m.alt_titles.toLowerCase().includes(query))
+            );
+
+            if(results.length === 0) {
+                resultsBox.innerHTML = `<div class="col-span-full text-center text-gray-400 py-10">لم أجد عملاً بهذا الاسم 😔</div>`;
+                return;
+            }
+
+            resultsBox.innerHTML = '';
+            results.forEach(m => {
+                // نعيد استخدام كود الكارت لكن بنشيل منه كلاس swiper-slide عشان ده جريد
+                let cardHtml = createMangaCard(m).replace('swiper-slide ', '');
+                resultsBox.innerHTML += cardHtml;
+            });
+        });
+
+        // دالة مؤقتة للضغط
+        function openMangaDetails(id) {
+            tg.HapticFeedback.impactOccurred('light');
+            tg.showAlert(`قريباً: فتح صفحة تفاصيل العمل رقم ${id} 🚀`);
+        }
+        function playHero() {
+            if(heroMangaId) openMangaDetails(heroMangaId);
+        }
+
         loadApp();
     </script>
 </body>
