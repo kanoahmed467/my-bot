@@ -796,10 +796,9 @@ function openMyList() {
         document.getElementById('search-input').addEventListener('input', handleSearch);
 
         function openMangaDetails(id) {
-            tg.HapticFeedback.impactOccurred('light');
-            tg.sendData(`open_manga_${id}`);
-            tg.showAlert(`سيتم فتح العمل رقم ${id} في البوت.`);
-        }
+    try { tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
+    window.location.href = `manga.html?id=${id}`;
+}
         function playHero() {
             if(heroMangaId) openMangaDetails(heroMangaId);
         }
