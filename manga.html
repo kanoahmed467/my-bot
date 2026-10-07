@@ -306,15 +306,11 @@ function showMore() { shown += PAGE_SIZE; renderChapters(); }
 $('chap-search').addEventListener('input', e => { query = e.target.value.trim(); shown = PAGE_SIZE; renderChapters(); });
 
 /* ---------- أعمال مشابهة ---------- */
+let similarList = [];
+
 function renderSimilar() {
-  const mine = new Set(tags(manga));
-  const picks = all.filter(x => x.id !== manga.id)
-    .map(x => ({ x, s: tags(x).filter(t => mine.has(t)).length }))
-    .filter(o => o.s > 0)
-    .sort((a, b) => b.s - a.s || parseFloat(b.x.rating || 0) - parseFloat(a.x.rating || 0))
-    .slice(0, 12).map(o => o.x);
-  if (!picks.length) return;
-  $('similar').innerHTML = picks.map(m => `
+  if (!similarList.length) return;
+  $('similar').innerHTML = similarList.map(m => `
     <a href="manga.html?id=${m.id}" class="shrink-0 w-28 md:w-36 block">
       <div class="relative aspect-[2/3] rounded-lg overflow-hidden mb-2 manga-card-hover bg-slate-800 border border-white/5 transition">
         <img src="${esc(m.image_url)}" loading="lazy" alt="" class="absolute inset-0 w-full h-full object-cover" onerror="fixCover(this,${m.id})">
@@ -330,11 +326,14 @@ function renderSimilar() {
 async function init() {
   if (!mangaId) return showError('رابط غير صحيح', 'لم يتم تحديد العمل المطلوب.');
   try {
-    const res = await fetch(DATA_URL);
+    const res = await fetch(`${API_BASE_URL}/api/manga/${mangaId}`, { cache: 'no-store' });
+    if (res.status === 404) return showError('العمل غير موجود', 'ممكن يكون اتحذف أو الرابط غلط.');
     const data = await res.json();
-    all = data.mangas || [];
-    manga = all.find(m => m.id === mangaId);
-    if (!manga) return showError('العمل غير موجود', 'ممكن يكون اتحذف أو الرابط غلط.');
+    if (!data.success) throw new Error('bad response');
+
+    manga = data.manga;
+    similarList = data.similar || [];
+    all = [manga, ...similarList];
     const c = manga.chapters || {};
     chap = { normal: uniqSorted(c.normal), merged: uniqSorted(c.merged) };
     render();
