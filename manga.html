@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Speed Manga</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root { --bg-base:#0a0c10; --primary:#3b82f6; }
+body { background:var(--bg-base); color:#fff; font-family:'Tajawal',sans-serif; overflow-x:hidden; -webkit-tap-highlight-color:transparent; }
+.glass-panel { background:rgba(17,20,27,.7); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,.05); }
+.hero-gradient { background:linear-gradient(0deg,var(--bg-base) 0%,rgba(10,12,16,.6) 55%,rgba(10,12,16,.3) 100%); }
+.manga-card-hover:hover { transform:translateY(-5px); box-shadow:0 10px 25px rgba(59,130,246,.15); border-color:rgba(59,130,246,.4); }
+.no-scrollbar::-webkit-scrollbar { display:none; }
+.no-scrollbar { scrollbar-width:none; }
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:var(--bg-base); }
+::-webkit-scrollbar-thumb { background:#1f2937; border-radius:10px; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+#page { animation:fadeIn .4s ease-out; }
+@media (prefers-reduced-motion:reduce) { #page { animation:none; } }
+</style>
+</head>
+<body class="pb-16">
+
+<!-- شاشة التحميل -->
+<div id="splash" class="fixed inset-0 z-[9999] bg-[#0a0c10] flex flex-col items-center justify-center transition-opacity duration-300">
+  <div class="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+  <h1 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">Speed Manga</h1>
+</div>
+
+<!-- زرار الرجوع -->
+<button onclick="goBack()" aria-label="رجوع" class="fixed top-3 right-3 z-50 w-10 h-10 rounded-full glass-panel flex items-center justify-center text-gray-200 hover:text-white">
+  <i class="fa-solid fa-arrow-right"></i>
+</button>
+
+<!-- رسالة خطأ -->
+<div id="error" class="hidden min-h-screen flex-col items-center justify-center text-center px-6">
+  <i class="fa-solid fa-book-open text-4xl mb-3 text-gray-600"></i>
+  <h2 id="error-title" class="text-lg font-bold mb-1"></h2>
+  <p id="error-msg" class="text-sm text-gray-500 mb-5"></p>
+  <button onclick="goBack()" class="bg-white text-black px-6 py-2.5 rounded-md font-bold">رجوع للرئيسية</button>
+</div>
+
+<main id="page" class="hidden">
+
+  <!-- البانر -->
+  <section class="relative overflow-hidden">
+    <img id="bg" alt="" class="absolute inset-0 w-full h-full object-cover opacity-30 blur-2xl scale-125">
+    <div class="absolute inset-0 hero-gradient"></div>
+    <div class="relative max-w-4xl mx-auto px-4 pt-16 md:pt-20 pb-5">
+      <div class="flex gap-4 md:gap-6 items-end">
+        <div class="w-32 md:w-48 shrink-0 aspect-[2/3] rounded-xl overflow-hidden border border-white/10 shadow-2xl bg-slate-800">
+          <img id="cover" alt="" class="w-full h-full object-cover">
+        </div>
+        <div class="min-w-0 flex-1">
+          <div id="badges" class="flex flex-wrap gap-2 mb-2"></div>
+          <h1 id="title" class="text-xl md:text-4xl font-black leading-snug drop-shadow-lg break-words"></h1>
+          <p id="updated" class="text-xs text-gray-400 mt-2"></p>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-3 mt-5">
+        <button id="btn-start" class="bg-white text-black px-6 py-2.5 rounded-md font-bold flex items-center gap-2 hover:bg-gray-200 transition">
+          <i class="fa-solid fa-play"></i> ابدأ القراءة
+        </button>
+        <button id="btn-continue" class="hidden bg-blue-600 text-white px-5 py-2.5 rounded-md font-bold items-center gap-2 hover:bg-blue-500 transition"></button>
+        <button onclick="openInBot()" class="bg-gray-800/80 text-white px-5 py-2.5 rounded-md font-bold flex items-center gap-2 hover:bg-gray-700 transition">
+          <i class="fa-brands fa-telegram"></i> فتح في البوت
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <div class="max-w-4xl mx-auto px-4 space-y-8">
+
+    <!-- إحصائيات -->
+    <div class="grid grid-cols-3 gap-2 sm:gap-4">
+      <div class="bg-[#11141b] rounded-xl p-3 text-center border border-white/5 shadow-inner">
+        <i class="fa-solid fa-star text-yellow-500 mb-1 text-lg"></i>
+        <p id="stat-rating" class="text-lg sm:text-2xl font-black"></p>
+        <p class="text-[10px] text-gray-500 mt-1">التقييم</p>
+      </div>
+      <div class="bg-[#11141b] rounded-xl p-3 text-center border border-white/5 shadow-inner">
+        <i class="fa-solid fa-book-open text-blue-500 mb-1 text-lg"></i>
+        <p id="stat-chapters" class="text-lg sm:text-2xl font-black"></p>
+        <p class="text-[10px] text-gray-500 mt-1">فصل</p>
+      </div>
+      <div class="bg-[#11141b] rounded-xl p-3 text-center border border-white/5 shadow-inner">
+        <i class="fa-solid fa-signal text-green-500 mb-1 text-lg"></i>
+        <p id="stat-status" class="text-base sm:text-xl font-black pt-1"></p>
+        <p class="text-[10px] text-gray-500 mt-1">الحالة</p>
+      </div>
+    </div>
+
+    <!-- القصة -->
+    <section>
+      <h2 class="text-lg font-bold mb-3 border-r-4 border-blue-500 pr-2">القصة</h2>
+      <p id="desc" class="text-gray-300 text-sm leading-7 whitespace-pre-line line-clamp-4 break-words"></p>
+      <button id="desc-toggle" class="hidden text-blue-400 text-sm font-bold mt-2" onclick="toggleDesc()">عرض المزيد</button>
+      <div id="genres" class="flex flex-wrap gap-2 mt-4"></div>
+    </section>
+
+    <!-- الفصول -->
+    <section>
+      <h2 class="text-lg font-bold mb-3 border-r-4 border-purple-500 pr-2">الفصول</h2>
+      <div class="flex items-center gap-2 mb-3 flex-wrap">
+        <div id="chap-tabs" class="flex gap-2"></div>
+        <button id="sort-btn" onclick="toggleSort()" class="mr-auto bg-[#1c212c] border border-white/5 text-gray-300 hover:text-white rounded-full px-3 py-2 text-xs font-bold flex items-center gap-2"></button>
+      </div>
+      <div class="relative mb-3">
+        <i class="fa-solid fa-search absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+        <input id="chap-search" type="text" inputmode="decimal" placeholder="اذهب إلى فصل رقم..." autocomplete="off"
+               class="w-full bg-[#1c212c] text-white rounded-lg py-2.5 pr-11 pl-4 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 border border-white/5 placeholder-gray-500">
+      </div>
+      <div id="chap-grid"></div>
+      <button id="more-btn" class="hidden w-full mt-4 bg-[#11141b] border border-white/5 rounded-xl p-3 font-bold text-sm text-gray-300 hover:bg-slate-800" onclick="showMore()"></button>
+    </section>
+
+    <!-- أعمال مشابهة -->
+    <section id="similar-box" class="hidden">
+      <h2 class="text-lg font-bold mb-4 border-r-4 border-yellow-500 pr-2">أعمال مشابهة</h2>
+      <div id="similar" class="flex gap-3 overflow-x-auto no-scrollbar pb-2"></div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+const tg = window.Telegram.WebApp;
+try { tg.expand(); } catch(e) {}
+try { tg.setHeaderColor('#0d1017'); } catch(e) {}
+try { tg.setBackgroundColor('#0a0c10'); } catch(e) {}
+
+const API_BASE_URL = "https://apispeedmanga.hidenplay.net";
+const DATA_URL = "https://raw.githubusercontent.com/kanoahmed467/my-bot/main/data.json";
+const HOME_PAGE = "index.html";
+const PAGE_SIZE = 60;
+
+const mangaId = parseInt(new URLSearchParams(location.search).get('id'), 10);
+let all = [], manga = null, chap = { normal: [], merged: [] };
+let mode = 'normal', newestFirst = true, shown = PAGE_SIZE, query = '', lastRead = null;
+
+/* ---------- أدوات ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+const num = s => { const n = parseFloat(s); return isNaN(n) ? 0 : n; };
+const uniqSorted = a => [...new Set(a || [])].sort((x, y) => num(x) - num(y));
+const rate = m => (m.rating && m.rating !== '0.0') ? m.rating : 'N/A';
+const tags = m => (m.genre || '').split('•').map(s => s.replace(/[\u{1F1E6}-\u{1F1FF}]/gu, '').trim()).filter(t => t && t !== 'شريط طولي');
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} }
+};
+
+function goBack() {
+  if (history.length > 1) history.back(); else location.href = HOME_PAGE;
+}
+try { tg.BackButton.show(); tg.BackButton.onClick(goBack); } catch(e) {}
+
+function showError(title, msg) {
+  $('splash').style.display = 'none';
+  $('error-title').innerText = title;
+  $('error-msg').innerText = msg;
+  $('error').classList.remove('hidden');
+  $('error').classList.add('flex');
+}
+
+/* ---------- الأغلفة ---------- */
+const fixing = new Set();
+async function fixCover(img, id) {
+  img.onerror = null;
+  const m = all.find(x => x.id === id);
+  img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(m ? m.title : 'Manga')}&background=1f2937&color=3b82f6&size=300&font-size=0.1`;
+  if (fixing.has(id)) return;
+  fixing.add(id);
+  try {
+    const r = await fetch(`${API_BASE_URL}/api/fix_cover/${id}`);
+    const d = await r.json();
+    if (d.success) setTimeout(() => { img.src = `https://raw.githubusercontent.com/kanoahmed467/my-bot/main/covers/${id}.jpg?t=${Date.now()}`; }, 5000);
+  } catch(e) {}
+  setTimeout(() => fixing.delete(id), 10000);
+}
+
+/* ---------- القراءة ---------- */
+// الرابط اللي بيتفتح لما تدوس على فصل. حاليا بيفتح العمل في البوت.
+// لو البوت بتاعك بيدعم رابط مباشر للفصل، غيّر السطر ده بس.
+const chapterLink = (m, c, md) => m.telegram_link;
+
+function openLink(url) {
+  try { tg.openTelegramLink(url); } catch(e) { window.open(url, '_blank'); }
+}
+function openInBot() { openLink(manga.telegram_link); }
+
+function openChapter(c, md) {
+  lastRead = { c, m: md };
+  store.set('sm_last_' + manga.id, lastRead);
+  try { tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
+  openLink(chapterLink(manga, c, md));
+}
+
+/* ---------- الرسم ---------- */
+function render() {
+  const m = manga;
+  document.title = m.title + ' | Speed Manga';
+  $('bg').src = m.image_url;
+  $('cover').src = m.image_url;
+  $('cover').onerror = function() { fixCover(this, m.id); };
+  $('title').innerText = m.title;
+  $('stat-rating').innerText = rate(m);
+  $('stat-status').innerText = m.status || 'غير معروف';
+  $('stat-chapters').innerText = m.chapters && m.chapters.total_normal ? m.chapters.total_normal : chap.normal.length;
+
+  if (m.updated_at) {
+    const d = new Date(parseInt(m.updated_at, 10) * 1000);
+    $('updated').innerText = 'آخر تحديث: ' + d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  // شارات الحالة
+  const done = (m.status || '').includes('مكتمل');
+  $('badges').innerHTML = `<span class="${done ? 'bg-green-600/90' : 'bg-blue-600/90'} px-2 py-0.5 rounded text-xs font-bold">${esc(m.status || 'مستمر')}</span>`;
+
+  // الوصف
+  const text = (m.description || '').trim() || 'لا يوجد وصف متاح.';
+  $('desc').innerText = text;
+  if (text.length > 180) $('desc-toggle').classList.remove('hidden');
+
+  // التصنيفات
+  const flag = /[\u{1F1E6}-\u{1F1FF}]/u;
+  $('genres').innerHTML = (m.genre || '').split('•').map(s => s.trim()).filter(Boolean).map(g =>
+    `<span class="${flag.test(g) ? 'bg-blue-600/10 text-blue-400 border-blue-500/30' : 'bg-white/10 text-gray-200 border-white/10'} border px-2.5 py-1 rounded text-xs font-bold">${esc(g)}</span>`
+  ).join('');
+
+  // أزرار القراءة
+  const first = chap.normal[0];
+  if (first !== undefined) $('btn-start').onclick = () => openChapter(first, 'normal');
+  else $('btn-start').classList.add('hidden');
+
+  lastRead = store.get('sm_last_' + m.id);
+  if (lastRead && lastRead.c) {
+    const b = $('btn-continue');
+    b.innerHTML = `<i class="fa-solid fa-forward"></i> تابع من ${esc(lastRead.c)}`;
+    b.classList.remove('hidden');
+    b.classList.add('flex');
+    b.onclick = () => openChapter(lastRead.c, lastRead.m);
+  }
+
+  renderChapters();
+  renderSimilar();
+
+  $('page').classList.remove('hidden');
+  $('splash').style.opacity = '0';
+  setTimeout(() => $('splash').style.display = 'none', 300);
+}
+
+function toggleDesc() {
+  const el = $('desc');
+  const collapsed = el.classList.toggle('line-clamp-4');
+  $('desc-toggle').innerText = collapsed ? 'عرض المزيد' : 'عرض أقل';
+}
+
+/* ---------- الفصول ---------- */
+function currentList() {
+  let l = chap[mode];
+  if (query) l = l.filter(c => c.includes(query));
+  return newestFirst ? [...l].reverse() : l;
+}
+
+function renderChapters() {
+  // التابات
+  const tabs = [['normal', 'فصول', chap.normal.length]];
+  if (chap.merged.length) tabs.push(['merged', 'مدمجة', chap.merged.length]);
+  $('chap-tabs').innerHTML = tabs.map(([k, label, n]) => {
+    const active = k === mode;
+    return `<button onclick="setMode('${k}')" class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition ${active ? 'bg-blue-600 text-white shadow-lg' : 'bg-[#1c212c] text-gray-400 border border-white/5 hover:text-white'}">${label}<span class="text-[10px] px-1.5 py-0.5 rounded-full ${active ? 'bg-white/20' : 'bg-white/5'}">${n}</span></button>`;
+  }).join('');
+
+  $('sort-btn').innerHTML = `<i class="fa-solid ${newestFirst ? 'fa-arrow-down-wide-short' : 'fa-arrow-up-wide-short'}"></i> ${newestFirst ? 'الأحدث أولاً' : 'الأقدم أولاً'}`;
+
+  const list = currentList();
+  const grid = $('chap-grid');
+  if (!list.length) {
+    grid.innerHTML = `<div class="flex flex-col items-center justify-center py-12 text-gray-600"><i class="fa-solid fa-folder-open text-4xl mb-3 opacity-50"></i><p>${query ? 'مفيش فصل بالرقم ده' : 'لا توجد فصول حالياً'}</p></div>`;
+    $('more-btn').classList.add('hidden');
+    return;
+  }
+
+  const cols = mode === 'merged' ? 'grid-cols-3 sm:grid-cols-4 md:grid-cols-6' : 'grid-cols-4 sm:grid-cols-6 md:grid-cols-8';
+  grid.className = `grid ${cols} gap-2`;
+  grid.innerHTML = list.slice(0, shown).map(c => {
+    const read = lastRead && lastRead.c === c && lastRead.m === mode;
+    return `<button data-c="${esc(c)}" onclick="openChapter(this.dataset.c,'${mode}')" class="rounded-lg py-2.5 text-xs font-bold border transition ${read ? 'bg-blue-600/20 border-blue-500 text-blue-400' : 'bg-[#1c212c] border-white/5 text-gray-200 hover:border-blue-500/40'}">${esc(c)}</button>`;
+  }).join('');
+
+  const rest = list.length - shown;
+  const more = $('more-btn');
+  if (rest > 0) { more.innerText = `عرض المزيد (${rest} متبقي)`; more.classList.remove('hidden'); }
+  else more.classList.add('hidden');
+}
+
+function setMode(k) { mode = k; shown = PAGE_SIZE; query = ''; $('chap-search').value = ''; renderChapters(); }
+function toggleSort() { newestFirst = !newestFirst; shown = PAGE_SIZE; renderChapters(); }
+function showMore() { shown += PAGE_SIZE; renderChapters(); }
+$('chap-search').addEventListener('input', e => { query = e.target.value.trim(); shown = PAGE_SIZE; renderChapters(); });
+
+/* ---------- أعمال مشابهة ---------- */
+function renderSimilar() {
+  const mine = new Set(tags(manga));
+  const picks = all.filter(x => x.id !== manga.id)
+    .map(x => ({ x, s: tags(x).filter(t => mine.has(t)).length }))
+    .filter(o => o.s > 0)
+    .sort((a, b) => b.s - a.s || parseFloat(b.x.rating || 0) - parseFloat(a.x.rating || 0))
+    .slice(0, 12).map(o => o.x);
+  if (!picks.length) return;
+  $('similar').innerHTML = picks.map(m => `
+    <a href="manga.html?id=${m.id}" class="shrink-0 w-28 md:w-36 block">
+      <div class="relative aspect-[2/3] rounded-lg overflow-hidden mb-2 manga-card-hover bg-slate-800 border border-white/5 transition">
+        <img src="${esc(m.image_url)}" loading="lazy" alt="" class="absolute inset-0 w-full h-full object-cover" onerror="fixCover(this,${m.id})">
+        <div class="absolute inset-0 bg-gradient-to-t from-[#0a0c10] via-transparent to-transparent opacity-80"></div>
+        <div class="absolute top-1 right-1 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[10px] font-bold text-yellow-400">★ ${esc(rate(m))}</div>
+      </div>
+      <h3 class="text-xs font-bold text-gray-200 line-clamp-1">${esc(m.title)}</h3>
+    </a>`).join('');
+  $('similar-box').classList.remove('hidden');
+}
+
+/* ---------- التشغيل ---------- */
+async function init() {
+  if (!mangaId) return showError('رابط غير صحيح', 'لم يتم تحديد العمل المطلوب.');
+  try {
+    const res = await fetch(DATA_URL);
+    const data = await res.json();
+    all = data.mangas || [];
+    manga = all.find(m => m.id === mangaId);
+    if (!manga) return showError('العمل غير موجود', 'ممكن يكون اتحذف أو الرابط غلط.');
+    const c = manga.chapters || {};
+    chap = { normal: uniqSorted(c.normal), merged: uniqSorted(c.merged) };
+    render();
+  } catch (e) {
+    console.error(e);
+    showError('حدث خطأ في الاتصال', 'تأكد من الإنترنت وحاول مرة تانية.');
+  }
+}
+init();
+</script>
+</body>
+</html>
