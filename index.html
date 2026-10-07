@@ -80,6 +80,7 @@
     </div>
 
     <!-- القائمة الجانبية (للكمبيوتر) -->
+    <!-- القائمة الجانبية (للكمبيوتر) -->
     <aside class="hidden md:flex flex-col w-64 h-screen fixed right-0 top-0 bg-[#0d1017] border-l border-white/5 z-40 p-6">
         <div class="flex items-center gap-3 mb-10">
             <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-xl font-bold shadow-lg">S</div>
@@ -87,21 +88,22 @@
         </div>
 
         <nav class="flex-1 space-y-2">
-            <a href="#" onclick="closeAllModals()" class="flex items-center gap-4 px-4 py-3 rounded-xl bg-blue-600/10 text-blue-400 font-bold transition">
+            <a href="#" onclick="closeAllModals(); window.scrollTo(0,0);" class="flex items-center gap-4 px-4 py-3 rounded-xl bg-blue-600/10 text-blue-400 font-bold transition">
                 <i class="fa-solid fa-house text-lg w-5"></i> الرئيسية
             </a>
             <a href="#" onclick="openSearch()" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
-                <i class="fa-solid fa-magnifying-glass text-lg w-5"></i> بحث
+                <i class="fa-solid fa-magnifying-glass text-lg w-5"></i> البحث السريع
             </a>
-            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mt-8 mb-4 px-4">الأقسام</h3>
-            <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
-                <span class="text-lg w-5">🇰🇷</span> مانهوا كورية
+            <a href="#" onclick="openProfile()" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
+                <i class="fa-solid fa-bookmark text-lg w-5"></i> أعمالي المفضلة
             </a>
-            <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
-                <span class="text-lg w-5">🇯🇵</span> مانجا يابانية
+            
+            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mt-8 mb-4 px-4">تصفح سريع</h3>
+            <a href="#section-top" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
+                <i class="fa-solid fa-star text-lg w-5 text-yellow-500"></i> الأعلى تقييماً
             </a>
-            <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
-                <i class="fa-solid fa-bookmark text-lg w-5"></i> قائمتي
+            <a href="#section-completed" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
+                <i class="fa-solid fa-check-double text-lg w-5 text-green-500"></i> مكتملة
             </a>
         </nav>
 
@@ -112,7 +114,7 @@
                 </div>
                 <div>
                     <h4 id="side-user-name" class="text-sm font-bold">ضيف</h4>
-                    <p class="text-xs text-gray-400">الإعدادات</p>
+                    <p class="text-xs text-gray-400">حسابي وإعداداتي</p>
                 </div>
             </div>
         </div>
@@ -146,7 +148,17 @@
         </div>
 
         <!-- القوائم الأفقية -->
+        <!-- القوائم الأفقية (الصفحة الرئيسية) -->
         <div id="main-content" class="px-4 md:px-8 mt-6 relative z-20 hidden space-y-10 pb-10">
+            
+            <!-- شريط قائمتي (هيظهر بس لو اليوزر مسجل أعمال) -->
+            <div id="quick-fav-section" class="fade-in-up hidden" style="animation-delay: 0.05s;">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 border-purple-500 pr-2">تكملة القراءة (مفضلتي)</h2>
+                <div class="swiper mySwiper overflow-visible">
+                    <div class="swiper-wrapper" id="quick-fav-mangas"></div>
+                </div>
+            </div>
+
             <!-- أحدث الأعمال -->
             <div class="fade-in-up" style="animation-delay: 0.1s;">
                 <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 border-blue-500 pr-2">أحدث الأعمال</h2>
@@ -155,13 +167,38 @@
                 </div>
             </div>
 
+            <!-- الأعلى تقييماً -->
+            <div id="section-top" class="fade-in-up" style="animation-delay: 0.2s;">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 border-yellow-500 pr-2">الأعلى تقييماً 🌟</h2>
+                <div class="swiper mySwiper overflow-visible">
+                    <div class="swiper-wrapper" id="top-rated-mangas"></div>
+                </div>
+            </div>
+
             <!-- مانهوا كورية -->
-            <div class="fade-in-up" style="animation-delay: 0.2s;">
-                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 border-purple-500 pr-2">مانهوا ونظام</h2>
+            <div class="fade-in-up" style="animation-delay: 0.3s;">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 border-red-500 pr-2">مانهوا كورية 🇰🇷</h2>
                 <div class="swiper mySwiper overflow-visible">
                     <div class="swiper-wrapper" id="korean-mangas"></div>
                 </div>
             </div>
+
+            <!-- مانجا يابانية -->
+            <div class="fade-in-up" style="animation-delay: 0.4s;">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 border-gray-400 pr-2">مانجا يابانية 🇯🇵</h2>
+                <div class="swiper mySwiper overflow-visible">
+                    <div class="swiper-wrapper" id="japanese-mangas"></div>
+                </div>
+            </div>
+
+            <!-- أعمال مكتملة -->
+            <div id="section-completed" class="fade-in-up" style="animation-delay: 0.5s;">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 border-green-500 pr-2">أعمال مكتملة 🏁</h2>
+                <div class="swiper mySwiper overflow-visible">
+                    <div class="swiper-wrapper" id="completed-mangas"></div>
+                </div>
+            </div>
+
         </div>
     </main>
 
@@ -309,9 +346,6 @@
         // 🔴 الرابط الذي حصلت عليه من لوحة التحكم 🔴
         const API_BASE_URL = "https://apispeedmanga.hidenplay.net";
 
-        // ==========================================
-        // 🔐 بيانات المستخدم وتسجيل الدخول
-        // ==========================================
         let currentUser = {
             id: null,
             name: "ضيف",
@@ -325,30 +359,20 @@
             currentUser.photo = tgData.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=3b82f6&color=fff&bold=true`;
         }
 
-        // تحديث الصور والأسماء الجانبية فوراً
         document.getElementById('side-user-name').innerText = currentUser.name;
         document.getElementById('side-user-avatar').src = currentUser.photo;
         document.getElementById('prof-name').innerText = currentUser.name;
         document.getElementById('prof-avatar').src = currentUser.photo;
 
-
-        // دالة ذكية لتحويل الأرقام الكبيرة (مثال: 1036419 -> 1.03M)
         function formatNumber(num) {
             if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
             if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
             return num.toString();
         }
 
-        // ==========================================
-        // 🚀 جلب البيانات الفورية من الـ API (السحر هنا)
-        // ==========================================
-        // ==========================================
-        // 🚀 جلب البيانات وقائمة الأعمال من السيرفر
-        // ==========================================
         async function fetchRealtimeUserData() {
             if (!currentUser.id) return;
             try {
-                // 1. جلب الإحصائيات
                 const response = await fetch(`${API_BASE_URL}/api/user/${currentUser.id}`);
                 const dbData = await response.json();
                 if (dbData.success) {
@@ -366,13 +390,17 @@
                     }
                 }
 
-                // 2. جلب الأعمال المفضلة (قائمتي) 🌟
+                // سحب المفضلة
                 const favResponse = await fetch(`${API_BASE_URL}/api/user/${currentUser.id}/favorites`);
                 const favData = await favResponse.json();
                 const favBox = document.getElementById('user-favorites-list');
+                const quickFavBox = document.getElementById('quick-fav-mangas');
+                const quickFavSection = document.getElementById('quick-fav-section');
                 
                 if (favData.success && favData.favorites.length > 0) {
-                    favBox.innerHTML = ''; // تفريغ الصندوق
+                    favBox.innerHTML = '';
+                    quickFavBox.innerHTML = '';
+                    quickFavSection.classList.remove('hidden'); // إظهار الشريط في الرئيسية
                     
                     const statusMap = {
                         'reading': { text: '📖 يقرأ', color: 'bg-blue-600/90' },
@@ -384,45 +412,52 @@
                     favData.favorites.forEach(m => {
                         const sInfo = statusMap[m.status] || { text: m.status, color: 'bg-gray-600/90' };
                         
+                        // إضافة الكارت لشاشة البروفايل
                         favBox.innerHTML += `
                             <div class="relative w-full aspect-[2/3] rounded-lg overflow-hidden cursor-pointer shadow-lg border border-white/10" onclick="openMangaDetails(${m.id})">
                                 <img src="${m.image_url}?t=${new Date().getTime()}" class="absolute inset-0 w-full h-full object-cover">
                                 <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
-                                
-                                <div class="absolute top-1 right-1 ${sInfo.color} backdrop-blur-md px-1.5 py-0.5 rounded text-[9px] font-bold text-white shadow-sm">
-                                    ${sInfo.text}
+                                <div class="absolute top-1 right-1 ${sInfo.color} backdrop-blur-md px-1.5 py-0.5 rounded text-[9px] font-bold text-white shadow-sm">${sInfo.text}</div>
+                                <div class="absolute bottom-0 left-0 right-0 p-1.5 text-center"><h3 class="text-[10px] font-bold text-white line-clamp-1 drop-shadow-md">${m.title}</h3></div>
+                            </div>
+                        `;
+
+                        // إضافة الكارت لشريط الرئيسية السريع
+                        quickFavBox.innerHTML += `
+                            <div class="swiper-slide cursor-pointer" onclick="openMangaDetails(${m.id})">
+                                <div class="relative w-full aspect-[2/3] rounded-lg overflow-hidden mb-2 manga-card-hover bg-slate-800">
+                                    <img src="${m.image_url}?t=${new Date().getTime()}" class="absolute inset-0 w-full h-full object-cover" onerror="fixMissingCover(this, ${m.id}, '${m.title.replace(/'/g, "\\'")}')">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                                    <div class="absolute top-1 right-1 ${sInfo.color} px-1.5 py-0.5 rounded text-[10px] font-bold text-white">${sInfo.text}</div>
                                 </div>
-                                
-                                <div class="absolute bottom-0 left-0 right-0 p-1.5 text-center">
-                                    <h3 class="text-[10px] font-bold text-white line-clamp-1 drop-shadow-md">${m.title}</h3>
-                                </div>
+                                <h3 class="text-xs font-bold text-white line-clamp-1">${m.title}</h3>
                             </div>
                         `;
                     });
+                    
+                    // تحديث السلايدر بعد إضافة العناصر
+                    initSwiper();
                 } else {
                     favBox.innerHTML = `<p class="col-span-full text-center text-gray-500 text-sm py-6 bg-white/5 rounded-xl border border-white/5">قائمتك فارغة حالياً 📭</p>`;
+                    quickFavSection.classList.add('hidden');
                 }
-
             } catch (error) { console.error("User API Error:", error); }
         }
 
-        // ==========================================
-        // 🛠️ دوال إنشاء الكروت
-        // ==========================================
         const createCarouselCard = (manga) => {
             return `
                 <div class="swiper-slide cursor-pointer" onclick="openMangaDetails(${manga.id})">
-                    <div class="relative w-full aspect-[2/3] rounded-lg overflow-hidden mb-2 manga-card-hover bg-slate-800">
-                        <img id="img-${manga.id}" src="${manga.image_url}?t=${new Date().getTime()}" 
+                    <div class="relative w-full aspect-[2/3] rounded-lg overflow-hidden mb-2 manga-card-hover bg-slate-800 border border-white/5">
+                        <img id="img-${manga.id}" src="${m.image_url || manga.image_url}?t=${new Date().getTime()}" 
                              class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300" 
                              alt="${manga.title}" 
                              onerror="fixMissingCover(this, ${manga.id}, '${manga.title.replace(/'/g, "\\'")}')">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                        <div class="absolute top-1 right-1 bg-black/60 px-1.5 py-0.5 rounded text-[10px] font-bold text-yellow-400">
-                            ★ ${manga.rating || 'N/A'}
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#0a0c10] via-transparent to-transparent opacity-80"></div>
+                        <div class="absolute top-1 right-1 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[10px] font-bold text-yellow-400">
+                            ★ ${manga.rating && manga.rating !== '0.0' ? manga.rating : 'N/A'}
                         </div>
                     </div>
-                    <h3 class="text-xs font-bold text-white line-clamp-1">${manga.title}</h3>
+                    <h3 class="text-xs font-bold text-gray-200 line-clamp-1">${manga.title}</h3>
                 </div>
             `;
         };
@@ -436,7 +471,7 @@
                          onerror="fixMissingCover(this, ${manga.id}, '${manga.title.replace(/'/g, "\\'")}')">
                     <div class="absolute inset-0 bg-gradient-to-t from-[#0a0c10] via-transparent to-transparent opacity-90"></div>
                     <div class="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded text-[10px] font-bold text-yellow-400">
-                        ★ ${manga.rating || 'N/A'}
+                        ★ ${manga.rating && manga.rating !== '0.0' ? manga.rating : 'N/A'}
                     </div>
                     <div class="absolute bottom-0 left-0 right-0 p-2.5">
                         <h3 class="text-xs sm:text-sm font-bold text-white line-clamp-2 leading-tight">${manga.title}</h3>
@@ -445,89 +480,60 @@
             `;
         };
 
-        // ==========================================
-        // 🪄 نظام العلاج الذاتي للأغلفة (Auto-Heal)
-        // ==========================================
-        // ==========================================
-        // 🪄 نظام العلاج الذاتي للأغلفة (Auto-Heal) - النسخة المحمية
-        // ==========================================
-        // 🛡️ ذاكرة للمتصفح عشان ميبعتش طلب لنفس المانجا مرتين
         const currentlyFixingCovers = new Set();
-
         async function fixMissingCover(imgElement, mangaId, title) {
-            // 1. مسح الـ onerror فوراً لمنع اللوب اللانهائي
             imgElement.onerror = null;
-            
-            // 2. لو المانجا دي بيتعملها فحص دلوقتي، تجاهل الطلب تماماً
             if (currentlyFixingCovers.has(mangaId)) return;
-            
-            // تسجيل إن المانجا دي تحت العلاج
             currentlyFixingCovers.add(mangaId);
-            
-            // 3. وضع صورة "جاري التحميل" مؤقتة شيك
             imgElement.src = `https://ui-avatars.com/api/?name=Loading...&background=1f2937&color=3b82f6&size=300`;
             imgElement.style.opacity = '0.5';
 
             try {
-                // 4. نرسل نداء استغاثة لسيرفر البوت
-                console.log(`[Auto-Heal] Requesting cover upload for ID: ${mangaId}`);
                 const response = await fetch(`${API_BASE_URL}/api/fix_cover/${mangaId}`);
                 const data = await response.json();
-                
                 if (data.success) {
-                    // 5. البوت بدأ الرفع. هنستنى 5 ثواني عشان جيت هاب يخلص ونعمل ريفريش
                     setTimeout(() => {
                         imgElement.style.opacity = '1';
-                        // نحط رقم عشوائي في آخر الرابط عشان نجبر المتصفح يمسح الكاش ويجيب الصورة الجديدة
                         imgElement.src = `https://raw.githubusercontent.com/kanoahmed467/my-bot/main/covers/${mangaId}.jpg?t=${new Date().getTime()}`;
-                        
-                        // لو الصورة لسه مجاتش من جيت هاب، نحط الحروف كحل أخير
                         imgElement.onerror = function() {
                             this.onerror = null;
                             this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=1f2937&color=3b82f6&size=300&font-size=0.1`;
                         };
-                        
-                        // نفتح القفل بعد 10 ثواني عشان لو حب يجرب تاني
                         setTimeout(() => currentlyFixingCovers.delete(mangaId), 10000);
-                        
                     }, 5000);
-                } else {
-                    throw new Error("Bot returned false or already fixing");
-                }
+                } else throw new Error("Bot returned false");
             } catch (error) {
-                console.error(`[Auto-Heal] Failed for ${mangaId}:`, error);
                 imgElement.style.opacity = '1';
                 imgElement.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=1f2937&color=3b82f6&size=300&font-size=0.1`;
-                
-                // نفتح القفل بعد 10 ثواني
                 setTimeout(() => currentlyFixingCovers.delete(mangaId), 10000);
             }
         }
 
-        // ==========================================
-        // 🚀 تحميل الموقع (يدمج جيت هاب + الـ API اللايف)
-        // ==========================================
         const githubDataUrl = 'https://raw.githubusercontent.com/kanoahmed467/my-bot/main/data.json';
+        let swiperInstance = null;
+
+        function initSwiper() {
+            if (swiperInstance) return; // عشان ميعملش مشاكل لو اتندى مرتين
+            swiperInstance = new Swiper(".mySwiper", {
+                slidesPerView: "auto", spaceBetween: 12, freeMode: true, grabCursor: true, rtl: true
+            });
+        }
 
         async function loadApp() {
             try {
-                // 1. جلب أحدث الأعمال فوراً من السيرفر (Live API) عشان يسمع في نفس اللحظة
                 let latestMangas = [];
                 try {
                     const liveResponse = await fetch(`${API_BASE_URL}/api/latest`);
                     const liveData = await liveResponse.json();
                     if(liveData.success) latestMangas = liveData.mangas;
-                } catch(e) { console.log("Live API failed, falling back to GitHub"); }
+                } catch(e) { console.log("Live API failed"); }
 
-                // 2. جلب باقي الأعمال من جيت هاب (للبحث والأقسام)
                 const ghResponse = await fetch(`${githubDataUrl}?t=${new Date().getTime()}`);
                 const ghData = await ghResponse.json();
                 allMangasData = ghData.mangas;
 
                 if (allMangasData.length > 0) {
-                    // لو הـ API رجع داتا لايف، هنعرض أول عمل منها في البانر.. لو لأ، هناخد من جيت هاب
                     const hero = latestMangas.length > 0 ? latestMangas[0] : allMangasData[0];
-                    
                     heroMangaId = hero.id;
                     document.getElementById('hero-img').src = hero.image_url;
                     document.getElementById('hero-img').onerror = function() { this.src='https://via.placeholder.com/800x600?text=No+Cover'; };
@@ -535,21 +541,25 @@
                     document.getElementById('hero-desc').innerText = hero.description || "";
                     document.getElementById('hero-genre').innerText = (hero.genre || "أكشن").split('•')[0].trim();
                     document.getElementById('hero-origin').innerText = hero.origin || 'مانهوا';
-                    
                     document.getElementById('hero-section').classList.remove('hidden');
 
-                    // تعبئة (أحدث الأعمال) من الـ API اللايف عشان تسمع فوراً!
-                    const latestBox = document.getElementById('latest-mangas');
                     const sourceForLatest = latestMangas.length > 0 ? latestMangas : allMangasData.slice(0, 15);
-                    sourceForLatest.slice(0, 15).forEach(m => latestBox.innerHTML += createCarouselCard(m));
+                    
+                    // توزيع الأقسام الجديدة بذكاء
+                    document.getElementById('latest-mangas').innerHTML = sourceForLatest.slice(0, 15).map(createCarouselCard).join('');
+                    
+                    // الأعلى تقييماً (بنجيب المانجات ونرتبهم بالتقييم من العالي للواطي)
+                    const topRated = [...allMangasData].sort((a, b) => parseFloat(b.rating || 0) - parseFloat(a.rating || 0)).slice(0, 15);
+                    document.getElementById('top-rated-mangas').innerHTML = topRated.map(createCarouselCard).join('');
 
-                    // تعبئة (المانهوا الكورية) من داتا جيت هاب
-                    const krBox = document.getElementById('korean-mangas');
-                    allMangasData.filter(m => m.origin === 'مانهوا').slice(0, 10).forEach(m => krBox.innerHTML += createCarouselCard(m));
+                    document.getElementById('korean-mangas').innerHTML = allMangasData.filter(m => m.origin === 'مانهوا' || m.origin === 'مانها').slice(0, 15).map(createCarouselCard).join('');
+                    document.getElementById('japanese-mangas').innerHTML = allMangasData.filter(m => m.origin === 'مانجا').slice(0, 15).map(createCarouselCard).join('');
+                    document.getElementById('completed-mangas').innerHTML = allMangasData.filter(m => m.status && m.status.includes('مكتمل')).slice(0, 15).map(createCarouselCard).join('');
 
-                    new Swiper(".mySwiper", {
-                        slidesPerView: "auto", spaceBetween: 12, freeMode: true, grabCursor: true, rtl: true
-                    });
+                    initSwiper();
+                    
+                    // جلب قائمة مفضلة اليوزر لو موجودة
+                    fetchRealtimeUserData();
 
                     document.getElementById('main-content').classList.remove('hidden');
                     document.getElementById('splash-screen').style.opacity = '0';
@@ -561,11 +571,10 @@
         }
 
         // ================== Modals ==================
-        // ================== Modals (محدثة لإصلاح السحب) ==================
         function openSearch() {
             const modal = document.getElementById('search-modal');
             modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden'; // 👈 تجميد الشاشة الخلفية
+            document.body.style.overflow = 'hidden';
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 document.getElementById('search-input').focus();
@@ -580,10 +589,9 @@
             modal.classList.remove('hidden');
             loading.classList.remove('hidden');
             content.classList.add('hidden');
-            document.body.style.overflow = 'hidden'; // 👈 تجميد الشاشة الخلفية
+            document.body.style.overflow = 'hidden';
             setTimeout(() => modal.classList.remove('translate-y-full'), 10);
 
-            // جلب الداتا وعرض الشاشة
             fetchRealtimeUserData().then(() => {
                 setTimeout(() => {
                     loading.classList.add('hidden');
@@ -595,24 +603,13 @@
         function closeAllModals() {
             document.getElementById('search-modal').classList.add('opacity-0');
             document.getElementById('profile-modal').classList.add('translate-y-full');
-            document.body.style.overflow = ''; // 👈 إرجاع السحب للشاشة الرئيسية
+            document.body.style.overflow = '';
             setTimeout(() => {
                 document.getElementById('search-modal').classList.add('hidden');
                 document.getElementById('profile-modal').classList.add('hidden');
             }, 300);
         }
 
-        // ================== نظام البحث (Debounce) ==================
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => { clearTimeout(timeout); func(...args); };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
-
-        // ================== نظام البحث (Live API Search) ==================
         function debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
@@ -631,42 +628,38 @@
                 return;
             }
 
-            // إظهار أيقونة تحميل شيك أثناء البحث في البوت
-            resultsBox.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-[50vh] text-blue-500"><div class="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-3"></div><p class="font-bold">جاري البحث في قاعدة بيانات البوت...</p></div>`;
+            resultsBox.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-[50vh] text-blue-500"><div class="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-3"></div><p class="font-bold">جاري البحث...</p></div>`;
 
             try {
-                // إرسال البحث للبوت مباشرة!
                 const response = await fetch(`${API_BASE_URL}/api/search?q=${encodeURIComponent(query)}`);
                 const data = await response.json();
 
                 if(data.success && data.results.length > 0) {
-                    resultsBox.innerHTML = '';
-                    data.results.forEach(m => resultsBox.innerHTML += createGridCard(m));
+                    resultsBox.innerHTML = data.results.map(createGridCard).join('');
                 } else {
                     resultsBox.innerHTML = `<div class="col-span-full text-center text-gray-500 py-10">لم أجد عملاً بهذا الاسم.</div>`;
                 }
             } catch (error) {
-                console.error("API Search failed, using offline mode", error);
-                // خطة طوارئ: لو البوت قافل، يبحث في الداتا القديمة المحفوظة (Offline mode)
                 const localResults = allMangasData.filter(m => 
                     m.title.toLowerCase().includes(query.toLowerCase()) || 
                     (m.alt_titles && m.alt_titles.toLowerCase().includes(query.toLowerCase()))
                 );
 
                 if(localResults.length > 0) {
-                    resultsBox.innerHTML = '';
-                    localResults.forEach(m => resultsBox.innerHTML += createGridCard(m));
+                    resultsBox.innerHTML = localResults.map(createGridCard).join('');
                 } else {
                     resultsBox.innerHTML = `<div class="col-span-full text-center text-gray-500 py-10">لم أجد عملاً بهذا الاسم.</div>`;
                 }
             }
-        }, 500); // 500 ملي ثانية عشان ميضغطش السيرفر مع كل حرف تكتبه
+        }, 500);
 
         document.getElementById('search-input').addEventListener('input', handleSearch);
 
         function openMangaDetails(id) {
             tg.HapticFeedback.impactOccurred('light');
-            tg.showAlert(`قريباً: صفحة التفاصيل للعمل رقم ${id}`);
+            // هنا ممكن تقوله يبعت رسالة للبوت عشان يفتح المانجا
+            tg.sendData(`open_manga_${id}`);
+            tg.showAlert(`سيتم فتح العمل رقم ${id} في البوت.`);
         }
         function playHero() {
             if(heroMangaId) openMangaDetails(heroMangaId);
