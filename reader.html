@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0c10">
+<title>Speed Manga</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+:root{
+  --bg-base:#0a0c10;      /* خلفية الموقع */
+  --panel:#0d1017;        /* القوائم والهيدر */
+  --card:#11141b;         /* الكروت */
+  --field:#1c212c;       /* الحقول والأزرار الثانوية */
+  --skeleton:#1e293b;
+  --primary:#3b82f6;
+  --primary-soft:#60a5fa;
+  --line:rgba(255,255,255,.05);
+  --text:#fff; --muted:#9ca3af; --dim:#4b5563;
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg-base);color:var(--text);font-family:'Tajawal',sans-serif;overflow-x:hidden}
+button,select,input{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg-base)}
+::-webkit-scrollbar-thumb{background:#1f2937;border-radius:10px}
+
+/* ===== الأشرطة (glass-panel زي الموقع) ===== */
+.bar{position:fixed;left:0;right:0;z-index:50;display:flex;align-items:center;gap:10px;
+  background:rgba(17,20,27,.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  transition:transform .25s ease}
+.top{top:0;padding:calc(var(--sat) + 8px) 12px 8px;border-bottom:1px solid var(--line);box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.bot{bottom:0;padding:10px 12px calc(var(--sab) + 10px);border-top:1px solid var(--line);justify-content:space-between;box-shadow:0 -4px 12px rgba(0,0,0,.35)}
+body.hide .top{transform:translateY(-100%)}
+body.hide .bot{transform:translateY(100%)}
+
+.iconbtn{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;color:var(--muted);font-size:20px;flex:none;transition:color .15s,background .15s}
+.iconbtn:hover,.iconbtn:active{color:#fff;background:rgba(255,255,255,.05)}
+
+.title{flex:1;min-width:0}
+.title b{display:block;font-size:14px;font-weight:700;color:#e5e7eb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pick{margin-top:3px}
+.pick select,.pick input{background:var(--field);color:#fff;border:1px solid var(--line);border-radius:8px;
+  padding:5px 10px;font-size:13px;font-weight:600;max-width:100%}
+.pick input{width:96px}
+.pick input::placeholder{color:#6b7280}
+.pick select:focus,.pick input:focus{outline:none;box-shadow:0 0 0 1px var(--primary)}
+
+.counter{flex:none;background:rgba(0,0,0,.6);border:1px solid var(--line);border-radius:6px;padding:3px 9px;
+  font-size:12px;font-weight:700;color:var(--primary-soft);font-variant-numeric:tabular-nums;direction:ltr}
+
+.navbtn{flex:1;max-width:190px;height:42px;display:flex;align-items:center;justify-content:center;gap:8px;
+  border-radius:10px;font-size:14px;font-weight:700;transition:background .15s,opacity .15s}
+.navbtn.sec{background:var(--field);color:var(--muted);border:1px solid var(--line)}
+.navbtn.sec:hover{color:#fff}
+.navbtn.pri{background:var(--primary);color:#fff;box-shadow:0 4px 14px rgba(59,130,246,.25)}
+.navbtn.pri:hover{background:#2563eb}
+.navbtn[disabled]{opacity:.35;pointer-events:none;box-shadow:none}
+
+/* ===== الصفحات ===== */
+#pages{max-width:820px;margin:0 auto;padding-top:calc(60px + var(--sat))}
+.pg{position:relative;min-height:60vh;background:var(--skeleton);line-height:0;display:flex;align-items:center;justify-content:center}
+.pg.ok{min-height:0;background:none;display:block}
+.pg img{display:block;width:100%;height:auto}
+.pg .wait{width:34px;height:34px;border-radius:50%;border:4px solid rgba(59,130,246,.3);border-top-color:var(--primary);animation:spin .8s linear infinite}
+.pg.ok .wait,.pg.bad .wait{display:none}
+.pg .fail{display:none;flex-direction:column;align-items:center;gap:10px;line-height:1.5;font-size:14px;color:var(--muted)}
+.pg.bad .fail{display:flex}
+.pg .fail i{font-size:30px;opacity:.5}
+.pg .fail button{padding:8px 18px;border-radius:8px;background:var(--field);border:1px solid var(--line);color:#fff;font-weight:700;font-size:13px}
+.pg .fail button:hover{background:#262d3b}
+
+/* ===== نهاية الفصل ===== */
+.end{max-width:820px;margin:0 auto;padding:40px 20px calc(80px + var(--sab));text-align:center}
+.end p{margin:0 0 16px;color:var(--muted);font-size:14px;font-weight:500}
+.end button{padding:10px 28px;border-radius:6px;background:#fff;color:#000;font-weight:700;display:inline-flex;align-items:center;gap:8px}
+.end button:hover{background:#e5e7eb}
+.end button[disabled]{display:none}
+
+/* ===== التحميل والأخطاء ===== */
+.state{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center}
+.state .big{font-size:40px;color:var(--dim);opacity:.6}
+.state h1{margin:0;font-size:20px;font-weight:900}
+.state p{margin:0;color:var(--muted);font-size:14px;max-width:320px;line-height:1.8}
+.state .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.btn-w{padding:10px 24px;border-radius:6px;background:#fff;color:#000;font-weight:700;display:inline-flex;align-items:center;gap:8px}
+.btn-w:hover{background:#e5e7eb}
+.btn-g{padding:10px 22px;border-radius:6px;background:rgba(31,41,55,.8);color:#fff;font-weight:700;display:inline-flex;align-items:center;gap:8px}
+.btn-g:hover{background:#374151}
+.spinner{width:40px;height:40px;border-radius:50%;border:4px solid rgba(59,130,246,.3);border-top-color:var(--primary);animation:spin .8s linear infinite}
+.state .lbl{color:var(--primary-soft);font-weight:700}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spinner,.wait{animation-duration:2.5s}.bar{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="bar top" id="top" hidden>
+  <button class="iconbtn" id="backBtn" aria-label="رجوع"><i class="fa-solid fa-arrow-right"></i></button>
+  <div class="title">
+    <b id="ttl">الفصل</b>
+    <div class="pick" id="pick"></div>
+  </div>
+  <span class="counter" id="cnt"></span>
+</div>
+
+<main id="app">
+  <div class="state"><div class="spinner"></div><p class="lbl">جاري تحميل الفصل...</p></div>
+</main>
+
+<div class="bar bot" id="bot" hidden>
+  <button class="navbtn sec" id="prevBtn"><i class="fa-solid fa-chevron-right text-xs"></i> السابق</button>
+  <button class="navbtn pri" id="nextBtn">التالي <i class="fa-solid fa-chevron-left text-xs"></i></button>
+</div>
+
+<script>
+/* ============ إعدادات ============ */
+const API = "https://apispeedmanga.hidenplay.net";
+// اختياري: رابط البوت لزرار "فتح في البوت" (مثال: "https://t.me/YourBot"). سيبه فاضي لو مش عايز الزرار.
+const BOT_URL = "";
+
+/* ============ أدوات ============ */
+const tg = window.Telegram && Telegram.WebApp;
+try { tg.ready(); tg.expand(); } catch (e) {}
+try { tg.disableVerticalSwipes(); } catch (e) {}
+try { tg.setHeaderColor('#0d1017'); } catch (e) {}
+try { tg.setBackgroundColor('#0a0c10'); } catch (e) {}
+
+const qs = new URLSearchParams(location.search);
+const mangaId = qs.get("id") || "";
+const chapter = (qs.get("c") || "").trim();
+const $ = (id) => document.getElementById(id);
+
+const num = (v) => { const m = String(v).match(/\d+(?:\.\d+)?/); return m ? parseFloat(m[0]) : NaN; };
+const goChapter = (c) => { try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {} location.replace(`reader.html?id=${encodeURIComponent(mangaId)}&c=${encodeURIComponent(c)}`); };
+const goBack = () => { if (history.length > 1) history.back(); else { try { tg.close(); } catch (e) {} } };
+try { tg.BackButton.show(); tg.BackButton.onClick(goBack); } catch (e) {}
+
+/* قائمة الفصول (اختيارية): manga.html يقدر يحفظها في sessionStorage بالمفتاح sm_chs_<id> كمصفوفة أرقام */
+function loadChapterList() {
+  try {
+    const arr = JSON.parse(sessionStorage.getItem("sm_chs_" + mangaId) || "[]");
+    return arr.map(String).filter((x) => !isNaN(num(x))).sort((a, b) => num(a) - num(b));
+  } catch (e) { return []; }
+}
+const chList = loadChapterList();
+
+function neighbours() {
+  const cur = num(chapter);
+  if (chList.length) {
+    const i = chList.findIndex((x) => num(x) === cur);
+    if (i >= 0) return { prev: chList[i - 1] || null, next: chList[i + 1] || null };
+  }
+  if (isNaN(cur)) return { prev: null, next: null };
+  return { prev: cur > 1 ? String(Math.floor(cur) === cur ? cur - 1 : Math.floor(cur)) : null, next: String(Math.floor(cur) + 1) };
+}
+
+/* ============ الشريط العلوي والسفلي ============ */
+function buildBars() {
+  $("ttl").textContent = "فصل " + chapter;
+  document.title = "فصل " + chapter;
+  const pick = $("pick");
+  pick.innerHTML = "";
+  if (chList.length) {
+    const sel = document.createElement("select");
+    sel.setAttribute("aria-label", "اختيار الفصل");
+    chList.forEach((c) => {
+      const o = document.createElement("option");
+      o.value = c; o.textContent = "فصل " + c;
+      if (num(c) === num(chapter)) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.onchange = () => goChapter(sel.value);
+    pick.appendChild(sel);
+  } else {
+    const inp = document.createElement("input");
+    inp.type = "text"; inp.inputMode = "decimal"; inp.placeholder = "رقم الفصل";
+    inp.setAttribute("aria-label", "اذهب لفصل");
+    inp.onkeydown = (e) => { if (e.key === "Enter" && inp.value.trim()) goChapter(inp.value.trim()); };
+    pick.appendChild(inp);
+  }
+  $("top").hidden = false;
+  $("bot").hidden = false;
+  $("backBtn").onclick = goBack;
+  const n = neighbours();
+  $("prevBtn").disabled = !n.prev;
+  $("nextBtn").disabled = !n.next;
+  $("prevBtn").onclick = () => n.prev && goChapter(n.prev);
+  $("nextBtn").onclick = () => n.next && goChapter(n.next);
+}
+
+/* ============ شاشة الخطأ ============ */
+function showError(msg) {
+  $("app").innerHTML = `<div class="state">
+    <i class="fa-solid fa-triangle-exclamation big"></i>
+    <h1>تعذر تحميل الفصل</h1>
+    <p>${msg}</p>
+    <div class="row">
+      <button class="btn-w" id="retry"><i class="fa-solid fa-rotate-right"></i> إعادة المحاولة</button>
+      ${BOT_URL ? '<button class="btn-g" id="inbot"><i class="fa-brands fa-telegram"></i> فتح في البوت</button>' : ""}
+      <button class="btn-g" id="back2">رجوع</button>
+    </div></div>`;
+  $("retry").onclick = () => location.reload();
+  $("back2").onclick = goBack;
+  if (BOT_URL) $("inbot").onclick = () => {
+    try { tg ? tg.openTelegramLink(BOT_URL) : window.open(BOT_URL, "_blank"); } catch (e) { window.open(BOT_URL, "_blank"); }
+  };
+}
+
+/* ============ تحميل الصور ============ */
+const MAX_TRIES = 3;
+function loadImg(pg) {
+  if (pg.dataset.state === "loading" || pg.dataset.state === "done") return;
+  pg.dataset.state = "loading";
+  pg.classList.remove("bad");
+  const url = pg.dataset.src;
+  let tries = Number(pg.dataset.tries || 0);
+  const img = new Image();
+  img.decoding = "async";
+  img.alt = "صفحة " + pg.dataset.i;
+  img.onload = () => {
+    pg.dataset.state = "done";
+    pg.classList.add("ok");
+    pg.insertBefore(img, pg.firstChild);
+  };
+  img.onerror = () => {
+    tries++; pg.dataset.tries = tries;
+    pg.dataset.state = "";
+    if (tries < MAX_TRIES) setTimeout(() => loadImg(pg), 700 * tries);
+    else pg.classList.add("bad");
+  };
+  // _t بيكسر كاش المتصفح عند إعادة المحاولة (التوقيع بيغطي u و r بس)
+  img.src = tries ? url + (url.includes("?") ? "&" : "?") + "_t=" + tries : url;
+}
+
+let lazy;
+function makeLazy() {
+  lazy = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) { loadImg(e.target); lazy.unobserve(e.target); } });
+  }, { rootMargin: "1500px 0px" });
+}
+
+/* ============ العرض ============ */
+let pgEls = [], prefetched = false;
+
+function render(data) {
+  const app = $("app");
+  app.innerHTML = '<div id="pages"></div>';
+  const box = $("pages");
+  makeLazy();
+  data.pages.forEach((u, i) => {
+    const d = document.createElement("div");
+    d.className = "pg"; d.dataset.src = u; d.dataset.i = i + 1;
+    d.innerHTML = `<div class="wait"></div>
+      <div class="fail"><i class="fa-solid fa-image"></i><span>تعذر تحميل صفحة ${i + 1}</span><button type="button">إعادة تحميل الصورة</button></div>`;
+    d.querySelector("button").onclick = (e) => {
+      e.stopPropagation();
+      d.dataset.tries = 0; d.dataset.state = ""; loadImg(d);
+    };
+    box.appendChild(d);
+    pgEls.push(d);
+    lazy.observe(d);
+  });
+  const n = neighbours();
+  const end = document.createElement("div");
+  end.className = "end";
+  end.innerHTML = `<p>انتهى الفصل ${chapter}</p><button id="endNext" ${n.next ? "" : "disabled"}><i class="fa-solid fa-play"></i> الفصل التالي</button>`;
+  app.appendChild(end);
+  if (n.next) $("endNext").onclick = () => goChapter(n.next);
+  updateCounter();
+}
+
+function updateCounter() {
+  if (!pgEls.length) return;
+  const line = innerHeight * 0.4;
+  let cur = 0;
+  for (let i = 0; i < pgEls.length; i++) {
+    if (pgEls[i].getBoundingClientRect().top <= line) cur = i; else break;
+  }
+  $("cnt").textContent = `${cur + 1} / ${pgEls.length}`;
+  if (!prefetched && (cur + 1) / pgEls.length >= 0.7) prefetchNext();
+}
+
+/* تجهيز الفصل التالي في الخلفية عند الوصول لـ 70% */
+function prefetchNext() {
+  prefetched = true;
+  const n = neighbours();
+  if (!n.next) return;
+  fetch(`${API}/api/chapter/${encodeURIComponent(mangaId)}/${encodeURIComponent(n.next)}`)
+    .then((r) => r.ok ? r.json() : null)
+    .then((d) => { if (d && d.success) d.pages.slice(0, 3).forEach((u) => { new Image().src = u; }); })
+    .catch(() => {});
+}
+
+let ticking = false;
+addEventListener("scroll", () => {
+  if (ticking) return;
+  ticking = true;
+  requestAnimationFrame(() => { updateCounter(); ticking = false; });
+}, { passive: true });
+
+/* لمسة على الصفحة تخفي/تظهر الأشرطة */
+document.addEventListener("click", (e) => {
+  if (e.target.closest(".bar, button, select, input, .state")) return;
+  document.body.classList.toggle("hide");
+});
+
+/* ============ تشغيل ============ */
+async function init() {
+  if (!mangaId || !chapter) { showError("رابط الفصل ناقص."); return; }
+  buildBars();
+  try {
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), 60000);
+    const r = await fetch(`${API}/api/chapter/${encodeURIComponent(mangaId)}/${encodeURIComponent(chapter)}`, { signal: ctl.signal });
+    clearTimeout(t);
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok || !data.success || !data.pages || !data.pages.length) {
+      showError(data.error === "no_source"
+        ? "الفصل ده مالوش مصدر صور متاح. ممكن يكون مدمج أو العمل مش مربوط بمصدر."
+        : "حصل خطأ أثناء جلب الفصل. جرب تاني بعد شوية.");
+      return;
+    }
+    render(data);
+  } catch (e) {
+    showError("تعذر الاتصال بالسيرفر. اتأكد من النت وجرب تاني.");
+  }
+}
+init();
+</script>
+</body>
+</html>
