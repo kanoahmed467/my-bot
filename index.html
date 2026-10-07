@@ -206,56 +206,81 @@
     </div>
 
     <!-- ========================================= -->
-    <!-- شاشة الحساب -->
+    <!-- شاشة الحساب (نظيفة واحترافية) -->
     <!-- ========================================= -->
     <div id="profile-modal" class="fixed inset-0 z-[100] bg-[#0a0c10] hidden flex-col transition-transform transform translate-y-full duration-300">
+        <!-- هيدر الشاشة -->
         <div class="p-4 flex items-center justify-between border-b border-white/5 bg-[#0d1017]">
-            <h2 class="text-lg font-bold">حسابي</h2>
             <button onclick="closeAllModals()" class="text-gray-400 hover:text-white p-2">
-                <i class="fa-solid fa-times text-xl"></i>
+                <i class="fa-solid fa-arrow-right text-xl"></i>
             </button>
+            <h2 class="text-lg font-bold text-gray-200">حسابي</h2>
+            <div class="w-8"></div>
+        </div>
+
+        <!-- شاشة "جاري التحقق" (الأنيميشن الفخم) -->
+        <div id="profile-loading" class="flex-1 flex flex-col items-center justify-center">
+            <div class="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+            <p class="text-blue-400 font-bold animate-pulse">جاري التحقق من حسابك...</p>
         </div>
         
-        <div class="flex-1 overflow-y-auto p-4 md:p-8 max-w-2xl mx-auto w-full">
-            <div class="bg-slate-800/50 rounded-xl p-6 border border-white/5 mb-6 text-center relative overflow-hidden">
-                <!-- تأثير إضاءة في الخلفية -->
-                <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl"></div>
+        <!-- المحتوى الفعلي للحساب -->
+        <div id="profile-content" class="flex-1 overflow-y-auto p-4 md:p-8 max-w-3xl mx-auto w-full hidden hide-scrollbar pb-10">
+            
+            <!-- البانر ومعلومات المستخدم -->
+            <div class="relative bg-[#11141b] rounded-2xl border border-white/5 overflow-hidden mb-6 shadow-xl">
+                <!-- صورة البانر الخلفية -->
+                <div class="h-32 bg-[url('https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center opacity-40"></div>
                 
-                <img id="prof-avatar" src="" class="w-24 h-24 rounded-full mx-auto mb-3 object-cover border-2 border-blue-500 shadow-lg shadow-blue-500/20 relative z-10">
-                <h2 id="prof-name" class="text-xl font-bold mb-1 relative z-10">...</h2>
-                <span id="prof-badge" class="inline-block bg-[#0a0c10] text-gray-400 border border-white/10 px-3 py-1 rounded-full text-xs font-bold relative z-10">عضو</span>
+                <div class="px-6 pb-6 relative">
+                    <!-- الصورة والاسم -->
+                    <div class="flex flex-col items-center -mt-16 mb-4">
+                        <div class="relative mb-3">
+                            <img id="prof-avatar" src="" class="w-28 h-28 rounded-full object-cover border-4 border-[#11141b] shadow-lg bg-slate-800">
+                            <div id="prof-badge" class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full border border-[#11141b] tracking-widest uppercase shadow-md">
+                                FREE
+                            </div>
+                        </div>
+                        <h2 id="prof-name" class="text-2xl font-black text-white drop-shadow-md">...</h2>
+                        <p class="text-sm text-gray-400 mt-1">عضو في مكتبة سبيد مانجا</p>
+                    </div>
+
+                    <!-- الإحصائيات (نقاط، قراءة، مفضلة) -->
+                    <div class="grid grid-cols-3 gap-4 mt-6">
+                        <div class="bg-[#0a0c10] rounded-xl p-4 text-center border border-white/5 shadow-inner">
+                            <i class="fa-solid fa-star text-yellow-500 mb-2 text-xl"></i>
+                            <p id="stat-points" class="text-2xl font-black text-white">0</p>
+                            <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">نقاطي</p>
+                        </div>
+                        <div class="bg-[#0a0c10] rounded-xl p-4 text-center border border-white/5 shadow-inner">
+                            <i class="fa-solid fa-book-open text-blue-500 mb-2 text-xl"></i>
+                            <p id="stat-history" class="text-2xl font-black text-white">0</p>
+                            <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">قرأت</p>
+                        </div>
+                        <div class="bg-[#0a0c10] rounded-xl p-4 text-center border border-white/5 shadow-inner">
+                            <i class="fa-solid fa-bookmark text-purple-500 mb-2 text-xl"></i>
+                            <p id="stat-favs" class="text-2xl font-black text-white">0</p>
+                            <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">في قائمتي</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- إحصائيات مبدئية -->
-            <div class="grid grid-cols-3 gap-3 mb-6">
-                <div class="bg-[#11141b] rounded-lg p-3 text-center border border-white/5">
-                    <p class="text-gray-500 text-xs mb-1">النقاط</p>
-                    <p id="stat-points" class="text-lg font-bold text-yellow-400">0</p>
-                </div>
-                <div class="bg-[#11141b] rounded-lg p-3 text-center border border-white/5">
-                    <p class="text-gray-500 text-xs mb-1">قرأت</p>
-                    <p id="stat-history" class="text-lg font-bold text-white">0</p>
-                </div>
-                <div class="bg-[#11141b] rounded-lg p-3 text-center border border-white/5">
-                    <p class="text-gray-500 text-xs mb-1">قائمتي</p>
-                    <p id="stat-favs" class="text-lg font-bold text-blue-400">0</p>
-                </div>
-            </div>
-
+            <!-- أزرار التحكم السفلية -->
             <div class="space-y-3">
-                <button class="w-full bg-[#11141b] flex items-center justify-between p-4 rounded-lg hover:bg-slate-800 transition border border-white/5">
-                    <div class="flex items-center gap-4 text-yellow-500"><i class="fa-solid fa-crown"></i> <span class="font-semibold text-white">ترقية لـ VIP</span></div>
+                <button onclick="tg.showAlert('للحصول على VIP، تواصل مع الإدارة في البوت.')" class="w-full bg-[#11141b] flex items-center justify-between p-4 rounded-xl hover:bg-slate-800 transition border border-white/5 shadow-sm">
+                    <div class="flex items-center gap-4 text-yellow-500"><i class="fa-solid fa-crown text-xl w-6"></i> <span class="font-semibold text-white">الترقية لـ VIP</span></div>
                     <i class="fa-solid fa-chevron-left text-gray-600"></i>
                 </button>
-                <button class="w-full bg-[#11141b] flex items-center justify-between p-4 rounded-lg hover:bg-slate-800 transition border border-white/5">
-                    <div class="flex items-center gap-4 text-blue-400"><i class="fa-solid fa-clock-rotate-left"></i> <span class="font-semibold text-white">سجل القراءة</span></div>
+                <button class="w-full bg-[#11141b] flex items-center justify-between p-4 rounded-xl hover:bg-slate-800 transition border border-white/5 shadow-sm">
+                    <div class="flex items-center gap-4 text-blue-400"><i class="fa-solid fa-clock-rotate-left text-xl w-6"></i> <span class="font-semibold text-white">سجل القراءة</span></div>
                     <i class="fa-solid fa-chevron-left text-gray-600"></i>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- السكربتات -->
+    <!-- السكربتات الأساسية -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
     <script>
         const tg = window.Telegram.WebApp;
@@ -266,41 +291,39 @@
         let allMangasData = []; 
         let heroMangaId = null;
 
+        // 🔴 الرابط الذي حصلت عليه من لوحة التحكم 🔴
+        const API_BASE_URL = "https://apispeedmanga.hidenplay.net";
+
         // ==========================================
-        // 🔐 نظام تسجيل الدخول عبر تليجرام + جلب البيانات لايف
+        // 🔐 بيانات المستخدم وتسجيل الدخول
         // ==========================================
         let currentUser = {
             id: null,
             name: "ضيف",
-            username: "",
             photo: "https://ui-avatars.com/api/?name=Guest&background=1f2937&color=fff",
         };
 
         const tgData = tg.initDataUnsafe?.user;
-
         if (tgData) {
             currentUser.id = tgData.id;
             currentUser.name = tgData.first_name + (tgData.last_name ? ' ' + tgData.last_name : '');
-            currentUser.username = tgData.username ? '@' + tgData.username : '';
             currentUser.photo = tgData.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=3b82f6&color=fff&bold=true`;
         }
 
-        // 🔴 الرابط الذي حصلت عليه من لوحة التحكم 🔴
-        const API_BASE_URL = "https://apispeedmanga.hidenplay.net";
+        // تحديث الصور والأسماء الجانبية فوراً
+        document.getElementById('side-user-name').innerText = currentUser.name;
+        document.getElementById('side-user-avatar').src = currentUser.photo;
+        document.getElementById('prof-name').innerText = currentUser.name;
+        document.getElementById('prof-avatar').src = currentUser.photo;
 
+        // ==========================================
+        // 🚀 جلب البيانات الفورية من الـ API (السحر هنا)
+        // ==========================================
         async function fetchRealtimeUserData() {
-            // تحديث البيانات الأساسية (الاسم والصورة) فوراً
-            document.getElementById('side-user-name').innerText = currentUser.name;
-            document.getElementById('side-user-avatar').src = currentUser.photo;
-            document.getElementById('prof-name').innerText = currentUser.name;
-            document.getElementById('prof-avatar').src = currentUser.photo;
-
             if (!currentUser.id) return;
-
             try {
                 const response = await fetch(`${API_BASE_URL}/api/user/${currentUser.id}`);
                 const dbData = await response.json();
-
                 if (dbData.success) {
                     document.getElementById('stat-points').innerText = dbData.points;
                     document.getElementById('stat-history').innerText = dbData.history_count;
@@ -308,20 +331,15 @@
 
                     const badge = document.getElementById('prof-badge');
                     if (dbData.is_vip) {
-                        badge.innerHTML = "👑 VIP";
-                        badge.className = "inline-block bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-3 py-1 rounded-full text-xs font-bold relative z-10 shadow-[0_0_10px_rgba(234,179,8,0.2)]";
+                        badge.innerHTML = "PRO VIP";
+                        badge.className = "absolute -bottom-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-[10px] font-black px-4 py-1 rounded-full border border-[#11141b] shadow-[0_0_15px_rgba(234,179,8,0.4)] tracking-widest uppercase";
                     } else {
-                        badge.innerHTML = "عضو";
-                        badge.className = "inline-block bg-[#0a0c10] text-gray-400 border border-white/10 px-3 py-1 rounded-full text-xs font-bold relative z-10";
+                        badge.innerHTML = "FREE";
+                        badge.className = "absolute -bottom-2 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] font-bold px-4 py-1 rounded-full border border-[#11141b] tracking-widest uppercase shadow-md";
                     }
                 }
-            } catch (error) {
-                console.error("فشل الاتصال بالسيرفر:", error);
-            }
+            } catch (error) { console.error("API Error:", error); }
         }
-
-        // تشغيل جلب بيانات المستخدم
-        fetchRealtimeUserData();
 
         // ==========================================
         // 🛠️ دوال إنشاء الكروت
@@ -358,16 +376,30 @@
             `;
         };
 
-        const dataUrl = 'https://raw.githubusercontent.com/kanoahmed467/my-bot/main/data.json';
+        // ==========================================
+        // 🚀 تحميل الموقع (يدمج جيت هاب + الـ API اللايف)
+        // ==========================================
+        const githubDataUrl = 'https://raw.githubusercontent.com/kanoahmed467/my-bot/main/data.json';
 
         async function loadApp() {
             try {
-                const response = await fetch(`${dataUrl}?t=${new Date().getTime()}`);
-                const data = await response.json();
-                allMangasData = data.mangas;
+                // 1. جلب أحدث الأعمال فوراً من السيرفر (Live API) عشان يسمع في نفس اللحظة
+                let latestMangas = [];
+                try {
+                    const liveResponse = await fetch(`${API_BASE_URL}/api/latest`);
+                    const liveData = await liveResponse.json();
+                    if(liveData.success) latestMangas = liveData.mangas;
+                } catch(e) { console.log("Live API failed, falling back to GitHub"); }
+
+                // 2. جلب باقي الأعمال من جيت هاب (للبحث والأقسام)
+                const ghResponse = await fetch(`${githubDataUrl}?t=${new Date().getTime()}`);
+                const ghData = await ghResponse.json();
+                allMangasData = ghData.mangas;
 
                 if (allMangasData.length > 0) {
-                    const hero = allMangasData[0];
+                    // لو הـ API رجع داتا لايف، هنعرض أول عمل منها في البانر.. لو لأ، هناخد من جيت هاب
+                    const hero = latestMangas.length > 0 ? latestMangas[0] : allMangasData[0];
+                    
                     heroMangaId = hero.id;
                     document.getElementById('hero-img').src = hero.image_url;
                     document.getElementById('hero-img').onerror = function() { this.src='https://via.placeholder.com/800x600?text=No+Cover'; };
@@ -378,9 +410,12 @@
                     
                     document.getElementById('hero-section').classList.remove('hidden');
 
+                    // تعبئة (أحدث الأعمال) من الـ API اللايف عشان تسمع فوراً!
                     const latestBox = document.getElementById('latest-mangas');
-                    allMangasData.slice(1, 12).forEach(m => latestBox.innerHTML += createCarouselCard(m));
+                    const sourceForLatest = latestMangas.length > 0 ? latestMangas : allMangasData.slice(0, 15);
+                    sourceForLatest.slice(1, 15).forEach(m => latestBox.innerHTML += createCarouselCard(m));
 
+                    // تعبئة (المانهوا الكورية) من داتا جيت هاب
                     const krBox = document.getElementById('korean-mangas');
                     allMangasData.filter(m => m.origin === 'مانهوا').slice(0, 10).forEach(m => krBox.innerHTML += createCarouselCard(m));
 
@@ -409,26 +444,33 @@
 
         function openProfile() {
             const modal = document.getElementById('profile-modal');
+            const loading = document.getElementById('profile-loading');
+            const content = document.getElementById('profile-content');
+            
             modal.classList.remove('hidden');
+            loading.classList.remove('hidden');
+            content.classList.add('hidden');
             setTimeout(() => modal.classList.remove('translate-y-full'), 10);
+
+            // جلب الداتا وعرض الشاشة
+            fetchRealtimeUserData().then(() => {
+                setTimeout(() => {
+                    loading.classList.add('hidden');
+                    content.classList.remove('hidden');
+                }, 800); // 800ms لضمان رؤية الأنيميشن الفخم
+            });
         }
 
         function closeAllModals() {
-            const searchModal = document.getElementById('search-modal');
-            const profileModal = document.getElementById('profile-modal');
-            
-            searchModal.classList.add('opacity-0');
-            profileModal.classList.add('translate-y-full');
-            
+            document.getElementById('search-modal').classList.add('opacity-0');
+            document.getElementById('profile-modal').classList.add('translate-y-full');
             setTimeout(() => {
-                searchModal.classList.add('hidden');
-                profileModal.classList.add('hidden');
+                document.getElementById('search-modal').classList.add('hidden');
+                document.getElementById('profile-modal').classList.add('hidden');
             }, 300);
         }
 
-        // ==========================================
-        // 🚀 نظام البحث (Debounce)
-        // ==========================================
+        // ================== نظام البحث (Debounce) ==================
         function debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
@@ -443,18 +485,11 @@
             const resultsBox = document.getElementById('search-results');
             
             if(query.length < 2) {
-                resultsBox.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center justify-center h-[50vh] text-gray-600">
-                        <i class="fa-solid fa-book-open text-4xl mb-3 opacity-50"></i>
-                        <p>اكتب اسم العمل للبحث...</p>
-                    </div>`;
+                resultsBox.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-[50vh] text-gray-600"><i class="fa-solid fa-book-open text-4xl mb-3 opacity-50"></i><p>اكتب اسم العمل للبحث...</p></div>`;
                 return;
             }
 
-            const results = allMangasData.filter(m => 
-                m.title.toLowerCase().includes(query) || 
-                (m.alt_titles && m.alt_titles.toLowerCase().includes(query))
-            );
+            const results = allMangasData.filter(m => m.title.toLowerCase().includes(query) || (m.alt_titles && m.alt_titles.toLowerCase().includes(query)));
 
             if(results.length === 0) {
                 resultsBox.innerHTML = `<div class="col-span-full text-center text-gray-500 py-10">لم أجد عملاً بهذا الاسم.</div>`;
@@ -462,9 +497,7 @@
             }
 
             resultsBox.innerHTML = '';
-            results.forEach(m => {
-                resultsBox.innerHTML += createGridCard(m);
-            });
+            results.forEach(m => resultsBox.innerHTML += createGridCard(m));
         }, 300);
 
         document.getElementById('search-input').addEventListener('input', handleSearch);
@@ -477,7 +510,6 @@
             if(heroMangaId) openMangaDetails(heroMangaId);
         }
 
-        // تشغيل جلب المانجات
         loadApp();
     </script>
 </body>
