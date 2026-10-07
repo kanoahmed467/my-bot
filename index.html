@@ -383,41 +383,59 @@
         // ==========================================
         // 🪄 نظام العلاج الذاتي للأغلفة (Auto-Heal)
         // ==========================================
+        // ==========================================
+        // 🪄 نظام العلاج الذاتي للأغلفة (Auto-Heal) - النسخة المحمية
+        // ==========================================
+        // 🛡️ ذاكرة للمتصفح عشان ميبعتش طلب لنفس المانجا مرتين
+        const currentlyFixingCovers = new Set();
+
         async function fixMissingCover(imgElement, mangaId, title) {
-            // 1. مسح الـ onerror عشان ميعملش لوب لا نهائي لو فشل
+            // 1. مسح الـ onerror فوراً لمنع اللوب اللانهائي
             imgElement.onerror = null;
             
-            // 2. وضع صورة "جاري التحميل" مؤقتة شيك
+            // 2. لو المانجا دي بيتعملها فحص دلوقتي، تجاهل الطلب تماماً
+            if (currentlyFixingCovers.has(mangaId)) return;
+            
+            // تسجيل إن المانجا دي تحت العلاج
+            currentlyFixingCovers.add(mangaId);
+            
+            // 3. وضع صورة "جاري التحميل" مؤقتة شيك
             imgElement.src = `https://ui-avatars.com/api/?name=Loading...&background=1f2937&color=3b82f6&size=300`;
             imgElement.style.opacity = '0.5';
 
             try {
-                // 3. نرسل نداء استغاثة لسيرفر البوت لرفع الصورة لجيت هاب
+                // 4. نرسل نداء استغاثة لسيرفر البوت
                 console.log(`[Auto-Heal] Requesting cover upload for ID: ${mangaId}`);
                 const response = await fetch(`${API_BASE_URL}/api/fix_cover/${mangaId}`);
                 const data = await response.json();
                 
                 if (data.success) {
-                    // 4. البوت بدأ الرفع. هنستنى 4.5 ثواني عشان جيت هاب يخلص ونعمل ريفريش للصورة
+                    // 5. البوت بدأ الرفع. هنستنى 5 ثواني عشان جيت هاب يخلص ونعمل ريفريش
                     setTimeout(() => {
                         imgElement.style.opacity = '1';
-                        // نستخدم raw.githubusercontent لأنه أسرع في تحديث الكاش
+                        // نحط رقم عشوائي في آخر الرابط عشان نجبر المتصفح يمسح الكاش ويجيب الصورة الجديدة
                         imgElement.src = `https://raw.githubusercontent.com/kanoahmed467/my-bot/main/covers/${mangaId}.jpg?t=${new Date().getTime()}`;
                         
-                        // لو فشل تاني (لا قدر الله)، نحط الحروف كبديل أخير
+                        // لو الصورة لسه مجاتش من جيت هاب، نحط الحروف كحل أخير
                         imgElement.onerror = function() {
                             this.onerror = null;
                             this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=1f2937&color=3b82f6&size=300&font-size=0.1`;
                         };
-                    }, 4500);
+                        
+                        // نفتح القفل بعد 10 ثواني عشان لو حب يجرب تاني
+                        setTimeout(() => currentlyFixingCovers.delete(mangaId), 10000);
+                        
+                    }, 5000);
                 } else {
-                    throw new Error("Bot returned false");
+                    throw new Error("Bot returned false or already fixing");
                 }
             } catch (error) {
-                // لو السيرفر واقع أو أي خطأ، نحط صورة الحروف كبديل أخير
                 console.error(`[Auto-Heal] Failed for ${mangaId}:`, error);
                 imgElement.style.opacity = '1';
                 imgElement.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=1f2937&color=3b82f6&size=300&font-size=0.1`;
+                
+                // نفتح القفل بعد 10 ثواني
+                setTimeout(() => currentlyFixingCovers.delete(mangaId), 10000);
             }
         }
 
@@ -458,7 +476,7 @@
                     // تعبئة (أحدث الأعمال) من الـ API اللايف عشان تسمع فوراً!
                     const latestBox = document.getElementById('latest-mangas');
                     const sourceForLatest = latestMangas.length > 0 ? latestMangas : allMangasData.slice(0, 15);
-                    sourceForLatest.slice(1, 15).forEach(m => latestBox.innerHTML += createCarouselCard(m));
+                    sourceForLatest.slice(0, 15).forEach(m => latestBox.innerHTML += createCarouselCard(m));
 
                     // تعبئة (المانهوا الكورية) من داتا جيت هاب
                     const krBox = document.getElementById('korean-mangas');
@@ -525,8 +543,18 @@
             };
         }
 
-        const handleSearch = debounce((e) => {
-            const query = e.target.value.toLowerCase().trim();
+        // ================== نظام البحث (Live API Search) ==================
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => { clearTimeout(timeout); func(...args); };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        const handleSearch = debounce(async (e) => {
+            const query = e.target.value.trim();
             const resultsBox = document.getElementById('search-results');
             
             if(query.length < 2) {
@@ -534,16 +562,36 @@
                 return;
             }
 
-            const results = allMangasData.filter(m => m.title.toLowerCase().includes(query) || (m.alt_titles && m.alt_titles.toLowerCase().includes(query)));
+            // إظهار أيقونة تحميل شيك أثناء البحث في البوت
+            resultsBox.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-[50vh] text-blue-500"><div class="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-3"></div><p class="font-bold">جاري البحث في قاعدة بيانات البوت...</p></div>`;
 
-            if(results.length === 0) {
-                resultsBox.innerHTML = `<div class="col-span-full text-center text-gray-500 py-10">لم أجد عملاً بهذا الاسم.</div>`;
-                return;
+            try {
+                // إرسال البحث للبوت مباشرة!
+                const response = await fetch(`${API_BASE_URL}/api/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                if(data.success && data.results.length > 0) {
+                    resultsBox.innerHTML = '';
+                    data.results.forEach(m => resultsBox.innerHTML += createGridCard(m));
+                } else {
+                    resultsBox.innerHTML = `<div class="col-span-full text-center text-gray-500 py-10">لم أجد عملاً بهذا الاسم.</div>`;
+                }
+            } catch (error) {
+                console.error("API Search failed, using offline mode", error);
+                // خطة طوارئ: لو البوت قافل، يبحث في الداتا القديمة المحفوظة (Offline mode)
+                const localResults = allMangasData.filter(m => 
+                    m.title.toLowerCase().includes(query.toLowerCase()) || 
+                    (m.alt_titles && m.alt_titles.toLowerCase().includes(query.toLowerCase()))
+                );
+
+                if(localResults.length > 0) {
+                    resultsBox.innerHTML = '';
+                    localResults.forEach(m => resultsBox.innerHTML += createGridCard(m));
+                } else {
+                    resultsBox.innerHTML = `<div class="col-span-full text-center text-gray-500 py-10">لم أجد عملاً بهذا الاسم.</div>`;
+                }
             }
-
-            resultsBox.innerHTML = '';
-            results.forEach(m => resultsBox.innerHTML += createGridCard(m));
-        }, 300);
+        }, 500); // 500 ملي ثانية عشان ميضغطش السيرفر مع كل حرف تكتبه
 
         document.getElementById('search-input').addEventListener('input', handleSearch);
 
