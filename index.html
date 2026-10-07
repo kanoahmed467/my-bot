@@ -58,6 +58,12 @@
             z-index: 10;
         }
 
+        /* إصلاح السحب في الشاشات المنبثقة للموبايل */
+        .scrollable-modal {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+        }
+
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: var(--bg-base); }
         ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 10px; }
@@ -195,7 +201,7 @@
             </div>
         </div>
         <!-- نتائج البحث (Grid سليم) -->
-        <div class="flex-1 overflow-y-auto p-4 md:p-8">
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 scrollable-modal pb-24">
             <div id="search-results" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6 max-w-7xl mx-auto">
                 <div class="col-span-full flex flex-col items-center justify-center h-[50vh] text-gray-600">
                     <i class="fa-solid fa-book-open text-4xl mb-3 opacity-50"></i>
@@ -225,7 +231,7 @@
         </div>
         
         <!-- المحتوى الفعلي للحساب -->
-        <div id="profile-content" class="flex-1 overflow-y-auto p-4 md:p-8 max-w-3xl mx-auto w-full hidden hide-scrollbar pb-10">
+        <div id="profile-content" class="flex-1 overflow-y-auto p-4 md:p-8 max-w-3xl mx-auto w-full hidden hide-scrollbar scrollable-modal pb-24">
             
             <!-- البانر ومعلومات المستخدم -->
             <div class="relative bg-[#11141b] rounded-2xl border border-white/5 overflow-hidden mb-6 shadow-xl">
@@ -246,24 +252,24 @@
                     </div>
 
                     <!-- الإحصائيات (نقاط، قراءة، مفضلة) -->
-                    <div class="grid grid-cols-3 gap-4 mt-6">
-                        <div class="bg-[#0a0c10] rounded-xl p-4 text-center border border-white/5 shadow-inner">
-                            <i class="fa-solid fa-star text-yellow-500 mb-2 text-xl"></i>
-                            <p id="stat-points" class="text-2xl font-black text-white">0</p>
-                            <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">نقاطي</p>
+                    <!-- الإحصائيات (نقاط، قراءة، مفضلة) -->
+                    <div class="grid grid-cols-3 gap-2 sm:gap-4 mt-6">
+                        <div class="bg-[#0a0c10] rounded-xl p-2 sm:p-4 text-center border border-white/5 shadow-inner">
+                            <i class="fa-solid fa-star text-yellow-500 mb-1 sm:mb-2 text-lg sm:text-xl"></i>
+                            <p id="stat-points" class="text-lg sm:text-2xl font-black text-white truncate px-1">0</p>
+                            <p class="text-[9px] sm:text-[10px] text-gray-500 mt-1 uppercase tracking-wider">نقاطي</p>
                         </div>
-                        <div class="bg-[#0a0c10] rounded-xl p-4 text-center border border-white/5 shadow-inner">
-                            <i class="fa-solid fa-book-open text-blue-500 mb-2 text-xl"></i>
-                            <p id="stat-history" class="text-2xl font-black text-white">0</p>
-                            <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">قرأت</p>
+                        <div class="bg-[#0a0c10] rounded-xl p-2 sm:p-4 text-center border border-white/5 shadow-inner">
+                            <i class="fa-solid fa-book-open text-blue-500 mb-1 sm:mb-2 text-lg sm:text-xl"></i>
+                            <p id="stat-history" class="text-lg sm:text-2xl font-black text-white truncate px-1">0</p>
+                            <p class="text-[9px] sm:text-[10px] text-gray-500 mt-1 uppercase tracking-wider">قرأت</p>
                         </div>
-                        <div class="bg-[#0a0c10] rounded-xl p-4 text-center border border-white/5 shadow-inner">
-                            <i class="fa-solid fa-bookmark text-purple-500 mb-2 text-xl"></i>
-                            <p id="stat-favs" class="text-2xl font-black text-white">0</p>
-                            <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">في قائمتي</p>
+                        <div class="bg-[#0a0c10] rounded-xl p-2 sm:p-4 text-center border border-white/5 shadow-inner">
+                            <i class="fa-solid fa-bookmark text-purple-500 mb-1 sm:mb-2 text-lg sm:text-xl"></i>
+                            <p id="stat-favs" class="text-lg sm:text-2xl font-black text-white truncate px-1">0</p>
+                            <p class="text-[9px] sm:text-[10px] text-gray-500 mt-1 uppercase tracking-wider">قائمتي</p>
                         </div>
                     </div>
-                </div>
             </div>
 
 
@@ -325,6 +331,14 @@
         document.getElementById('prof-name').innerText = currentUser.name;
         document.getElementById('prof-avatar').src = currentUser.photo;
 
+
+        // دالة ذكية لتحويل الأرقام الكبيرة (مثال: 1036419 -> 1.03M)
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
+        }
+
         // ==========================================
         // 🚀 جلب البيانات الفورية من الـ API (السحر هنا)
         // ==========================================
@@ -338,9 +352,9 @@
                 const response = await fetch(`${API_BASE_URL}/api/user/${currentUser.id}`);
                 const dbData = await response.json();
                 if (dbData.success) {
-                    document.getElementById('stat-points').innerText = dbData.points;
-                    document.getElementById('stat-history').innerText = dbData.history_count;
-                    document.getElementById('stat-favs').innerText = dbData.favorites_count;
+                    document.getElementById('stat-points').innerText = formatNumber(dbData.points);
+                    document.getElementById('stat-history').innerText = formatNumber(dbData.history_count);
+                    document.getElementById('stat-favs').innerText = formatNumber(dbData.favorites_count);
 
                     const badge = document.getElementById('prof-badge');
                     if (dbData.is_vip) {
@@ -547,9 +561,11 @@
         }
 
         // ================== Modals ==================
+        // ================== Modals (محدثة لإصلاح السحب) ==================
         function openSearch() {
             const modal = document.getElementById('search-modal');
             modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // 👈 تجميد الشاشة الخلفية
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 document.getElementById('search-input').focus();
@@ -564,6 +580,7 @@
             modal.classList.remove('hidden');
             loading.classList.remove('hidden');
             content.classList.add('hidden');
+            document.body.style.overflow = 'hidden'; // 👈 تجميد الشاشة الخلفية
             setTimeout(() => modal.classList.remove('translate-y-full'), 10);
 
             // جلب الداتا وعرض الشاشة
@@ -571,13 +588,14 @@
                 setTimeout(() => {
                     loading.classList.add('hidden');
                     content.classList.remove('hidden');
-                }, 800); // 800ms لضمان رؤية الأنيميشن الفخم
+                }, 800);
             });
         }
 
         function closeAllModals() {
             document.getElementById('search-modal').classList.add('opacity-0');
             document.getElementById('profile-modal').classList.add('translate-y-full');
+            document.body.style.overflow = ''; // 👈 إرجاع السحب للشاشة الرئيسية
             setTimeout(() => {
                 document.getElementById('search-modal').classList.add('hidden');
                 document.getElementById('profile-modal').classList.add('hidden');
