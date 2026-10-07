@@ -225,7 +225,7 @@
     <!-- ========================================= -->
     <!-- شاشة البحث المنبثقة (محدثة ومضادة للاج) -->
     <!-- ========================================= -->
-    <div id="search-modal" class="fixed inset-0 z-[100] bg-[#0a0c10] hidden flex-col transition-opacity duration-300 opacity-0">
+    <div id="search-modal" class="fixed top-0 left-0 w-full h-[100dvh] z-[100] bg-[#0a0c10] hidden flex-col transition-opacity duration-300 opacity-0">
         <!-- هيدر البحث -->
         <div class="p-4 md:p-6 flex items-center gap-3 bg-[#0d1017] border-b border-white/5">
             <button onclick="closeAllModals()" class="text-gray-400 hover:text-white p-2">
@@ -251,7 +251,7 @@
     <!-- ========================================= -->
     <!-- شاشة الحساب (نظيفة واحترافية) -->
     <!-- ========================================= -->
-    <div id="profile-modal" class="fixed inset-0 z-[100] bg-[#0a0c10] hidden flex-col transition-transform transform translate-y-full duration-300">
+    <div id="profile-modal" class="fixed top-0 left-0 w-full h-[100dvh] z-[100] bg-[#0a0c10] hidden flex-col transition-transform transform translate-y-full duration-300">
         <!-- هيدر الشاشة -->
         <div class="p-4 flex items-center justify-between border-b border-white/5 bg-[#0d1017]">
             <button onclick="closeAllModals()" class="text-gray-400 hover:text-white p-2">
@@ -336,9 +336,10 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.setHeaderColor('#0d1017');
-        tg.setBackgroundColor('#0a0c10');
+        try { tg.expand(); } catch(e) {}
+        try { tg.disableVerticalSwipes(); } catch(e) {} 
+        try { tg.setHeaderColor('#0d1017'); } catch(e) {}
+        try { tg.setBackgroundColor('#0a0c10'); } catch(e) {}
 
         let allMangasData = []; 
         let heroMangaId = null;
@@ -448,7 +449,7 @@
             return `
                 <div class="swiper-slide cursor-pointer" onclick="openMangaDetails(${manga.id})">
                     <div class="relative w-full aspect-[2/3] rounded-lg overflow-hidden mb-2 manga-card-hover bg-slate-800 border border-white/5">
-                        <img id="img-${manga.id}" src="${m.image_url || manga.image_url}?t=${new Date().getTime()}" 
+                        <img id="img-${manga.id}" src="${manga.image_url}?t=${new Date().getTime()}" 
                              class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300" 
                              alt="${manga.title}" 
                              onerror="fixMissingCover(this, ${manga.id}, '${manga.title.replace(/'/g, "\\'")}')">
@@ -570,11 +571,11 @@
             }
         }
 
+        // ================== Modals (محدثة للإسكرول الطبيعي) ==================
         // ================== Modals ==================
         function openSearch() {
             const modal = document.getElementById('search-modal');
             modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 document.getElementById('search-input').focus();
@@ -589,7 +590,6 @@
             modal.classList.remove('hidden');
             loading.classList.remove('hidden');
             content.classList.add('hidden');
-            document.body.style.overflow = 'hidden';
             setTimeout(() => modal.classList.remove('translate-y-full'), 10);
 
             fetchRealtimeUserData().then(() => {
@@ -603,20 +603,10 @@
         function closeAllModals() {
             document.getElementById('search-modal').classList.add('opacity-0');
             document.getElementById('profile-modal').classList.add('translate-y-full');
-            document.body.style.overflow = '';
             setTimeout(() => {
                 document.getElementById('search-modal').classList.add('hidden');
                 document.getElementById('profile-modal').classList.add('hidden');
             }, 300);
-        }
-
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => { clearTimeout(timeout); func(...args); };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
         }
 
         const handleSearch = debounce(async (e) => {
