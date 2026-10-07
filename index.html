@@ -217,18 +217,39 @@
         </div>
         
         <div class="flex-1 overflow-y-auto p-4 md:p-8 max-w-2xl mx-auto w-full">
-            <div class="bg-slate-800/50 rounded-xl p-6 border border-white/5 mb-6 text-center">
-                <img id="prof-avatar" src="" class="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-2 border-slate-600">
-                <h2 id="prof-name" class="text-xl font-bold mb-1">...</h2>
-                <span class="inline-block bg-slate-700 text-gray-300 px-3 py-1 rounded-full text-xs font-bold">عضو</span>
+            <div class="bg-slate-800/50 rounded-xl p-6 border border-white/5 mb-6 text-center relative overflow-hidden">
+                <!-- تأثير إضاءة في الخلفية -->
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl"></div>
+                
+                <img id="prof-avatar" src="" class="w-24 h-24 rounded-full mx-auto mb-3 object-cover border-2 border-blue-500 shadow-lg shadow-blue-500/20 relative z-10">
+                <h2 id="prof-name" class="text-xl font-bold mb-1 relative z-10">...</h2>
+                <span id="prof-badge" class="inline-block bg-[#0a0c10] text-gray-400 border border-white/10 px-3 py-1 rounded-full text-xs font-bold relative z-10">عضو</span>
+            </div>
+
+            <!-- إحصائيات مبدئية -->
+            <div class="grid grid-cols-3 gap-3 mb-6">
+                <div class="bg-[#11141b] rounded-lg p-3 text-center border border-white/5">
+                    <p class="text-gray-500 text-xs mb-1">النقاط</p>
+                    <p id="stat-points" class="text-lg font-bold text-yellow-400">0</p>
+                </div>
+                <div class="bg-[#11141b] rounded-lg p-3 text-center border border-white/5">
+                    <p class="text-gray-500 text-xs mb-1">قرأت</p>
+                    <p id="stat-history" class="text-lg font-bold text-white">0</p>
+                </div>
+                <div class="bg-[#11141b] rounded-lg p-3 text-center border border-white/5">
+                    <p class="text-gray-500 text-xs mb-1">قائمتي</p>
+                    <p id="stat-favs" class="text-lg font-bold text-blue-400">0</p>
+                </div>
             </div>
 
             <div class="space-y-3">
                 <button class="w-full bg-[#11141b] flex items-center justify-between p-4 rounded-lg hover:bg-slate-800 transition border border-white/5">
-                    <div class="flex items-center gap-4 text-blue-400"><i class="fa-solid fa-clock-rotate-left"></i> <span class="font-semibold text-white">سجل القراءة</span></div>
+                    <div class="flex items-center gap-4 text-yellow-500"><i class="fa-solid fa-crown"></i> <span class="font-semibold text-white">ترقية لـ VIP</span></div>
+                    <i class="fa-solid fa-chevron-left text-gray-600"></i>
                 </button>
                 <button class="w-full bg-[#11141b] flex items-center justify-between p-4 rounded-lg hover:bg-slate-800 transition border border-white/5">
-                    <div class="flex items-center gap-4 text-gray-400"><i class="fa-solid fa-gear"></i> <span class="font-semibold text-white">الإعدادات</span></div>
+                    <div class="flex items-center gap-4 text-blue-400"><i class="fa-solid fa-clock-rotate-left"></i> <span class="font-semibold text-white">سجل القراءة</span></div>
+                    <i class="fa-solid fa-chevron-left text-gray-600"></i>
                 </button>
             </div>
         </div>
@@ -245,8 +266,67 @@
         let allMangasData = []; 
         let heroMangaId = null;
 
-        // تهيئة بيانات المستخدم
-        const user = tg.initDataUnsafe?.user;
+        // ==========================================
+        // 🔐 نظام تسجيل الدخول عبر تليجرام + جلب البيانات لايف
+        // ==========================================
+        let currentUser = {
+            id: null,
+            name: "ضيف",
+            username: "",
+            photo: "https://ui-avatars.com/api/?name=Guest&background=1f2937&color=fff",
+        };
+
+        const tgData = tg.initDataUnsafe?.user;
+
+        if (tgData) {
+            currentUser.id = tgData.id;
+            currentUser.name = tgData.first_name + (tgData.last_name ? ' ' + tgData.last_name : '');
+            currentUser.username = tgData.username ? '@' + tgData.username : '';
+            currentUser.photo = tgData.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=3b82f6&color=fff&bold=true`;
+        }
+
+        // 🔴 ضع الرابط الذي حصلت عليه من لوحة التحكم (Reverse Proxy / Subdomain) هنا 🔴
+        const API_BASE_URL = "https://apispeedmanga.hidenplay.net";
+
+        async function fetchRealtimeUserData() {
+            // تحديث البيانات الأساسية (الاسم والصورة) فوراً
+            document.getElementById('side-user-name').innerText = currentUser.name;
+            document.getElementById('side-user-avatar').src = currentUser.photo;
+            document.getElementById('prof-name').innerText = currentUser.name;
+            document.getElementById('prof-avatar').src = currentUser.photo;
+
+            if (!currentUser.id) return; // لو فاتح من المتصفح العادي مش البوت
+
+            try {
+                // الاتصال بالسيرفر بتاعك لجلب النقط والـ VIP
+                const response = await fetch(`${API_BASE_URL}/api/user/${currentUser.id}`);
+                const dbData = await response.json();
+
+                if (dbData.success) {
+                    // تحديث واجهة الحساب بالبيانات الحقيقية
+                    
+                    // 1. تحديث النقط، سجل القراءة، والمفضلة
+                    document.getElementById('stat-points').innerText = dbData.points;
+                    document.getElementById('stat-history').innerText = dbData.history_count;
+                    document.getElementById('stat-favs').innerText = dbData.favorites_count;
+
+                    // 2. تحديث الرتبة (VIP)
+                    const badge = document.getElementById('prof-badge');
+                    if (dbData.is_vip) {
+                        badge.innerHTML = "👑 VIP";
+                        badge.className = "inline-block bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-3 py-1 rounded-full text-xs font-bold relative z-10 shadow-[0_0_10px_rgba(234,179,8,0.2)]";
+                    } else {
+                        badge.innerHTML = "عضو";
+                        badge.className = "inline-block bg-[#0a0c10] text-gray-400 border border-white/10 px-3 py-1 rounded-full text-xs font-bold relative z-10";
+                    }
+                }
+            } catch (error) {
+                console.error("فشل الاتصال بالسيرفر الخاص بك:", error);
+            }
+        }
+
+        // تشغيل الدالة
+        fetchRealtimeUserData();
         const userName = user ? user.first_name : "ضيف";
         const userAvatar = user && user.photo_url ? user.photo_url : `https://ui-avatars.com/api/?name=${userName}&background=3b82f6&color=fff&bold=true`;
         
