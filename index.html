@@ -202,6 +202,12 @@
         <!-- القوائم الأفقية (الصفحة الرئيسية) -->
         <div id="main-content" class="px-4 md:px-8 mt-6 relative z-20 hidden space-y-10 pb-10">
             
+
+        <!-- التصنيفات -->
+<div class="fade-in-up">
+    <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 border-pink-500 pr-2">تصفح بالتصنيف</h2>
+    <div id="home-genres" class="flex gap-2 overflow-x-auto no-scrollbar pb-1"></div>
+</div>
             
 
             <!-- أحدث الأعمال -->
@@ -393,6 +399,41 @@
     <!-- المحتوى (سكرول) -->
     <div class="flex-1 min-h-0 overflow-y-auto w-full relative z-0 scrollable-modal">
         <div id="list-content" class="max-w-3xl mx-auto w-full p-4 md:p-8 pb-32"></div>
+    </div>
+</div>
+
+<!-- شاشة عرض الكل -->
+<div id="browse-modal" class="fixed inset-0 h-[100dvh] w-full z-[100] bg-[#0a0c10] hidden flex flex-col transition-transform transform translate-y-full duration-300">
+    <div class="flex-none p-4 flex items-center justify-between border-b border-white/5 bg-[#0d1017] shadow-md z-10">
+        <button onclick="closeAllModals()" class="text-gray-400 hover:text-white p-2">
+            <i class="fa-solid fa-arrow-right text-xl"></i>
+        </button>
+        <h2 id="browse-title" class="text-lg font-bold text-gray-200"></h2>
+        <div class="w-8"></div>
+    </div>
+
+    <div class="flex-none bg-[#0d1017] border-b border-white/5 z-10">
+        <div class="max-w-7xl mx-auto px-4 py-3 space-y-3">
+            <div id="browse-genres" class="flex gap-2 overflow-x-auto no-scrollbar"></div>
+            <div class="flex items-center justify-between gap-3">
+                <select id="browse-sort" onchange="setSort(this.value)"
+                        style="color-scheme:dark"
+                        class="bg-[#1c212c] text-white text-sm font-bold rounded-lg px-3 py-2 border border-white/5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <option value="">الترتيب الافتراضي</option>
+                    <option value="new">الأحدث</option>
+                    <option value="rating">الأعلى تقييماً</option>
+                    <option value="az">أبجدي (A-Z)</option>
+                </select>
+                <span id="browse-count" class="text-xs text-gray-500 font-semibold"></span>
+            </div>
+        </div>
+    </div>
+
+    <div id="browse-scroll" class="flex-1 min-h-0 overflow-y-auto w-full relative z-0 scrollable-modal">
+        <div class="max-w-7xl mx-auto w-full p-4 md:p-8 pb-32">
+            <div id="browse-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 md:gap-4"></div>
+            <div id="browse-pager" class="mt-8 flex items-center justify-center gap-2 flex-wrap"></div>
+        </div>
     </div>
 </div>
 
@@ -750,6 +791,9 @@ function openMyList() {
                     // تشغيل السحب وتحديث بيانات المستخدم
                     initSwiper();
                     fetchRealtimeUserData();
+                    addViewAllButtons();
+                    buildHomeGenres();
+                    restoreBrowseFromHash();
 
                     // إخفاء شاشة التحميل وعرض الموقع
                     document.getElementById('main-content').classList.remove('hidden');
@@ -792,16 +836,16 @@ function openMyList() {
             });
         }
 
-        function closeAllModals() {
+    function closeAllModals() {
     document.body.style.overflow = '';
     document.getElementById('search-modal').classList.add('opacity-0');
-    document.getElementById('profile-modal').classList.add('translate-y-full');
-    document.getElementById('list-modal').classList.add('translate-y-full');
+    ['profile-modal', 'list-modal', 'browse-modal'].forEach(id =>
+        document.getElementById(id).classList.add('translate-y-full'));
     setTimeout(() => {
-        document.getElementById('search-modal').classList.add('hidden');
-        document.getElementById('profile-modal').classList.add('hidden');
-        document.getElementById('list-modal').classList.add('hidden');
+        ['search-modal', 'profile-modal', 'list-modal', 'browse-modal'].forEach(id =>
+            document.getElementById(id).classList.add('hidden'));
     }, 300);
+    clearBrowseHash();
 }
 
         // تم إضافة الدالة المفقودة هنا والتي كانت تسبب الخطأ وتوقف الموقع
@@ -948,6 +992,213 @@ function goHero(i) {
 }
 
 function heroNext(dir) { goHero(heroIndex + dir); }
+
+
+// ================= عرض الكل (Browse) =================
+const $el = id => document.getElementById(id);
+const escHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const BROWSE_PER = 24;
+const BROWSE_TTL = 120000; // الكاش بيعيش دقيقتين
+const BROWSE_META = {
+    latest:    { title: 'أحدث الأعمال' },
+    top:       { title: 'الأعلى تقييماً' },
+    korean:    { title: 'مانهوا كورية' },
+    japanese:  { title: 'مانجا يابانية' },
+    completed: { title: 'أعمال مكتملة' },
+    all:       { title: 'كل الأعمال' }
+};
+const BROWSE_SECTIONS_MAP = {
+    'latest-mangas': 'latest', 'top-rated-mangas': 'top', 'korean-mangas': 'korean',
+    'japanese-mangas': 'japanese', 'completed-mangas': 'completed'
+};
+
+let browse = { section: 'latest', genre: '', sort: '', page: 1, pages: 1 };
+let browseGenres = [];
+let browseToken = 0;
+const apiCache = new Map();
+
+async function cachedJson(url) {
+    const hit = apiCache.get(url);
+    if (hit && Date.now() - hit.t < BROWSE_TTL) return hit.d;
+    const r = await fetch(url);
+    const d = await r.json();
+    if (d && d.success) apiCache.set(url, { t: Date.now(), d });
+    return d;
+}
+
+const browseUrl = (p) =>
+    `${API_BASE_URL}/api/browse?section=${browse.section}&genre=${encodeURIComponent(browse.genre)}&sort=${browse.sort}&page=${p}&per=${BROWSE_PER}`;
+
+// كارت بدون ?t= (عشان الصور تتحفظ في كاش المتصفح) ومع lazy loading
+const createBrowseCard = (m) => `
+    <div class="relative w-full aspect-[2/3] rounded-lg overflow-hidden cursor-pointer manga-card-hover bg-slate-800 border border-white/5 transition" onclick="openMangaDetails(${m.id})">
+        <img src="${escHtml(m.image_url)}" loading="lazy" decoding="async" alt="${escHtml(m.title)}"
+             class="absolute inset-0 w-full h-full object-cover"
+             onerror="fixMissingCover(this, ${m.id}, this.alt)">
+        <div class="absolute inset-0 bg-gradient-to-t from-[#0a0c10] via-transparent to-transparent opacity-90"></div>
+        <div class="absolute top-1.5 right-1.5 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded text-[10px] font-bold text-yellow-400">
+            ★ ${m.rating && m.rating !== '0.0' ? escHtml(m.rating) : 'N/A'}
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 p-2">
+            <h3 class="text-[11px] sm:text-xs font-bold text-white line-clamp-2 leading-tight">${escHtml(m.title)}</h3>
+        </div>
+    </div>`;
+
+function openBrowse(section, opts = {}) {
+    if (!BROWSE_META[section]) return;
+    browse = { section, genre: opts.genre || '', sort: opts.sort || '', page: opts.page || 1, pages: 1 };
+    $el('browse-title').innerText = BROWSE_META[section].title;
+    $el('browse-sort').value = browse.sort;
+    document.body.style.overflow = 'hidden';
+    const modal = $el('browse-modal');
+    modal.classList.remove('hidden');
+    setTimeout(() => modal.classList.remove('translate-y-full'), 10);
+    loadBrowseGenres();
+    loadBrowse();
+}
+
+async function loadBrowseGenres() {
+    browseGenres = [];
+    renderGenreChips();
+    try {
+        const d = await cachedJson(`${API_BASE_URL}/api/genres?section=${browse.section}`);
+        browseGenres = d.success ? d.genres.slice(0, 40) : [];
+    } catch (e) {}
+    renderGenreChips();
+}
+
+function renderGenreChips() {
+    const chip = (label, g, active, count) => `
+        <button data-g="${escHtml(g)}" onclick="setGenre(this.dataset.g)"
+            class="shrink-0 px-4 py-1.5 rounded-full text-sm font-bold transition ${active ? 'bg-blue-600 text-white shadow-lg' : 'bg-[#1c212c] text-gray-400 border border-white/5 hover:text-white'}">
+            ${escHtml(label)}${count != null ? ` <span class="text-[10px] opacity-70">${count}</span>` : ''}
+        </button>`;
+    $el('browse-genres').innerHTML =
+        chip('الكل', '', browse.genre === '', null) +
+        browseGenres.map(g => chip(g.name, g.name, browse.genre === g.name, g.count)).join('');
+}
+
+function setGenre(g) { browse.genre = g; browse.page = 1; renderGenreChips(); loadBrowse(); }
+function setSort(v)  { browse.sort = v;  browse.page = 1; loadBrowse(); }
+
+async function loadBrowse() {
+    const tok = ++browseToken;
+    const grid = $el('browse-grid');
+    grid.innerHTML = Array.from({ length: 12 }, () =>
+        '<div class="aspect-[2/3] rounded-lg bg-slate-800/60 animate-pulse"></div>').join('');
+    $el('browse-pager').innerHTML = '';
+    saveBrowseHash();
+
+    try {
+        const d = await cachedJson(browseUrl(browse.page));
+        if (tok !== browseToken) return; // المستخدم غيّر الفلتر قبل ما الرد يوصل
+        if (!d.success) throw new Error('bad response');
+
+        browse.page = d.page;
+        browse.pages = d.pages;
+        $el('browse-count').innerText = `${d.total} عمل`;
+
+        if (!d.mangas.length) {
+            grid.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center py-20 text-gray-600">
+                <i class="fa-solid fa-folder-open text-4xl mb-3 opacity-50"></i><p>مفيش أعمال في التصنيف ده</p></div>`;
+            return;
+        }
+        grid.innerHTML = d.mangas.map(createBrowseCard).join('');
+        renderPager();
+        // تحميل الصفحة اللي بعدها في الخلفية عشان التنقل يبقى فوري
+        if (d.page < d.pages) cachedJson(browseUrl(d.page + 1)).catch(() => {});
+    } catch (e) {
+        if (tok !== browseToken) return;
+        grid.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center py-20 text-gray-500">
+            <i class="fa-solid fa-wifi text-4xl mb-3 opacity-50"></i>
+            <p class="mb-4">حصل خطأ في الاتصال بالسيرفر</p>
+            <button onclick="loadBrowse()" class="bg-white text-black px-5 py-2 rounded-md font-bold">إعادة المحاولة</button></div>`;
+    }
+}
+
+function goPage(n) {
+    if (n < 1 || n > browse.pages || n === browse.page) return;
+    browse.page = n;
+    $el('browse-scroll').scrollTo({ top: 0, behavior: 'smooth' });
+    loadBrowse();
+}
+
+function renderPager() {
+    const box = $el('browse-pager');
+    const { page, pages } = browse;
+    if (pages <= 1) { box.innerHTML = ''; return; }
+
+    const set = new Set([1, 2, pages - 1, pages, page - 1, page, page + 1]);
+    const list = [...set].filter(n => n >= 1 && n <= pages).sort((a, b) => a - b);
+    const base = 'min-w-[40px] h-10 px-3 rounded-lg text-sm font-bold flex items-center justify-center transition border';
+
+    let html = `<button onclick="goPage(${page - 1})" ${page === 1 ? 'disabled' : ''}
+        class="${base} bg-[#1c212c] border-white/5 text-gray-300 disabled:opacity-30"><i class="fa-solid fa-chevron-right text-xs"></i></button>`;
+    let prev = 0;
+    list.forEach(n => {
+        if (n - prev > 1) html += `<span class="text-gray-600 px-1">…</span>`;
+        html += `<button onclick="goPage(${n})" class="${base} ${n === page
+            ? 'bg-blue-600 border-blue-500 text-white shadow-lg'
+            : 'bg-[#1c212c] border-white/5 text-gray-300 hover:text-white'}">${n}</button>`;
+        prev = n;
+    });
+    html += `<button onclick="goPage(${page + 1})" ${page === pages ? 'disabled' : ''}
+        class="${base} bg-[#1c212c] border-white/5 text-gray-300 disabled:opacity-30"><i class="fa-solid fa-chevron-left text-xs"></i></button>`;
+    box.innerHTML = html;
+}
+
+// حفظ مكانك في الرابط: لما ترجع من صفحة العمل ترجع لنفس القسم والصفحة
+function saveBrowseHash() {
+    try {
+        history.replaceState(null, '', '#b=' + encodeURIComponent(JSON.stringify(
+            { s: browse.section, g: browse.genre, so: browse.sort, p: browse.page })));
+    } catch (e) {}
+}
+function clearBrowseHash() {
+    try { if (location.hash.startsWith('#b=')) history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+}
+function restoreBrowseFromHash() {
+    const m = location.hash.match(/^#b=(.+)$/);
+    if (!m) return;
+    try {
+        const s = JSON.parse(decodeURIComponent(m[1]));
+        if (BROWSE_META[s.s]) openBrowse(s.s, { genre: s.g || '', sort: s.so || '', page: s.p || 1 });
+    } catch (e) {}
+}
+
+// زرار "عرض الكل" جنب عنوان كل قسم (من غير ما تعدل الـ HTML بإيدك)
+function addViewAllButtons() {
+    Object.entries(BROWSE_SECTIONS_MAP).forEach(([id, key]) => {
+        const h2 = $el(id)?.closest('.swiper')?.previousElementSibling;
+        if (!h2 || h2.dataset.va) return;
+        h2.dataset.va = '1';
+        h2.classList.remove('mb-4');
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between mb-4';
+        h2.parentNode.insertBefore(row, h2);
+        row.appendChild(h2);
+        row.insertAdjacentHTML('beforeend',
+            `<button onclick="openBrowse('${key}')" class="text-sm font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition">
+                عرض الكل <i class="fa-solid fa-chevron-left text-[10px]"></i></button>`);
+    });
+}
+
+// شريط التصنيفات في الرئيسية
+async function buildHomeGenres() {
+    const box = $el('home-genres');
+    if (!box) return;
+    try {
+        const d = await cachedJson(`${API_BASE_URL}/api/genres?section=all`);
+        if (!d.success || !d.genres.length) return;
+        box.innerHTML =
+            `<button onclick="openBrowse('all')" class="shrink-0 px-4 py-2 rounded-full bg-blue-600 text-sm font-bold shadow-lg">كل الأعمال</button>` +
+            d.genres.slice(0, 14).map(g =>
+                `<button data-g="${escHtml(g.name)}" onclick="openBrowse('all',{genre:this.dataset.g})"
+                    class="shrink-0 px-4 py-2 rounded-full bg-[#1c212c] border border-white/5 text-sm font-bold text-gray-300 hover:text-white hover:border-blue-500/40 transition">${escHtml(g.name)}</button>`
+            ).join('');
+    } catch (e) {}
+}
 
         loadApp();
     </script>
