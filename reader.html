@@ -6,22 +6,34 @@
 <meta name="theme-color" content="#0a0c10">
 <title>Speed Manga</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
 :root{
-  --bg-base:#0a0c10;      /* خلفية الموقع */
-  --panel:#0d1017;        /* القوائم والهيدر */
-  --card:#11141b;         /* الكروت */
-  --field:#1c212c;       /* الحقول والأزرار الثانوية */
+  --bg-base:#0a0c10;
+  --panel:#0d1017;
+  --card:#11141b;
+  --field:#1c212c;
   --skeleton:#1e293b;
   --primary:#3b82f6;
   --primary-soft:#60a5fa;
   --line:rgba(255,255,255,.05);
   --text:#fff; --muted:#9ca3af; --dim:#4b5563;
   --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+  /* متغيرات قارئ الروايات */
+  --novel-bg:#0d1017;
+  --novel-text:#e5e7eb;
+  --novel-font-size:19px;
+}
+body.theme-sepia{
+  --novel-bg:#f4ecd8;
+  --novel-text:#2c221e;
+}
+body.theme-light{
+  --novel-bg:#ffffff;
+  --novel-text:#111827;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg-base);color:var(--text);font-family:'Tajawal',sans-serif;overflow-x:hidden}
@@ -32,9 +44,9 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 ::-webkit-scrollbar-track{background:var(--bg-base)}
 ::-webkit-scrollbar-thumb{background:#1f2937;border-radius:10px}
 
-/* ===== الأشرطة (glass-panel زي الموقع) ===== */
+/* ===== الأشرطة ===== */
 .bar{position:fixed;left:0;right:0;z-index:50;display:flex;align-items:center;gap:10px;
-  background:rgba(17,20,27,.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  background:rgba(17,20,27,.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   transition:transform .25s ease}
 .top{top:0;padding:calc(var(--sat) + 8px) 12px 8px;border-bottom:1px solid var(--line);box-shadow:0 4px 12px rgba(0,0,0,.35)}
 .bot{bottom:0;padding:10px 12px calc(var(--sab) + 10px);border-top:1px solid var(--line);justify-content:space-between;box-shadow:0 -4px 12px rgba(0,0,0,.35)}
@@ -64,7 +76,7 @@ body.hide .bot{transform:translateY(100%)}
 .navbtn.pri:hover{background:#2563eb}
 .navbtn[disabled]{opacity:.35;pointer-events:none;box-shadow:none}
 
-/* ===== الصفحات ===== */
+/* ===== صفحات المانجا ===== */
 #pages{max-width:820px;margin:0 auto;padding-top:calc(60px + var(--sat))}
 .pg{position:relative;min-height:60vh;background:var(--skeleton);line-height:0;display:flex;align-items:center;justify-content:center}
 .pg.ok{min-height:0;background:none;display:block}
@@ -76,6 +88,66 @@ body.hide .bot{transform:translateY(100%)}
 .pg .fail i{font-size:30px;opacity:.5}
 .pg .fail button{padding:8px 18px;border-radius:8px;background:var(--field);border:1px solid var(--line);color:#fff;font-weight:700;font-size:13px}
 .pg .fail button:hover{background:#262d3b}
+
+/* ===== قارئ الروايات (Novel Reader) ===== */
+.novel-wrap{
+  max-width:780px;
+  margin:0 auto;
+  min-height:100vh;
+  background:var(--novel-bg);
+  color:var(--novel-text);
+  padding:calc(74px + var(--sat)) 20px 40px;
+  transition:background .25s, color .25s;
+}
+.novel-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  flex-wrap:wrap;
+  padding:10px 14px;
+  margin-bottom:22px;
+  border-radius:12px;
+  background:rgba(128,128,128,.1);
+  border:1px solid rgba(128,128,128,.18);
+}
+.novel-toolbar .grp{display:flex;align-items:center;gap:6px}
+.tbtn{
+  padding:6px 12px;
+  border-radius:8px;
+  background:rgba(0,0,0,.25);
+  color:inherit;
+  border:1px solid rgba(128,128,128,.25);
+  font-size:13px;
+  font-weight:700;
+}
+.tbtn.active{border-color:var(--primary);color:var(--primary-soft)}
+.novel-head{
+  text-align:center;
+  padding-bottom:18px;
+  margin-bottom:24px;
+  border-bottom:1px solid rgba(128,128,128,.22);
+}
+.novel-head h1{margin:0 0 6px;font-size:21px;font-weight:900;line-height:1.5}
+.novel-head p{margin:0;font-size:14px;opacity:.75;font-weight:700}
+.novel-body{
+  font-size:var(--novel-font-size);
+  line-height:2.05;
+  text-align:justify;
+  word-break:break-word;
+}
+.novel-body.font-amiri{font-family:'Amiri',serif;line-height:2.2}
+.novel-body p{margin:0 0 1.25em}
+.novel-body .novel-illust{
+  margin:1.5em auto;
+  text-align:center;
+}
+.novel-body .novel-illust img{
+  max-width:100%;
+  height:auto;
+  border-radius:10px;
+  box-shadow:0 6px 20px rgba(0,0,0,.35);
+}
 
 /* ===== نهاية الفصل ===== */
 .end{max-width:820px;margin:0 auto;padding:40px 20px calc(80px + var(--sab));text-align:center}
@@ -123,8 +195,8 @@ body.hide .bot{transform:translateY(100%)}
 <script>
 /* ============ إعدادات ============ */
 const API = "https://apispeedmanga.hidenplay.net";
-// رابط البوت لزرار "فتح في البوت": manga.html بيحفظه تلقائي (sm_bot_<id>)، وده قيمة احتياطية لو مش موجود.
 let BOT_URL = "";
+let isNovelMode = false;
 
 /* ============ أدوات ============ */
 const tg = window.Telegram && Telegram.WebApp;
@@ -144,7 +216,6 @@ const goChapter = (c) => { try { tg.HapticFeedback.impactOccurred('light'); } ca
 const goBack = () => { if (history.length > 1) history.back(); else { try { tg.close(); } catch (e) {} } };
 try { tg.BackButton.show(); tg.BackButton.onClick(goBack); } catch (e) {}
 
-/* قائمة الفصول (اختيارية): manga.html يقدر يحفظها في sessionStorage بالمفتاح sm_chs_<id> كمصفوفة أرقام */
 function loadChapterList() {
   try {
     const arr = JSON.parse(sessionStorage.getItem("sm_chs_" + mangaId) || "[]");
@@ -215,7 +286,7 @@ function showError(msg) {
   };
 }
 
-/* ============ تحميل الصور ============ */
+/* ============ تحميل الصور (للمانجا) ============ */
 const MAX_TRIES = 3;
 function loadImg(pg) {
   if (pg.dataset.state === "loading" || pg.dataset.state === "done") return;
@@ -237,7 +308,6 @@ function loadImg(pg) {
     if (tries < MAX_TRIES) setTimeout(() => loadImg(pg), 700 * tries);
     else pg.classList.add("bad");
   };
-  // _t بيكسر كاش المتصفح عند إعادة المحاولة (التوقيع بيغطي u و r بس)
   img.src = tries ? url + (url.includes("?") ? "&" : "?") + "_t=" + tries : url;
 }
 
@@ -248,10 +318,104 @@ function makeLazy() {
   }, { rootMargin: "1500px 0px" });
 }
 
-/* ============ العرض ============ */
+/* ============ العرض (مانجا + روايات) ============ */
 let pgEls = [], prefetched = false;
 
-function render(data) {
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (m) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+}
+
+function renderNovel(data) {
+  isNovelMode = true;
+  const app = $("app");
+  if (data.manga_title) $("ttl").textContent = data.manga_title + " - فصل " + chapter;
+
+  // استرجاع إعدادات القارئ المحفوظة
+  let savedSize = parseInt(localStorage.getItem("sm_novel_fs") || "19", 10);
+  let savedTheme = localStorage.getItem("sm_novel_theme") || "dark";
+  let savedFont = localStorage.getItem("sm_novel_font") || "tajawal";
+
+  document.documentElement.style.setProperty("--novel-font-size", savedSize + "px");
+  document.body.classList.remove("theme-sepia", "theme-light");
+  if (savedTheme === "sepia") document.body.classList.add("theme-sepia");
+  if (savedTheme === "light") document.body.classList.add("theme-light");
+
+  // تحويل النص والفقرات والصور المدمجة [IMAGE:url]
+  const rawLines = String(data.content || "").split(/\n+/);
+  const bodyHtml = rawLines.map((line) => {
+    const trimmed = line.trim();
+    if (!trimmed) return "";
+    const imgMatch = trimmed.match(/^\[IMAGE:(https?:\/\/[^\]]+)\]$/i);
+    if (imgMatch) {
+      return `<div class="novel-illust"><img src="${escapeHtml(imgMatch[1])}" loading="lazy" alt="صورة توضيحية"></div>`;
+    }
+    return `<p>${escapeHtml(trimmed)}</p>`;
+  }).join("");
+
+  const n = neighbours();
+  app.innerHTML = `
+    <div class="novel-wrap">
+      <div class="novel-toolbar">
+        <div class="grp">
+          <button type="button" class="tbtn" id="fsPlus" title="تكبير الخط">A+</button>
+          <button type="button" class="tbtn" id="fsMinus" title="تصغير الخط">A-</button>
+          <button type="button" class="tbtn ${savedFont === 'amiri' ? 'active' : ''}" id="fontToggle">خط روائي</button>
+        </div>
+        <div class="grp">
+          <button type="button" class="tbtn" data-theme="dark">🌙 داكن</button>
+          <button type="button" class="tbtn" data-theme="sepia">📜 دافئ</button>
+          <button type="button" class="tbtn" data-theme="light">☀️ فاتح</button>
+        </div>
+      </div>
+      <div class="novel-head">
+        <h1>${escapeHtml(data.chapter_title || ("الفصل " + chapter))}</h1>
+        ${data.manga_title ? `<p>${escapeHtml(data.manga_title)}</p>` : ""}
+      </div>
+      <article class="novel-body ${savedFont === 'amiri' ? 'font-amiri' : ''}" id="novelBody">
+        ${bodyHtml}
+      </article>
+      <div class="end">
+        <p>انتهى الفصل ${escapeHtml(chapter)}</p>
+        <button id="endNext" ${n.next ? "" : "disabled"}><i class="fa-solid fa-play"></i> الفصل التالي</button>
+      </div>
+    </div>
+  `;
+
+  if (n.next) $("endNext").onclick = () => goChapter(n.next);
+
+  // أزرار التحكم بحجم الخط والمظهر
+  $("fsPlus").onclick = () => {
+    savedSize = Math.min(30, savedSize + 2);
+    document.documentElement.style.setProperty("--novel-font-size", savedSize + "px");
+    try { localStorage.setItem("sm_novel_fs", String(savedSize)); } catch (e) {}
+  };
+  $("fsMinus").onclick = () => {
+    savedSize = Math.max(14, savedSize - 2);
+    document.documentElement.style.setProperty("--novel-font-size", savedSize + "px");
+    try { localStorage.setItem("sm_novel_fs", String(savedSize)); } catch (e) {}
+  };
+  $("fontToggle").onclick = (e) => {
+    const bodyEl = $("novelBody");
+    bodyEl.classList.toggle("font-amiri");
+    const isAmiri = bodyEl.classList.contains("font-amiri");
+    e.currentTarget.classList.toggle("active", isAmiri);
+    try { localStorage.setItem("sm_novel_font", isAmiri ? "amiri" : "tajawal"); } catch (err) {}
+  };
+  document.querySelectorAll("[data-theme]").forEach((btn) => {
+    btn.onclick = () => {
+      const t = btn.getAttribute("data-theme");
+      document.body.classList.remove("theme-sepia", "theme-light");
+      if (t === "sepia") document.body.classList.add("theme-sepia");
+      if (t === "light") document.body.classList.add("theme-light");
+      try { localStorage.setItem("sm_novel_theme", t); } catch (e) {}
+    };
+  });
+
+  updateCounter();
+}
+
+function renderManga(data) {
+  isNovelMode = false;
   const app = $("app");
   app.innerHTML = '<div id="pages"></div>';
   const box = $("pages");
@@ -279,6 +443,13 @@ function render(data) {
 }
 
 function updateCounter() {
+  if (isNovelMode) {
+    const docH = document.documentElement.scrollHeight - innerHeight;
+    const pct = docH > 0 ? Math.min(100, Math.max(1, Math.round((scrollY / docH) * 100))) : 100;
+    $("cnt").textContent = pct + "%";
+    if (!prefetched && pct >= 75) prefetchNext();
+    return;
+  }
   if (!pgEls.length) return;
   const line = innerHeight * 0.4;
   let cur = 0;
@@ -289,14 +460,13 @@ function updateCounter() {
   if (!prefetched && (cur + 1) / pgEls.length >= 0.7) prefetchNext();
 }
 
-/* تجهيز الفصل التالي في الخلفية عند الوصول لـ 70% */
 function prefetchNext() {
   prefetched = true;
   const n = neighbours();
   if (!n.next) return;
   fetch(`${API}/api/chapter/${encodeURIComponent(mangaId)}/${encodeURIComponent(n.next)}`)
     .then((r) => r.ok ? r.json() : null)
-    .then((d) => { if (d && d.success) d.pages.slice(0, 3).forEach((u) => { new Image().src = u; }); })
+    .then((d) => { if (d && d.success && d.pages) d.pages.slice(0, 3).forEach((u) => { new Image().src = u; }); })
     .catch(() => {});
 }
 
@@ -307,9 +477,8 @@ addEventListener("scroll", () => {
   requestAnimationFrame(() => { updateCounter(); ticking = false; });
 }, { passive: true });
 
-/* لمسة على الصفحة تخفي/تظهر الأشرطة */
 document.addEventListener("click", (e) => {
-  if (e.target.closest(".bar, button, select, input, .state")) return;
+  if (e.target.closest(".bar, button, select, input, .state, .novel-toolbar")) return;
   document.body.classList.toggle("hide");
 });
 
@@ -317,7 +486,6 @@ document.addEventListener("click", (e) => {
 async function init() {
   if (!mangaId || !chapter) { showError("رابط الفصل ناقص."); return; }
   buildBars();
-  // آخر فصل اتقرى (نفس صيغة manga.html) عشان زرار "تابع من" يفضل صح حتى لو انتقلت بالتالي/السابق
   try { localStorage.setItem("sm_last_" + mangaId, JSON.stringify({ c: chapter, m: "normal" })); } catch (e) {}
   try {
     const ctl = new AbortController();
@@ -325,13 +493,19 @@ async function init() {
     const r = await fetch(`${API}/api/chapter/${encodeURIComponent(mangaId)}/${encodeURIComponent(chapter)}`, { signal: ctl.signal });
     clearTimeout(t);
     const data = await r.json().catch(() => ({}));
-    if (!r.ok || !data.success || !data.pages || !data.pages.length) {
+    if (!r.ok || !data.success) {
       showError(data.error === "no_source"
-        ? "الفصل ده مالوش مصدر صور متاح. ممكن يكون مدمج أو العمل مش مربوط بمصدر."
+        ? "الفصل ده مالوش مصدر متاح حالياً. ممكن يكون مدمج أو العمل مش مربوط بمصدر."
         : "حصل خطأ أثناء جلب الفصل. جرب تاني بعد شوية.");
       return;
     }
-    render(data);
+    if (data.type === "novel" && data.content) {
+      renderNovel(data);
+    } else if (data.pages && data.pages.length) {
+      renderManga(data);
+    } else {
+      showError("لا يوجد محتوى قابل للعرض في هذا الفصل.");
+    }
   } catch (e) {
     showError("تعذر الاتصال بالسيرفر. اتأكد من النت وجرب تاني.");
   }
