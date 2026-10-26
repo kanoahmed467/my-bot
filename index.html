@@ -594,6 +594,7 @@
     <!-- صندوق الكتابة والإرسال -->
     <div id="comm-input-bar" class="flex-none p-2.5 pb-safe bg-[#0d1017] border-t border-white/5 flex items-end gap-2">
         <textarea id="comm-input" rows="1" placeholder="اكتب رسالتك في المجتمع..." maxlength="500"
+            oninput="onCommInputType(this)"
             class="flex-1 bg-[#1c212c] text-white rounded-2xl py-3 px-4 focus:outline-none focus:ring-1 focus:ring-blue-500 border border-white/5 resize-none max-h-[120px] text-[14px]"></textarea>
         <button onclick="sendCommunityMessage()" class="w-11 h-11 flex-none rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 flex items-center justify-center shadow-lg active:scale-95 transition">
             <i class="fa-solid fa-paper-plane"></i>
@@ -896,8 +897,6 @@ function openMyList() {
                 const response = await fetch(`${API_BASE_URL}/api/fix_cover/${mangaId}`);
                 const data = await response.json();
                 if (data.success) {
-                    comm.otherTypers = data.typing || [];
-                    renderTypingIndicator();
                     setTimeout(() => {
                         imgElement.style.opacity = '1';
                         imgElement.src = `https://raw.githubusercontent.com/kanoahmed467/my-bot/main/covers/${mangaId}.jpg?t=${new Date().getTime()}`;
@@ -1449,7 +1448,7 @@ async function buildHomeGenres() {
 
 
 // ================= مجتمع سبيد مانجا المتكامل (عام + شات خاص + مراتب) =================
-    const COMM_POLL_MS = 2500;
+    const COMM_POLL_MS = 1800;
     const comm = {
         tab: 'public',     // 'public' | 'dm_chat' | 'dms' | 'ranks'
         peerId: 0,         // 0 = الشات العام، أو آيدي الشخص في الشات الخاص
@@ -1460,8 +1459,12 @@ async function buildHomeGenres() {
         sending: false,
         opened: false,
         isOwner: false,
-        replyTo: null      // {id, name, text}
+        replyTo: null,     // {id, name, text}
+        otherTypers: []
     };
+
+    let _myTypingTimer = null;
+    let _lastTypingSent = 0;
 
     const commEsc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const commTime = (ts) => new Date(ts * 1000).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
@@ -1481,7 +1484,6 @@ async function buildHomeGenres() {
     }
 
     function initCommunityVisibility() {
-        // إظهار أزرار المجتمع دائماً
         document.querySelectorAll('.comm-entry').forEach(el => el.classList.remove('hidden'));
     }
 
@@ -1511,8 +1513,10 @@ async function buildHomeGenres() {
 
     function switchCommTab(tabName, peerId = 0, peerName = '') {
         comm.tab = tabName;
+        comm.otherTypers = [];
         clearInterval(comm.timer);
         clearCommReply();
+        renderTypingIndicator();
 
         const listEl = document.getElementById('comm-list');
         const loadEl = document.getElementById('comm-loading');
@@ -1522,7 +1526,6 @@ async function buildHomeGenres() {
         const backBtn = document.getElementById('comm-back-public');
         const titleEl = document.getElementById('comm-header-title');
 
-        // تلوين التاب النشط
         ['public', 'dms', 'ranks'].forEach(t => {
             const btn = document.getElementById('tab-btn-' + t);
             const isAct = (t === tabName) || (t === 'dms' && tabName === 'dm_chat');
@@ -1579,31 +1582,108 @@ async function buildHomeGenres() {
 
         clearInterval(comm.timer);
         comm.timer = setInterval(() => {
-            if (comm.opened && !document.hidden && (comm.tab === 'public' || comm.tab === 'dm_chat')) {
+            if (comm.opened && (comm.tab === 'public' || comm.tab === 'dm_chat')) {
                 fetchCommunity();
             }
         }, COMM_POLL_MS);
     }
 
-    async function fetchCommunity() {
+    function onCommInputType(el) {
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+
+        const hasText = el.value.trim().length > 0;
+        if (hasText) {
+            const now = Date.now();
+            if (now - _lastTypingSent > 1200) {
+                _lastTypingSent = now;
+                fetchCommunity('1');
+            }
+            clearTimeout(_myTypingTimer);
+            _myTypingTimer = setTimeout(() => {
+                _lastTypingSent = 0;
+                fetchCommunity('0');
+            }, 4500);
+        } else {
+            clearTimeout(_myTypingTimer);
+            _lastTypingSent = 0;
+            fetchCommunity('0');
+        }
+    }
+
+    async function fetchCommunity(typingFlag = null) {
         try {
-            const url = `${API_BASE_URL}/api/community/messages?uid=${currentUser.id}&peer=${comm.peerId}&after=${comm.lastId}&limit=60`;
+            let url = `${API_BASE_URL}/api/community/messages?uid=${currentUser.id}&peer=${comm.peerId}&after=${comm.lastId}&limit=60`;
+            if (typingFlag !== null) {
+                url += `&typing=${typingFlag}&tname=${encodeURIComponent(currentUser.name || '')}&tphoto=${encodeURIComponent(currentUser.photo || '')}`;
+            }
             const r = await fetch(url);
             if (!r.ok) throw new Error(r.status);
             const data = await r.json();
             if (data.success) {
                 comm.isOwner = !!data.is_owner;
-                document.getElementById('comm-online').innerText = comm.peerId > 0
-                    ? '🔒 محادثة خاصة مشفرة ومحفوظة'
-                    : `🟢 ${data.online ?? 1} متصل الآن في المجتمع`;
+                comm.otherTypers = (data.typing || []).filter(t => String(t.user_id) !== String(currentUser.id));
+
+                document.getElementById('comm-online').innerText = comm.otherTypers.length > 0
+                    ? `✍️ ${comm.otherTypers[0].name} يكتب الآن...`
+                    : (comm.peerId > 0 ? '🔒 محادثة خاصة مشفرة ومحفوظة' : `🟢 ${data.online ?? 1} متصل الآن في المجتمع`);
+
                 if (data.messages && data.messages.length) {
                     addCommunityMessages(data.messages);
                 } else if (comm.msgs.length === 0) {
                     renderCommunity();
                 }
+                renderTypingIndicator();
             }
         } catch (e) {
             document.getElementById('comm-online').innerText = '⏳ جاري الاتصال بالسيرفر...';
+        }
+    }
+
+    function renderTypingIndicator() {
+        const bar = document.getElementById('comm-typing-bar');
+        const box = document.getElementById('comm-typing-content');
+        const list = document.getElementById('comm-list');
+
+        const oldRow = document.getElementById('comm-live-typing-row');
+        if (oldRow) oldRow.remove();
+
+        const typers = (comm.otherTypers || []).filter(t => String(t.user_id) !== String(currentUser.id));
+        if (typers.length === 0) {
+            if (bar) bar.classList.add('hidden');
+            return;
+        }
+
+        const t = typers[0];
+        const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(t.name || 'U')}&background=1f2937&color=fff`;
+        const bubbleHtml = `
+            <div class="typing-avatar-ring flex-none">
+                <img src="${commEsc(t.photo || fallbackAvatar)}" class="w-full h-full rounded-full object-cover" onerror="this.src='${fallbackAvatar}'">
+            </div>
+            <div class="typing-bubble">
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+            </div>
+            <span class="text-[11px] text-blue-300 font-bold animate-pulse">${commEsc(t.name)} يكتب الآن...</span>
+        `;
+
+        // 1. إظهار الفقاعة تحت آخر رسالة مباشرة داخل الشات مثل واتساب
+        if (list && !list.classList.contains('hidden')) {
+            const row = document.createElement('div');
+            row.id = 'comm-live-typing-row';
+            row.className = 'comm-row mt-2.5 items-center gap-2';
+            row.innerHTML = bubbleHtml;
+            list.appendChild(row);
+            if (list.scrollHeight - list.scrollTop - list.clientHeight < 160) {
+                list.scrollTo({ top: list.scrollHeight, behavior: 'smooth' });
+            }
+        }
+
+        // 2. وإظهارها في الشريط السفلي أيضاً لو كان المستخدم طالع لفوق في الشات
+        if (bar && box) {
+            box.innerHTML = bubbleHtml;
+            bar.classList.remove('hidden');
         }
     }
 
@@ -1621,6 +1701,7 @@ async function buildHomeGenres() {
         });
         comm.lastId = Math.max(comm.lastId, ...comm.msgs.map(m => Number(m.id) || 0));
         renderCommunity();
+        renderTypingIndicator();
         if (added && (nearBottom || !fromOthers)) scrollCommunity();
         else if (added && fromOthers) document.getElementById('comm-down').classList.remove('hidden');
     }
@@ -1722,6 +1803,7 @@ async function buildHomeGenres() {
             });
             comm.msgs = comm.msgs.filter(x => Number(x.id) !== Number(msgId));
             renderCommunity();
+            renderTypingIndicator();
         } catch (e) {}
     }
 
@@ -1736,6 +1818,8 @@ async function buildHomeGenres() {
         const text = input.value.trim();
         if (!text || comm.sending) return;
         comm.sending = true;
+        clearTimeout(_myTypingTimer);
+        _lastTypingSent = 0;
         input.value = ''; input.style.height = 'auto';
 
         const replySnap = comm.replyTo ? { ...comm.replyTo } : null;
@@ -1790,96 +1874,10 @@ async function buildHomeGenres() {
         }
         comm.sending = false;
         renderCommunity();
+        renderTypingIndicator();
         scrollCommunity();
     }
 
-
-    let _myTypingTimer = null;
-    let _lastTypingPing = 0;
-    comm.otherTypers = [];
-
-    function renderTypingIndicator() {
-        const bar = document.getElementById('comm-typing-bar');
-        const box = document.getElementById('comm-typing-content');
-        if (!bar || !box) return;
-
-        // 🔥 نظهر الفقاعة فقط لو الطرف الآخر هو الذي يكتب (ومش أنا)
-        const typers = (comm.otherTypers || []).filter(t => String(t.user_id) !== String(currentUser.id));
-
-        if (typers.length === 0) {
-            bar.classList.add('hidden');
-            return;
-        }
-
-        const t = typers[0];
-        const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(t.name || 'U')}&background=1f2937&color=fff`;
-        box.innerHTML = `
-            <div class="comm-row items-end gap-2">
-                <div class="typing-avatar-ring flex-none">
-                    <img src="${commEsc(t.photo || fallbackAvatar)}" class="w-full h-full rounded-full object-cover" onerror="this.src='${fallbackAvatar}'">
-                </div>
-                <div class="typing-bubble">
-                    <span class="typing-dot"></span>
-                    <span class="typing-dot"></span>
-                    <span class="typing-dot"></span>
-                </div>
-                <span class="text-[11px] text-gray-400 font-bold">${commEsc(t.name)} يكتب الآن...</span>
-            </div>
-        `;
-        bar.classList.remove('hidden');
-    }
-
-    function notifyTyping(isTyping) {
-        if (!currentUser.id) return;
-        const now = Date.now();
-        // إرسال إشارة كل 1.5 ثانية طول ما بيكتب عشان تفضل منورة عند الطرف التاني
-        if (isTyping && now - _lastTypingPing < 1500) return;
-        _lastTypingPing = isTyping ? now : 0;
-
-        fetch(`${API_BASE_URL}/api/community/typing`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                user_id: currentUser.id,
-                peer_id: comm.peerId || 0,
-                name: currentUser.name,
-                photo: currentUser.photo,
-                typing: isTyping
-            })
-        }).catch(() => {});
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        initCommunityVisibility();
-        const input = document.getElementById('comm-input');
-        input.addEventListener('input', () => {
-            input.style.height = 'auto';
-            input.style.height = Math.min(input.scrollHeight, 120) + 'px';
-
-            if (input.value.trim().length > 0) {
-                notifyTyping(true);
-                clearTimeout(_myTypingTimer);
-                // تفضل ظاهرة عند الطرف التاني لمدة 5 ثواني بعد آخر حرف كتبه
-                _myTypingTimer = setTimeout(() => notifyTyping(false), 5000);
-            } else {
-                clearTimeout(_myTypingTimer);
-                notifyTyping(false);
-            }
-        });
-        input.addEventListener('keydown', e => {
-            if (e.key === 'Enter' && !e.shiftKey && window.innerWidth >= 768) {
-                e.preventDefault();
-                clearTimeout(_myTypingTimer);
-                notifyTyping(false);
-                sendCommunityMessage();
-            }
-        });
-        document.getElementById('comm-list').addEventListener('scroll', e => {
-            const l = e.target;
-            if (l.scrollHeight - l.scrollTop - l.clientHeight < 80) document.getElementById('comm-down').classList.add('hidden');
-        });
-    });
-    
     async function refreshInboxAndRanks() {
         try {
             const r = await fetch(`${API_BASE_URL}/api/community/inbox?uid=${currentUser.id || 0}`);
@@ -1890,7 +1888,6 @@ async function buildHomeGenres() {
                 document.getElementById('comm-my-rank-pill').innerText = d.my_info.rank;
             }
 
-            // 1. بناء قائمة المحادثات الخاصة (1v1)
             const dmsBox = document.getElementById('comm-dms-view');
             if (!d.dms || !d.dms.length) {
                 dmsBox.innerHTML = `<div class="flex flex-col items-center justify-center h-[50vh] text-gray-500 text-center">
@@ -1915,7 +1912,6 @@ async function buildHomeGenres() {
                 `).join('') + `</div>`;
             }
 
-            // 2. بناء لوحة المراتب والمتصدرين
             const ranksBox = document.getElementById('comm-ranks-view');
             const ranksGuide = [
                 { name: 'طيف مبتدئ 👻', pts: '0 - 20 نقطة' },
@@ -1929,7 +1925,6 @@ async function buildHomeGenres() {
 
             ranksBox.innerHTML = `
                 <div class="max-w-2xl mx-auto space-y-6 pb-20">
-                    <!-- بطاقة رتبتي الحالية -->
                     <div class="p-4 rounded-2xl bg-gradient-to-l from-blue-600/20 via-purple-600/15 to-[#141923] border border-blue-500/30 flex items-center justify-between">
                         <div>
                             <p class="text-xs text-gray-400">رتبتك الحالية في المملكة</p>
@@ -1939,7 +1934,6 @@ async function buildHomeGenres() {
                         <div class="w-12 h-12 rounded-2xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-2xl">🎖️</div>
                     </div>
 
-                    <!-- دليل المراتب -->
                     <div class="bg-[#131722] border border-white/5 rounded-2xl p-4">
                         <h4 class="font-black text-sm mb-3 text-yellow-400"><i class="fa-solid fa-wand-magic-sparkles ml-1"></i> نظام المراتب والترقيات (تزيد نقاطك مع القراءة والدردشة):</h4>
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -1952,7 +1946,6 @@ async function buildHomeGenres() {
                         </div>
                     </div>
 
-                    <!-- قائمة أساطير المجتمع -->
                     <div>
                         <h4 class="font-black text-sm mb-3 flex items-center gap-2"><i class="fa-solid fa-crown text-yellow-400"></i> متصدرو مجتمع سبيد مانجا</h4>
                         <div class="space-y-2">
@@ -1973,6 +1966,24 @@ async function buildHomeGenres() {
                 </div>
             `;
         } catch (e) {}
+    }
+
+    initCommunityVisibility();
+    const _commInputEl = document.getElementById('comm-input');
+    if (_commInputEl) {
+        _commInputEl.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey && window.innerWidth >= 768) {
+                e.preventDefault();
+                sendCommunityMessage();
+            }
+        });
+    }
+    const _commListEl = document.getElementById('comm-list');
+    if (_commListEl) {
+        _commListEl.addEventListener('scroll', e => {
+            const l = e.target;
+            if (l.scrollHeight - l.scrollTop - l.clientHeight < 80) document.getElementById('comm-down').classList.add('hidden');
+        });
     }
 
 
