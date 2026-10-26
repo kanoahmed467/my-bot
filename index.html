@@ -131,6 +131,19 @@
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: var(--bg-base); }
         ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 10px; }
+
+
+        /* ===== المجتمع ===== */
+.comm-bg{background-color:#0b0e14;background-image:radial-gradient(rgba(255,255,255,.035) 1px,transparent 1px);background-size:18px 18px;}
+.comm-row{display:flex;gap:8px;justify-content:flex-start;}
+.comm-row.mine{justify-content:flex-end;}
+.comm-bubble{max-width:78%;padding:7px 11px 5px;border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.3);animation:commPop .2s ease-out;}
+.comm-other{background:#1c212c;border-bottom-right-radius:4px;}
+.comm-mine{background:linear-gradient(135deg,#2563eb,#3b82f6);border-bottom-left-radius:4px;}
+.comm-day{font-size:11px;color:#9ca3af;background:rgba(255,255,255,.06);padding:3px 12px;border-radius:99px;}
+@keyframes commPop{from{opacity:0;transform:translateY(8px) scale(.97);}to{opacity:1;transform:none;}}
+.comm-sk{background:linear-gradient(90deg,#161a23 25%,#222836 50%,#161a23 75%);background-size:200% 100%;animation:commShimmer 1.3s infinite;border-radius:16px;}
+@keyframes commShimmer{to{background-position:-200% 0;}}
     </style>
 </head>
 <body class="flex pb-20 md:pb-0">
@@ -161,6 +174,12 @@
             <a href="#" onclick="openProfile()" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
                 <i class="fa-solid fa-bookmark text-lg w-5"></i> أعمالي المفضلة
             </a>
+            <a href="#" onclick="openVideoHub(); return false;" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
+                <i class="fa-solid fa-circle-play text-lg w-5 text-red-500"></i> مشغل الفيديو (Stream)
+            </a>
+            <a href="#" onclick="openCommunity(); return false;" class="comm-entry hidden flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
+    <i class="fa-solid fa-comments text-lg w-5 text-purple-400"></i> المجتمع
+</a>
             
             <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mt-8 mb-4 px-4">تصفح سريع</h3>
             <a href="#section-top" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
@@ -202,7 +221,16 @@
         <!-- القوائم الأفقية (الصفحة الرئيسية) -->
         <div id="main-content" class="px-4 md:px-8 mt-6 relative z-20 hidden space-y-10 pb-10">
             
-
+<div class="comm-entry hidden fade-in-up">
+    <button onclick="openCommunity()" class="w-full text-right rounded-2xl p-4 flex items-center gap-4 bg-gradient-to-l from-blue-600/20 via-purple-600/10 to-transparent border border-blue-500/20 hover:border-blue-500/50 transition active:scale-[.99]">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-2xl shadow-lg flex-none"><i class="fa-solid fa-comments"></i></div>
+        <div class="flex-1">
+            <h3 class="font-black text-base">مجتمع سبيد مانجا 💬</h3>
+            <p class="text-xs text-gray-400 mt-1">ناقش الفصول وشارك ترشيحاتك مع القرّاء</p>
+        </div>
+        <i class="fa-solid fa-chevron-left text-gray-500"></i>
+    </button>
+</div>
         <!-- التصنيفات -->
 <div class="fade-in-up">
     <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 border-pink-500 pr-2">تصفح بالتصنيف</h2>
@@ -263,6 +291,14 @@
             <i class="fa-solid fa-magnifying-glass text-lg mb-1"></i>
             <span class="text-[10px] font-bold">بحث</span>
         </a>
+        <a href="#" onclick="openVideoHub(); return false;" class="flex flex-col items-center text-red-400 hover:text-red-300 transition">
+            <i class="fa-solid fa-circle-play text-lg mb-1"></i>
+            <span class="text-[10px] font-bold">فيديو</span>
+        </a>
+        <a href="#" onclick="openCommunity(); return false;" class="comm-entry hidden flex flex-col items-center text-purple-400 hover:text-purple-300 transition">
+    <i class="fa-solid fa-comments text-lg mb-1"></i>
+    <span class="text-[10px] font-bold">مجتمع</span>
+</a>
         <a href="#" onclick="openMyList(); return false;" class="flex flex-col items-center text-gray-400 hover:text-white transition">
             <i class="fa-solid fa-bookmark text-lg mb-1"></i>
             <span class="text-[10px] font-bold">قائمتي</span>
@@ -433,6 +469,98 @@
         <div class="max-w-7xl mx-auto w-full p-4 md:p-8 pb-32">
             <div id="browse-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 md:gap-4"></div>
             <div id="browse-pager" class="mt-8 flex items-center justify-center gap-2 flex-wrap"></div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ========================================= -->
+<!-- شاشة مجتمع سبيد مانجا الفخمة (عام + خاص + مراتب) -->
+<!-- ========================================= -->
+<div id="community-modal" class="fixed inset-0 h-[100dvh] w-full z-[100] bg-[#0a0c10] hidden flex flex-col transition-transform transform translate-y-full duration-300">
+    <!-- الهيدر العلوي -->
+    <div class="flex-none px-3 py-2.5 flex items-center gap-3 bg-[#0d1017] border-b border-white/5 shadow-md">
+        <button onclick="closeCommunity()" class="text-gray-400 hover:text-white p-2"><i class="fa-solid fa-arrow-right text-xl"></i></button>
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg"><i class="fa-solid fa-crown text-white"></i></div>
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+                <h3 id="comm-header-title" class="font-black text-sm truncate">مجتمع سبيد مانجا</h3>
+                <span id="comm-my-rank-pill" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 truncate">...</span>
+            </div>
+            <p id="comm-online" class="text-[11px] text-green-400">🟢 متصل الآن</p>
+        </div>
+        <!-- زر العودة للعام عندما تكون داخل محادثة خاصة -->
+        <button id="comm-back-public" onclick="switchCommTab('public')" class="hidden bg-white/10 hover:bg-white/20 text-xs font-bold px-3 py-1.5 rounded-lg transition">
+            <i class="fa-solid fa-users ml-1"></i> العودة للعام
+        </button>
+    </div>
+
+    <!-- شريط التابات الثلاثة (الشات العام | رسائلي الخاصة | المراتب والمتصدرين) -->
+    <div class="flex-none bg-[#11151f] border-b border-white/5 px-3 py-2 flex gap-2">
+        <button id="tab-btn-public" onclick="switchCommTab('public')" class="flex-1 py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 bg-blue-600 text-white shadow-md transition">
+            <i class="fa-solid fa-comments"></i> الشات العام
+        </button>
+        <button id="tab-btn-dms" onclick="switchCommTab('dms')" class="flex-1 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-[#1c212c] text-gray-400 hover:text-white transition">
+            <i class="fa-solid fa-envelope"></i> الخاص (1v1)
+        </button>
+        <button id="tab-btn-ranks" onclick="switchCommTab('ranks')" class="flex-1 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-[#1c212c] text-gray-400 hover:text-white transition">
+            <i class="fa-solid fa-trophy text-yellow-400"></i> المراتب
+        </button>
+    </div>
+
+    <!-- 1. لودينج شات على طريقة واتساب -->
+    <div id="comm-loading" class="flex-1 comm-bg px-3 py-6 space-y-3 overflow-hidden">
+        <div class="flex gap-2"><div class="comm-sk w-9 h-9 !rounded-full"></div><div class="comm-sk h-16 w-60"></div></div>
+        <div class="flex gap-2"><div class="comm-sk w-9 h-9 !rounded-full"></div><div class="comm-sk h-12 w-44"></div></div>
+        <div class="flex justify-end"><div class="comm-sk h-14 w-52"></div></div>
+        <div class="flex gap-2"><div class="comm-sk w-9 h-9 !rounded-full"></div><div class="comm-sk h-20 w-64"></div></div>
+        <p class="text-center text-xs text-blue-400 font-bold pt-4 animate-pulse"><i class="fa-solid fa-spinner fa-spin ml-1"></i> جاري مزامنة الرسائل والمراتب...</p>
+    </div>
+
+    <!-- 2. منطقة رسائل الشات (العام أو الخاص مع شخص) -->
+    <div id="comm-list" class="flex-1 min-h-0 overflow-y-auto scrollable-modal comm-bg px-3 py-4 hidden"></div>
+
+    <!-- 3. منطقة قائمة المحادثات الخاصة (Inbox) -->
+    <div id="comm-dms-view" class="flex-1 min-h-0 overflow-y-auto scrollable-modal bg-[#0b0e14] p-4 hidden"></div>
+
+    <!-- 4. منطقة لوحة المراتب والمتصدرين -->
+    <div id="comm-ranks-view" class="flex-1 min-h-0 overflow-y-auto scrollable-modal bg-[#0b0e14] p-4 hidden"></div>
+
+    <!-- زر النزول لآخر رسالة -->
+    <button id="comm-down" onclick="scrollCommunity()" class="hidden absolute bottom-24 left-4 w-10 h-10 rounded-full bg-blue-600 shadow-xl flex items-center justify-center z-10">
+        <i class="fa-solid fa-chevron-down"></i>
+    </button>
+
+    <!-- شريط الرد على رسالة (Reply Preview) -->
+    <div id="comm-reply-bar" class="hidden flex-none px-4 py-2 bg-[#161b26] border-t border-white/10 flex items-center justify-between">
+        <div class="border-r-2 border-blue-500 pr-2.5 min-w-0">
+            <div id="comm-reply-name" class="text-[11px] font-black text-blue-400 truncate"></div>
+            <div id="comm-reply-text" class="text-xs text-gray-400 truncate"></div>
+        </div>
+        <button onclick="clearCommReply()" class="text-gray-400 hover:text-white p-1"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- صندوق الكتابة والإرسال -->
+    <div id="comm-input-bar" class="flex-none p-2.5 pb-safe bg-[#0d1017] border-t border-white/5 flex items-end gap-2">
+        <textarea id="comm-input" rows="1" placeholder="اكتب رسالتك في المجتمع..." maxlength="500"
+            class="flex-1 bg-[#1c212c] text-white rounded-2xl py-3 px-4 focus:outline-none focus:ring-1 focus:ring-blue-500 border border-white/5 resize-none max-h-[120px] text-[14px]"></textarea>
+        <button onclick="sendCommunityMessage()" class="w-11 h-11 flex-none rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 flex items-center justify-center shadow-lg active:scale-95 transition">
+            <i class="fa-solid fa-paper-plane"></i>
+        </button>
+    </div>
+
+    <!-- بطاقة العضو المنبثقة (عند الضغط على أي شخص لفتح شات خاص معه) -->
+    <div id="comm-user-card" class="hidden fixed inset-0 z-[150] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this)this.classList.add('hidden')">
+        <div class="bg-[#131722] border border-white/10 rounded-2xl p-6 w-full max-w-sm text-center shadow-2xl">
+            <img id="cuc-photo" src="" class="w-20 h-20 rounded-full mx-auto object-cover border-2 border-blue-500 shadow-lg mb-3">
+            <h3 id="cuc-name" class="text-lg font-black text-white"></h3>
+            <div id="cuc-rank" class="inline-block mt-1 px-3 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30"></div>
+            <div class="mt-5 flex gap-2">
+                <button id="cuc-dm-btn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-lg transition">
+                    <i class="fa-solid fa-paper-plane"></i> محادثة خاصة (1v1)
+                </button>
+                <button onclick="document.getElementById('comm-user-card').classList.add('hidden')" class="px-4 py-2.5 rounded-xl bg-white/10 text-gray-300 font-bold">إغلاق</button>
+            </div>
         </div>
     </div>
 </div>
@@ -836,13 +964,14 @@ function openMyList() {
             });
         }
 
-    function closeAllModals() {
+   function closeAllModals() {
     document.body.style.overflow = '';
     document.getElementById('search-modal').classList.add('opacity-0');
-    ['profile-modal', 'list-modal', 'browse-modal'].forEach(id =>
+    ['profile-modal', 'list-modal', 'browse-modal', 'community-modal'].forEach(id =>
         document.getElementById(id).classList.add('translate-y-full'));
+    comm.opened = false; clearInterval(comm.timer);
     setTimeout(() => {
-        ['search-modal', 'profile-modal', 'list-modal', 'browse-modal'].forEach(id =>
+        ['search-modal', 'profile-modal', 'list-modal', 'browse-modal', 'community-modal'].forEach(id =>
             document.getElementById(id).classList.add('hidden'));
     }, 300);
     clearBrowseHash();
@@ -1184,6 +1313,61 @@ function addViewAllButtons() {
     });
 }
 
+function openVideoHub() {
+    const modal = document.getElementById('video-modal');
+    modal.classList.remove('hidden');
+}
+
+function playFromInput() {
+    const msgId = document.getElementById('stream-msg-id').value.trim();
+    const chatId = document.getElementById('stream-chat-id').value.trim();
+    if (!msgId) {
+        alert("اكتب رقم رسالة الفيديو (Message ID) في القناة أولاً!");
+        return;
+    }
+    playTelegramVideo(msgId, `بث مباشر - حلقة #${msgId}`, chatId || null);
+}
+
+function playTelegramVideo(messageId, title = "عرض الفيديو", chatId = null) {
+    const modal = document.getElementById('video-modal');
+    const player = document.getElementById('speed-video-player');
+    const titleEl = document.getElementById('video-modal-title');
+    const statusEl = document.getElementById('video-stream-status');
+
+    titleEl.innerText = title;
+    const streamUrl = (chatId && String(chatId).trim() !== "")
+        ? `${API_BASE_URL}/api/stream/${String(chatId).trim()}/${messageId}`
+        : `${API_BASE_URL}/api/stream/${messageId}`;
+
+    statusEl.innerText = "⏳ جاري الاتصال بسيرفر البث المباشر...";
+    statusEl.className = "text-xs text-blue-400 font-bold mt-2";
+
+    player.src = streamUrl;
+    modal.classList.remove('hidden');
+    player.load();
+    player.play().then(() => {
+        statusEl.innerText = "🟢 البث المباشر يعمل الآن (بدون تحميل)";
+        statusEl.className = "text-xs text-green-400 font-bold mt-2";
+    }).catch(() => {
+        statusEl.innerText = "▶️ اضغط على زر التشغيل في المشغل لبدء العرض";
+        statusEl.className = "text-xs text-yellow-400 font-bold mt-2";
+    });
+
+    player.onerror = () => {
+        statusEl.innerText = "❌ تعذر تشغيل الفيديو! تأكد من رقم الرسالة (Message ID) ومن أن الفيديو بصيغة MP4.";
+        statusEl.className = "text-xs text-red-400 font-bold mt-2";
+    };
+}
+
+function closeVideoPlayer() {
+    const modal = document.getElementById('video-modal');
+    const player = document.getElementById('speed-video-player');
+    player.pause();
+    player.removeAttribute('src');
+    player.load();
+    modal.classList.add('hidden');
+}
+
 // شريط التصنيفات في الرئيسية
 async function buildHomeGenres() {
     const box = $el('home-genres');
@@ -1201,6 +1385,493 @@ async function buildHomeGenres() {
 }
 
         loadApp();
+
+        // لو الرابط فيه ?video=123 يفتح المشغل تلقائياً فور فتح الموقع
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('video')) {
+            setTimeout(() => {
+                playTelegramVideo(urlParams.get('video'), "مشاهدة الحلقة", urlParams.get('chat') || null);
+            }, 600);
+        }
+
+
+// ================= مجتمع سبيد مانجا المتكامل (عام + شات خاص + مراتب) =================
+    const COMM_POLL_MS = 2500;
+    const comm = {
+        tab: 'public',     // 'public' | 'dm_chat' | 'dms' | 'ranks'
+        peerId: 0,         // 0 = الشات العام، أو آيدي الشخص في الشات الخاص
+        peerName: '',
+        lastId: 0,
+        timer: null,
+        msgs: [],
+        sending: false,
+        opened: false,
+        isOwner: false,
+        replyTo: null      // {id, name, text}
+    };
+
+    const commEsc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const commTime = (ts) => new Date(ts * 1000).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+    const commDay = (ts) => {
+        const d = new Date(ts * 1000), t = new Date();
+        if (d.toDateString() === t.toDateString()) return 'اليوم';
+        const y = new Date(); y.setDate(t.getDate() - 1);
+        return d.toDateString() === y.toDateString() ? 'أمس' : d.toLocaleDateString('ar-EG');
+    };
+    const commColor = (id) => ['#f87171','#fb923c','#facc15','#4ade80','#22d3ee','#60a5fa','#c084fc','#f472b6'][Math.abs(Number(id) || 0) % 8];
+
+    function getRoleBadgeStyle(role) {
+        if (role === 'owner') return 'bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-black shadow-[0_0_10px_rgba(245,158,11,0.5)]';
+        if (role === 'admin') return 'bg-red-500/20 text-red-300 border border-red-500/40 font-bold';
+        if (role === 'vip')   return 'bg-purple-500/25 text-purple-200 border border-purple-400/40 font-bold';
+        return 'bg-white/10 text-gray-300 border border-white/10';
+    }
+
+    function initCommunityVisibility() {
+        // إظهار أزرار المجتمع دائماً
+        document.querySelectorAll('.comm-entry').forEach(el => el.classList.remove('hidden'));
+    }
+
+    function openCommunity() {
+        if (!currentUser.id) {
+            alert('يرجى فتح التطبيق من داخل بوت تليجرام للمشاركة في المجتمع وحفظ رسائلك ومراتبك! 💬');
+            return;
+        }
+        document.body.style.overflow = 'hidden';
+        const modal = document.getElementById('community-modal');
+        modal.classList.remove('hidden');
+        setTimeout(() => modal.classList.remove('translate-y-full'), 10);
+        comm.opened = true;
+        try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+        switchCommTab('public');
+        refreshInboxAndRanks();
+    }
+
+    function closeCommunity() {
+        comm.opened = false;
+        clearInterval(comm.timer);
+        const modal = document.getElementById('community-modal');
+        modal.classList.add('translate-y-full');
+        document.body.style.overflow = '';
+        setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
+    function switchCommTab(tabName, peerId = 0, peerName = '') {
+        comm.tab = tabName;
+        clearInterval(comm.timer);
+        clearCommReply();
+
+        const listEl = document.getElementById('comm-list');
+        const loadEl = document.getElementById('comm-loading');
+        const dmsEl = document.getElementById('comm-dms-view');
+        const ranksEl = document.getElementById('comm-ranks-view');
+        const inputBar = document.getElementById('comm-input-bar');
+        const backBtn = document.getElementById('comm-back-public');
+        const titleEl = document.getElementById('comm-header-title');
+
+        // تلوين التاب النشط
+        ['public', 'dms', 'ranks'].forEach(t => {
+            const btn = document.getElementById('tab-btn-' + t);
+            const isAct = (t === tabName) || (t === 'dms' && tabName === 'dm_chat');
+            btn.className = isAct
+                ? 'flex-1 py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 bg-blue-600 text-white shadow-md transition'
+                : 'flex-1 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-[#1c212c] text-gray-400 hover:text-white transition';
+        });
+
+        listEl.classList.add('hidden');
+        loadEl.classList.add('hidden');
+        dmsEl.classList.add('hidden');
+        ranksEl.classList.add('hidden');
+
+        if (tabName === 'public' || tabName === 'dm_chat') {
+            comm.peerId = tabName === 'dm_chat' ? Number(peerId) : 0;
+            comm.peerName = peerName;
+            titleEl.innerText = comm.peerId > 0 ? `💬 خاص: ${peerName}` : 'مجتمع سبيد مانجا';
+            document.getElementById('comm-input').placeholder = comm.peerId > 0 ? `اكتب رسالة خاصة لـ ${peerName}...` : 'اكتب رسالتك في المجتمع...';
+            backBtn.classList.toggle('hidden', comm.peerId === 0);
+            inputBar.classList.remove('hidden');
+            startChatStream();
+        } else if (tabName === 'dms') {
+            titleEl.innerText = '💌 محادثاتي الخاصة';
+            backBtn.classList.add('hidden');
+            inputBar.classList.add('hidden');
+            dmsEl.classList.remove('hidden');
+            refreshInboxAndRanks();
+        } else if (tabName === 'ranks') {
+            titleEl.innerText = '🏆 المراتب ولوحة الشرف';
+            backBtn.classList.add('hidden');
+            inputBar.classList.add('hidden');
+            ranksEl.classList.remove('hidden');
+            refreshInboxAndRanks();
+        }
+    }
+
+    async function startChatStream() {
+        const list = document.getElementById('comm-list');
+        const loading = document.getElementById('comm-loading');
+        list.classList.add('hidden');
+        loading.classList.remove('hidden');
+        comm.msgs = [];
+        comm.lastId = 0;
+        list.innerHTML = '';
+
+        await fetchCommunity();
+        setTimeout(() => {
+            if (comm.tab === 'public' || comm.tab === 'dm_chat') {
+                loading.classList.add('hidden');
+                list.classList.remove('hidden');
+                scrollCommunity(true);
+            }
+        }, 450);
+
+        clearInterval(comm.timer);
+        comm.timer = setInterval(() => {
+            if (comm.opened && !document.hidden && (comm.tab === 'public' || comm.tab === 'dm_chat')) {
+                fetchCommunity();
+            }
+        }, COMM_POLL_MS);
+    }
+
+    async function fetchCommunity() {
+        try {
+            const url = `${API_BASE_URL}/api/community/messages?uid=${currentUser.id}&peer=${comm.peerId}&after=${comm.lastId}&limit=60`;
+            const r = await fetch(url);
+            if (!r.ok) throw new Error(r.status);
+            const data = await r.json();
+            if (data.success) {
+                comm.isOwner = !!data.is_owner;
+                document.getElementById('comm-online').innerText = comm.peerId > 0
+                    ? '🔒 محادثة خاصة مشفرة ومحفوظة'
+                    : `🟢 ${data.online ?? 1} متصل الآن في المجتمع`;
+                if (data.messages && data.messages.length) {
+                    addCommunityMessages(data.messages);
+                } else if (comm.msgs.length === 0) {
+                    renderCommunity();
+                }
+            }
+        } catch (e) {
+            document.getElementById('comm-online').innerText = '⏳ جاري الاتصال بالسيرفر...';
+        }
+    }
+
+    function addCommunityMessages(incoming) {
+        const list = document.getElementById('comm-list');
+        const nearBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 120;
+        let added = 0, fromOthers = false;
+        incoming.forEach(m => {
+            const tmp = m.client_id && comm.msgs.find(x => x.client_id === m.client_id);
+            if (tmp) { Object.assign(tmp, m, { status: 'sent' }); return; }
+            if (comm.msgs.some(x => Number(x.id) === Number(m.id))) return;
+            comm.msgs.push(m);
+            added++;
+            if (String(m.user_id) !== String(currentUser.id)) fromOthers = true;
+        });
+        comm.lastId = Math.max(comm.lastId, ...comm.msgs.map(m => Number(m.id) || 0));
+        renderCommunity();
+        if (added && (nearBottom || !fromOthers)) scrollCommunity();
+        else if (added && fromOthers) document.getElementById('comm-down').classList.remove('hidden');
+    }
+
+    function renderCommunity() {
+        const list = document.getElementById('comm-list');
+        if (!comm.msgs.length) {
+            list.innerHTML = `<div class="flex flex-col items-center justify-center h-[50vh] text-gray-500 text-center">
+                <i class="fa-solid fa-comments text-4xl mb-3 opacity-40"></i>
+                <p class="text-sm font-bold">${comm.peerId > 0 ? 'ابدأ المحادثة الخاصة الآن 👋' : 'لا توجد رسائل بعد، كن أول من يفتتح النقاش! 🔥'}</p>
+            </div>`;
+            return;
+        }
+
+        let html = '', lastDay = '', lastUser = null;
+        comm.msgs.forEach(m => {
+            const mine = String(m.user_id) === String(currentUser.id);
+            const day = commDay(m.ts);
+            if (day !== lastDay) {
+                html += `<div class="flex justify-center my-3"><span class="comm-day">${commEsc(day)}</span></div>`;
+                lastDay = day; lastUser = null;
+            }
+            const first = lastUser !== m.user_id;
+            lastUser = m.user_id;
+            const tick = mine ? (m.status === 'sending' ? '<i class="fa-regular fa-clock text-[9px]"></i>' : '<i class="fa-solid fa-check-double text-[9px] text-blue-200"></i>') : '';
+            const badgeCls = getRoleBadgeStyle(m.role);
+
+            const replyBlock = m.reply_to_id ? `
+                <div class="mb-1.5 px-2.5 py-1 rounded-lg bg-black/25 border-r-2 border-blue-400 text-[11px]">
+                    <div class="font-bold text-blue-300 truncate">${commEsc(m.reply_to_name)}</div>
+                    <div class="text-white/70 truncate">${commEsc(m.reply_to_text)}</div>
+                </div>` : '';
+
+            const safeName = commEsc(m.name).replace(/'/g, "\\'");
+            const safePhoto = commEsc(m.photo).replace(/'/g, "\\'");
+            const safeRank = commEsc(m.rank || '').replace(/'/g, "\\'");
+            const safeTextShort = commEsc(m.text.slice(0, 60)).replace(/'/g, "\\'");
+
+            html += `
+            <div class="comm-row ${mine ? 'mine' : ''} ${first ? 'mt-2.5' : 'mt-1'}">
+                ${!mine ? (first
+                    ? `<img onclick="showCommUserCard(${m.user_id}, '${safeName}', '${safePhoto}', '${safeRank}')" src="${commEsc(m.photo)}" class="w-8 h-8 rounded-full object-cover flex-none self-end cursor-pointer border border-white/10" onerror="this.src='https://ui-avatars.com/api/?name=U&background=1f2937&color=fff'">`
+                    : '<div class="w-8 flex-none"></div>') : ''}
+                <div class="comm-bubble ${mine ? 'comm-mine' : 'comm-other'}">
+                    ${(!mine && first) ? `
+                        <div class="flex items-center gap-1.5 flex-wrap mb-1">
+                            <span onclick="showCommUserCard(${m.user_id}, '${safeName}', '${safePhoto}', '${safeRank}')" class="text-[11px] font-black cursor-pointer hover:underline" style="color:${commColor(m.user_id)}">${commEsc(m.name)}</span>
+                            <span class="text-[9px] px-1.5 py-0.5 rounded-full ${badgeCls}">${commEsc(m.rank || 'مغامر')}</span>
+                        </div>` : ''}
+                    ${replyBlock}
+                    <div class="text-[14px] leading-relaxed whitespace-pre-wrap break-words">${commEsc(m.text)}</div>
+                    <div class="text-[10px] text-white/50 mt-1 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2">
+                            <button onclick="setCommReply(${m.id}, '${safeName}', '${safeTextShort}')" class="hover:text-white"><i class="fa-solid fa-reply"></i></button>
+                            ${(mine || comm.isOwner) && !String(m.id).startsWith('tmp_') ? `<button onclick="deleteCommMsg(${m.id})" class="hover:text-red-400"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                        </div>
+                        <span class="flex items-center gap-1">${commTime(m.ts)} ${tick}</span>
+                    </div>
+                </div>
+            </div>`;
+        });
+        list.innerHTML = html;
+    }
+
+    function setCommReply(id, name, text) {
+        comm.replyTo = { id, name, text };
+        document.getElementById('comm-reply-name').innerText = `الرد على ${name}`;
+        document.getElementById('comm-reply-text').innerText = text;
+        document.getElementById('comm-reply-bar').classList.remove('hidden');
+        document.getElementById('comm-input').focus();
+    }
+
+    function clearCommReply() {
+        comm.replyTo = null;
+        document.getElementById('comm-reply-bar').classList.add('hidden');
+    }
+
+    function showCommUserCard(uid, name, photo, rank) {
+        if (String(uid) === String(currentUser.id)) return;
+        document.getElementById('cuc-name').innerText = name;
+        document.getElementById('cuc-photo').src = photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3b82f6&color=fff`;
+        document.getElementById('cuc-rank').innerText = rank || 'مغامر ⚔️';
+        document.getElementById('cuc-dm-btn').onclick = () => {
+            document.getElementById('comm-user-card').classList.add('hidden');
+            switchCommTab('dm_chat', uid, name);
+        };
+        document.getElementById('comm-user-card').classList.remove('hidden');
+    }
+
+    async function deleteCommMsg(msgId) {
+        try {
+            await fetch(`${API_BASE_URL}/api/community/delete`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: currentUser.id, msg_id: msgId })
+            });
+            comm.msgs = comm.msgs.filter(x => Number(x.id) !== Number(msgId));
+            renderCommunity();
+        } catch (e) {}
+    }
+
+    function scrollCommunity(instant) {
+        const list = document.getElementById('comm-list');
+        list.scrollTo({ top: list.scrollHeight, behavior: instant ? 'auto' : 'smooth' });
+        document.getElementById('comm-down').classList.add('hidden');
+    }
+
+    async function sendCommunityMessage() {
+        const input = document.getElementById('comm-input');
+        const text = input.value.trim();
+        if (!text || comm.sending) return;
+        comm.sending = true;
+        input.value = ''; input.style.height = 'auto';
+
+        const replySnap = comm.replyTo ? { ...comm.replyTo } : null;
+        clearCommReply();
+
+        const client_id = 'c' + Date.now() + Math.random().toString(36).slice(2, 6);
+        const msg = {
+            id: 'tmp_' + client_id,
+            client_id,
+            user_id: currentUser.id,
+            receiver_id: comm.peerId,
+            name: currentUser.name,
+            photo: currentUser.photo,
+            text,
+            reply_to_id: replySnap ? replySnap.id : 0,
+            reply_to_name: replySnap ? replySnap.name : '',
+            reply_to_text: replySnap ? replySnap.text : '',
+            ts: Math.floor(Date.now() / 1000),
+            status: 'sending'
+        };
+        comm.msgs.push(msg);
+        renderCommunity();
+        scrollCommunity();
+        try { tg.HapticFeedback.impactOccurred('soft'); } catch (e) {}
+
+        try {
+            const r = await fetch(`${API_BASE_URL}/api/community/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    client_id,
+                    user_id: currentUser.id,
+                    receiver_id: comm.peerId,
+                    name: currentUser.name,
+                    photo: currentUser.photo,
+                    text,
+                    reply_to_id: msg.reply_to_id,
+                    reply_to_name: msg.reply_to_name,
+                    reply_to_text: msg.reply_to_text
+                })
+            });
+            const res = await r.json();
+            if (!r.ok || !res.success) {
+                throw new Error(res.error || 'send_failed');
+            }
+            Object.assign(msg, res, { status: 'sent' });
+            if (res.rank) document.getElementById('comm-my-rank-pill').innerText = res.rank;
+        } catch (e) {
+            comm.msgs = comm.msgs.filter(x => x !== msg);
+            if (e.message === 'bad_words') alert('⛔ يرجى الالتزام بقوانين مجتمع سبيد مانجا وعدم استخدام ألفاظ غير لائقة.');
+            else alert('تعذر إرسال الرسالة، حاول مرة أخرى');
+        }
+        comm.sending = false;
+        renderCommunity();
+        scrollCommunity();
+    }
+
+    async function refreshInboxAndRanks() {
+        try {
+            const r = await fetch(`${API_BASE_URL}/api/community/inbox?uid=${currentUser.id || 0}`);
+            const d = await r.json();
+            if (!d.success) return;
+
+            if (d.my_info && d.my_info.rank) {
+                document.getElementById('comm-my-rank-pill').innerText = d.my_info.rank;
+            }
+
+            // 1. بناء قائمة المحادثات الخاصة (1v1)
+            const dmsBox = document.getElementById('comm-dms-view');
+            if (!d.dms || !d.dms.length) {
+                dmsBox.innerHTML = `<div class="flex flex-col items-center justify-center h-[50vh] text-gray-500 text-center">
+                    <i class="fa-solid fa-envelope-open-text text-4xl mb-3 opacity-40"></i>
+                    <p class="font-bold text-sm">لا توجد محادثات خاصة بعد 📭</p>
+                    <p class="text-xs text-gray-600 mt-1">اضغط على صورة أو اسم أي عضو في الشات العام لبدء محادثة خاصة معه!</p>
+                </div>`;
+            } else {
+                dmsBox.innerHTML = `<div class="space-y-2.5 max-w-2xl mx-auto">` + d.dms.map(dm => `
+                    <div onclick="switchCommTab('dm_chat', ${dm.peer_id}, '${commEsc(dm.name).replace(/'/g, "\\'")}')"
+                         class="flex items-center gap-3 p-3 rounded-2xl bg-[#141923] hover:bg-[#1c2331] border border-white/5 cursor-pointer transition">
+                        <img src="${commEsc(dm.photo)}" class="w-12 h-12 rounded-full object-cover border border-blue-500/30" onerror="this.src='https://ui-avatars.com/api/?name=U&background=1f2937&color=fff'">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-black text-sm text-white truncate">${commEsc(dm.name)}</h4>
+                                <span class="text-[10px] text-gray-500">${commTime(dm.ts)}</span>
+                            </div>
+                            <span class="inline-block text-[9px] px-2 py-0.5 rounded-full ${getRoleBadgeStyle(dm.role)} my-0.5">${commEsc(dm.rank)}</span>
+                            <p class="text-xs text-gray-400 truncate mt-0.5">${commEsc(dm.last_text)}</p>
+                        </div>
+                    </div>
+                `).join('') + `</div>`;
+            }
+
+            // 2. بناء لوحة المراتب والمتصدرين
+            const ranksBox = document.getElementById('comm-ranks-view');
+            const ranksGuide = [
+                { name: 'طيف مبتدئ 👻', pts: '0 - 20 نقطة' },
+                { name: 'متصفح سبيد ⚡', pts: '21 - 100 نقطة' },
+                { name: 'صائد الفصول 🏹', pts: '101 - 300 نقطة' },
+                { name: 'جنرال المانهوا ⚔️', pts: '301 - 600 نقطة' },
+                { name: 'ملك سبيد مانجا 👑', pts: '601 - 1000 نقطة' },
+                { name: 'إمبراطور العوالم 🌌', pts: '1001 - 3000 نقطة' },
+                { name: 'أسطورة سبيد الخالدة 🐉', pts: '+3000 نقطة' }
+            ];
+
+            ranksBox.innerHTML = `
+                <div class="max-w-2xl mx-auto space-y-6 pb-20">
+                    <!-- بطاقة رتبتي الحالية -->
+                    <div class="p-4 rounded-2xl bg-gradient-to-l from-blue-600/20 via-purple-600/15 to-[#141923] border border-blue-500/30 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-gray-400">رتبتك الحالية في المملكة</p>
+                            <h3 class="text-lg font-black text-white mt-0.5">${commEsc(d.my_info?.rank || 'طيف مبتدئ 👻')}</h3>
+                            <p class="text-xs text-blue-400 font-bold mt-1">نقاط تفاعلك: ${d.my_info?.points || 0} نقطة 🌟</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-2xl">🎖️</div>
+                    </div>
+
+                    <!-- دليل المراتب -->
+                    <div class="bg-[#131722] border border-white/5 rounded-2xl p-4">
+                        <h4 class="font-black text-sm mb-3 text-yellow-400"><i class="fa-solid fa-wand-magic-sparkles ml-1"></i> نظام المراتب والترقيات (تزيد نقاطك مع القراءة والدردشة):</h4>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            ${ranksGuide.map(rg => `
+                                <div class="p-2.5 rounded-xl bg-[#0b0e14] border border-white/5">
+                                    <div class="text-xs font-bold text-white">${rg.name}</div>
+                                    <div class="text-[10px] text-gray-400 mt-0.5">${rg.pts}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- قائمة أساطير المجتمع -->
+                    <div>
+                        <h4 class="font-black text-sm mb-3 flex items-center gap-2"><i class="fa-solid fa-crown text-yellow-400"></i> متصدرو مجتمع سبيد مانجا</h4>
+                        <div class="space-y-2">
+                            ${(d.leaders || []).map((ld, idx) => `
+                                <div onclick="showCommUserCard(${ld.user_id}, '${commEsc(ld.name).replace(/'/g, "\\'")}', '${commEsc(ld.photo).replace(/'/g, "\\'")}', '${commEsc(ld.rank).replace(/'/g, "\\'")}')"
+                                     class="flex items-center gap-3 p-3 rounded-xl bg-[#131722] border border-white/5 cursor-pointer hover:border-blue-500/40 transition">
+                                    <div class="w-7 text-center font-black text-sm ${idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-300' : idx === 2 ? 'text-amber-600' : 'text-gray-500'}">#${idx + 1}</div>
+                                    <img src="${commEsc(ld.photo)}" class="w-10 h-10 rounded-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=U&background=1f2937&color=fff'">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-bold text-sm text-white truncate">${commEsc(ld.name)}</div>
+                                        <span class="inline-block text-[9px] px-2 py-0.5 rounded-full ${getRoleBadgeStyle(ld.role)} mt-0.5">${commEsc(ld.rank)}</span>
+                                    </div>
+                                    <div class="text-xs font-black text-yellow-400">${formatNumber(ld.points)} 🌟</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        } catch (e) {}
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initCommunityVisibility();
+        const input = document.getElementById('comm-input');
+        input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 120) + 'px'; });
+        input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && window.innerWidth >= 768) { e.preventDefault(); sendCommunityMessage(); } });
+        document.getElementById('comm-list').addEventListener('scroll', e => {
+            const l = e.target; if (l.scrollHeight - l.scrollTop - l.clientHeight < 80) document.getElementById('comm-down').classList.add('hidden');
+        });
+    });
     </script>
+
+<!-- شاشة مشغل الفيديو المباشر (Stream Hub) -->
+<div id="video-modal" class="fixed inset-0 z-[200] bg-black/95 hidden flex flex-col items-center justify-center p-4 overflow-y-auto">
+    <div class="w-full max-w-4xl flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-play text-red-500 text-xl"></i>
+            <h3 id="video-modal-title" class="text-white font-bold text-base truncate">مشغل البث المباشر (Telegram Stream)</h3>
+        </div>
+        <button onclick="closeVideoPlayer()" class="text-gray-400 hover:text-white bg-white/10 w-10 h-10 rounded-full flex items-center justify-center">
+            <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+    </div>
+
+    <!-- شريط إدخال رقم رسالة الفيديو في القناة للتشغيل الفوري -->
+    <div class="w-full max-w-4xl bg-[#11141b] border border-white/10 rounded-xl p-3 mb-3 flex flex-col sm:flex-row gap-2">
+        <input id="stream-msg-id" type="number" placeholder="رقم رسالة الفيديو في القناة (مثال: 105)"
+               class="flex-1 bg-[#1c212c] text-white text-sm rounded-lg px-3 py-2.5 border border-white/5 focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold">
+        <input id="stream-chat-id" type="text" placeholder="آيدي القناة (اختياري، مثال: -1003756734193)"
+               class="sm:w-64 bg-[#1c212c] text-white text-sm rounded-lg px-3 py-2.5 border border-white/5 focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold">
+        <button onclick="playFromInput()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2.5 rounded-lg flex items-center justify-center gap-2 transition">
+            <i class="fa-solid fa-play"></i> تشغيل البث
+        </button>
+    </div>
+
+    <!-- المشغل الفعلي -->
+    <div class="w-full max-w-4xl aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+        <video id="speed-video-player" class="w-full h-full" controls playsinline preload="metadata"></video>
+    </div>
+    <p id="video-stream-status" class="text-xs text-gray-400 font-bold mt-2">💡 ارفع أي فيديو MP4 في قناتك واكتب رقم رسالته بالأعلى ليعمل البث فوراً.</p>
+</div>
+
 </body>
 </html>
