@@ -144,6 +144,51 @@
 @keyframes commPop{from{opacity:0;transform:translateY(8px) scale(.97);}to{opacity:1;transform:none;}}
 .comm-sk{background:linear-gradient(90deg,#161a23 25%,#222836 50%,#161a23 75%);background-size:200% 100%;animation:commShimmer 1.3s infinite;border-radius:16px;}
 @keyframes commShimmer{to{background-position:-200% 0;}}
+
+
+/* ===== فقاعة الكتابة (WhatsApp Typing 3 Dots) ===== */
+.typing-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    animation: commPop 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.typing-avatar-ring {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    border-radius: 9999px;
+    padding: 1.5px;
+    background: linear-gradient(135deg, #3b82f6, #a855f7);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.45);
+}
+.typing-bubble {
+    background: #1c2230;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px 14px;
+    border-radius: 18px;
+    border-bottom-right-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+}
+.typing-dot {
+    width: 7px;
+    height: 7px;
+    background: #60a5fa;
+    border-radius: 50%;
+    display: inline-block;
+    animation: waBounce 1.3s infinite ease-in-out;
+}
+.typing-dot:nth-child(1) { animation-delay: 0s; }
+.typing-dot:nth-child(2) { animation-delay: 0.18s; background: #818cf8; }
+.typing-dot:nth-child(3) { animation-delay: 0.36s; background: #c084fc; }
+@keyframes waBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+    30% { transform: translateY(-6px) scale(1.15); opacity: 1; }
+}
     </style>
 </head>
 <body class="flex pb-20 md:pb-0">
@@ -531,6 +576,12 @@
         <i class="fa-solid fa-chevron-down"></i>
     </button>
 
+
+    <!-- 💬 فقاعة جاري الكتابة (الصورة + الثلاث نقاط المتحركة مثل واتساب) -->
+    <div id="comm-typing-bar" class="hidden flex-none comm-bg border-t border-white/5">
+        <div id="comm-typing-content" class="typing-wrap"></div>
+    </div>
+
     <!-- شريط الرد على رسالة (Reply Preview) -->
     <div id="comm-reply-bar" class="hidden flex-none px-4 py-2 bg-[#161b26] border-t border-white/10 flex items-center justify-between">
         <div class="border-r-2 border-blue-500 pr-2.5 min-w-0">
@@ -845,6 +896,8 @@ function openMyList() {
                 const response = await fetch(`${API_BASE_URL}/api/fix_cover/${mangaId}`);
                 const data = await response.json();
                 if (data.success) {
+                    comm.otherTypers = data.typing || [];
+                    renderTypingIndicator();
                     setTimeout(() => {
                         imgElement.style.opacity = '1';
                         imgElement.src = `https://raw.githubusercontent.com/kanoahmed467/my-bot/main/covers/${mangaId}.jpg?t=${new Date().getTime()}`;
@@ -1609,7 +1662,7 @@ async function buildHomeGenres() {
             html += `
             <div class="comm-row ${mine ? 'mine' : ''} ${first ? 'mt-2.5' : 'mt-1'}">
                 ${!mine ? (first
-                    ? `<img onclick="showCommUserCard(${m.user_id}, '${safeName}', '${safePhoto}', '${safeRank}')" src="${commEsc(m.photo)}" class="w-8 h-8 rounded-full object-cover flex-none self-end cursor-pointer border border-white/10" onerror="this.src='https://ui-avatars.com/api/?name=U&background=1f2937&color=fff'">`
+                    ? `<img onclick="showCommUserCard(${m.user_id}, '${safeName}', '${safePhoto}', '${safeRank}')" src="${commEsc(m.photo)}" class="w-8 h-8 rounded-full object-cover flex-none self-end cursor-pointer border border-white/10 shadow" onerror="this.src='https://ui-avatars.com/api/?name=U&background=1f2937&color=fff'">`
                     : '<div class="w-8 flex-none"></div>') : ''}
                 <div class="comm-bubble ${mine ? 'comm-mine' : 'comm-other'}">
                     ${(!mine && first) ? `
@@ -1627,6 +1680,9 @@ async function buildHomeGenres() {
                         <span class="flex items-center gap-1">${commTime(m.ts)} ${tick}</span>
                     </div>
                 </div>
+                ${mine ? (first
+                    ? `<img src="${commEsc(currentUser.photo)}" class="w-8 h-8 rounded-full object-cover flex-none self-end border border-blue-400/40 shadow" onerror="this.src='https://ui-avatars.com/api/?name=Me&background=2563eb&color=fff'">`
+                    : '<div class="w-8 flex-none"></div>') : ''}
             </div>`;
         });
         list.innerHTML = html;
@@ -1737,6 +1793,96 @@ async function buildHomeGenres() {
         scrollCommunity();
     }
 
+
+    let _myTypingTimer = null;
+    let _lastTypingPing = 0;
+    comm.meTyping = false;
+    comm.otherTypers = [];
+
+    function renderTypingIndicator() {
+        const bar = document.getElementById('comm-typing-bar');
+        const box = document.getElementById('comm-typing-content');
+        if (!bar || !box) return;
+
+        // نجمع من يكتبون الآن (سواء طرف آخر أو أنت أثناء الكتابة لترى التأثير الحي)
+        const typers = [...(comm.otherTypers || [])];
+        if (comm.meTyping) {
+            typers.unshift({ user_id: currentUser.id, name: currentUser.name, photo: currentUser.photo, isMe: true });
+        }
+
+        if (typers.length === 0) {
+            bar.classList.add('hidden');
+            return;
+        }
+
+        const t = typers[0];
+        const label = t.isMe ? 'أنت تكتب الآن...' : `${commEsc(t.name)} يكتب الآن...`;
+        box.innerHTML = `
+            <div class="typing-avatar-ring flex-none">
+                <img src="${commEsc(t.photo)}" class="w-full h-full rounded-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=U&background=1f2937&color=fff'">
+            </div>
+            <div class="typing-bubble">
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+            </div>
+            <span class="text-[11px] text-blue-300/90 font-bold animate-pulse">${label}</span>
+        `;
+        bar.classList.remove('hidden');
+    }
+
+    function notifyTyping(isTyping) {
+        comm.meTyping = isTyping;
+        renderTypingIndicator();
+
+        const now = Date.now();
+        if (isTyping && now - _lastTypingPing < 2000) return;
+        _lastTypingPing = now;
+
+        if (!currentUser.id) return;
+        fetch(`${API_BASE_URL}/api/community/typing`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: currentUser.id,
+                peer_id: comm.peerId || 0,
+                name: currentUser.name,
+                photo: currentUser.photo,
+                typing: isTyping
+            })
+        }).catch(() => {});
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initCommunityVisibility();
+        const input = document.getElementById('comm-input');
+        input.addEventListener('input', () => {
+            input.style.height = 'auto';
+            input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+
+            if (input.value.trim().length > 0) {
+                notifyTyping(true);
+                clearTimeout(_myTypingTimer);
+                _myTypingTimer = setTimeout(() => notifyTyping(false), 2800);
+            } else {
+                clearTimeout(_myTypingTimer);
+                notifyTyping(false);
+            }
+        });
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey && window.innerWidth >= 768) {
+                e.preventDefault();
+                clearTimeout(_myTypingTimer);
+                notifyTyping(false);
+                sendCommunityMessage();
+            }
+        });
+        document.getElementById('comm-list').addEventListener('scroll', e => {
+            const l = e.target;
+            if (l.scrollHeight - l.scrollTop - l.clientHeight < 80) document.getElementById('comm-down').classList.add('hidden');
+        });
+    });
+
     async function refreshInboxAndRanks() {
         try {
             const r = await fetch(`${API_BASE_URL}/api/community/inbox?uid=${currentUser.id || 0}`);
@@ -1832,15 +1978,7 @@ async function buildHomeGenres() {
         } catch (e) {}
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        initCommunityVisibility();
-        const input = document.getElementById('comm-input');
-        input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 120) + 'px'; });
-        input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && window.innerWidth >= 768) { e.preventDefault(); sendCommunityMessage(); } });
-        document.getElementById('comm-list').addEventListener('scroll', e => {
-            const l = e.target; if (l.scrollHeight - l.scrollTop - l.clientHeight < 80) document.getElementById('comm-down').classList.add('hidden');
-        });
-    });
+
     </script>
 
 <!-- شاشة مشغل الفيديو المباشر (Stream Hub) -->
