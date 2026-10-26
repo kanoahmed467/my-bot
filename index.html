@@ -1796,7 +1796,6 @@ async function buildHomeGenres() {
 
     let _myTypingTimer = null;
     let _lastTypingPing = 0;
-    comm.meTyping = false;
     comm.otherTypers = [];
 
     function renderTypingIndicator() {
@@ -1804,11 +1803,8 @@ async function buildHomeGenres() {
         const box = document.getElementById('comm-typing-content');
         if (!bar || !box) return;
 
-        // نجمع من يكتبون الآن (سواء طرف آخر أو أنت أثناء الكتابة لترى التأثير الحي)
-        const typers = [...(comm.otherTypers || [])];
-        if (comm.meTyping) {
-            typers.unshift({ user_id: currentUser.id, name: currentUser.name, photo: currentUser.photo, isMe: true });
-        }
+        // 🔥 نظهر الفقاعة فقط لو الطرف الآخر هو الذي يكتب (ومش أنا)
+        const typers = (comm.otherTypers || []).filter(t => String(t.user_id) !== String(currentUser.id));
 
         if (typers.length === 0) {
             bar.classList.add('hidden');
@@ -1816,30 +1812,30 @@ async function buildHomeGenres() {
         }
 
         const t = typers[0];
-        const label = t.isMe ? 'أنت تكتب الآن...' : `${commEsc(t.name)} يكتب الآن...`;
+        const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(t.name || 'U')}&background=1f2937&color=fff`;
         box.innerHTML = `
-            <div class="typing-avatar-ring flex-none">
-                <img src="${commEsc(t.photo)}" class="w-full h-full rounded-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=U&background=1f2937&color=fff'">
+            <div class="comm-row items-end gap-2">
+                <div class="typing-avatar-ring flex-none">
+                    <img src="${commEsc(t.photo || fallbackAvatar)}" class="w-full h-full rounded-full object-cover" onerror="this.src='${fallbackAvatar}'">
+                </div>
+                <div class="typing-bubble">
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                </div>
+                <span class="text-[11px] text-gray-400 font-bold">${commEsc(t.name)} يكتب الآن...</span>
             </div>
-            <div class="typing-bubble">
-                <span class="typing-dot"></span>
-                <span class="typing-dot"></span>
-                <span class="typing-dot"></span>
-            </div>
-            <span class="text-[11px] text-blue-300/90 font-bold animate-pulse">${label}</span>
         `;
         bar.classList.remove('hidden');
     }
 
     function notifyTyping(isTyping) {
-        comm.meTyping = isTyping;
-        renderTypingIndicator();
-
-        const now = Date.now();
-        if (isTyping && now - _lastTypingPing < 2000) return;
-        _lastTypingPing = now;
-
         if (!currentUser.id) return;
+        const now = Date.now();
+        // إرسال إشارة كل 1.5 ثانية طول ما بيكتب عشان تفضل منورة عند الطرف التاني
+        if (isTyping && now - _lastTypingPing < 1500) return;
+        _lastTypingPing = isTyping ? now : 0;
+
         fetch(`${API_BASE_URL}/api/community/typing`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1863,7 +1859,8 @@ async function buildHomeGenres() {
             if (input.value.trim().length > 0) {
                 notifyTyping(true);
                 clearTimeout(_myTypingTimer);
-                _myTypingTimer = setTimeout(() => notifyTyping(false), 2800);
+                // تفضل ظاهرة عند الطرف التاني لمدة 5 ثواني بعد آخر حرف كتبه
+                _myTypingTimer = setTimeout(() => notifyTyping(false), 5000);
             } else {
                 clearTimeout(_myTypingTimer);
                 notifyTyping(false);
@@ -1882,7 +1879,7 @@ async function buildHomeGenres() {
             if (l.scrollHeight - l.scrollTop - l.clientHeight < 80) document.getElementById('comm-down').classList.add('hidden');
         });
     });
-
+    
     async function refreshInboxAndRanks() {
         try {
             const r = await fetch(`${API_BASE_URL}/api/community/inbox?uid=${currentUser.id || 0}`);
