@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Speed Manga App</title>
     
     <!-- خطوط جوجل -->
@@ -13,8 +13,13 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
     
     <!-- مكتبة تليجرام وتيلويند -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- مكتبة إعلانات Adsgram -->
+<script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+
+
 
     <style>
         :root {
@@ -35,6 +40,21 @@
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
+
+        .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;padding:8px 0;border-radius:18px;color:#8b93a1;transition:.2s;}
+.nav-item.hidden{display:none;}
+.nav-item i{font-size:19px;}
+.nav-item span{font-size:10px;font-weight:700;}
+.nav-item.active{color:#3b82f6;background:rgba(59,130,246,.14);}
+.nav-item.nav-video.active{color:#f87171;background:rgba(248,113,113,.14);}
+.nav-item.nav-comm.active{color:#c084fc;background:rgba(192,132,252,.14);}
+.nav-item:active{transform:scale(.92);}
+
+.more-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:#cbd5e1;font-size:11px;font-weight:700;}
+.more-item .ico{width:52px;height:52px;border-radius:16px;background:#1c212c;
+  display:flex;align-items:center;justify-content:center;font-size:20px;transition:.15s;}
+.more-item:active .ico{transform:scale(.92);background:#252b38;}
         
         .hero-gradient { background: linear-gradient(0deg, var(--bg-base) 0%, rgba(10,12,16,0.6) 50%, transparent 100%); }
 
@@ -264,7 +284,7 @@
 
         <!-- القوائم الأفقية -->
         <!-- القوائم الأفقية (الصفحة الرئيسية) -->
-        <div id="main-content" class="px-4 md:px-8 mt-6 relative z-20 hidden space-y-10 pb-10">
+        <div id="main-content" class="px-4 md:px-8 mt-6 relative z-20 hidden space-y-10 pb-28 md:pb-10">
             
 <div class="comm-entry hidden fade-in-up">
     <button onclick="openCommunity()" class="w-full text-right rounded-2xl p-4 flex items-center gap-4 bg-gradient-to-l from-blue-600/20 via-purple-600/10 to-transparent border border-blue-500/20 hover:border-blue-500/50 transition active:scale-[.99]">
@@ -327,32 +347,58 @@
     </main>
 
     <!-- شريط التنقل السفلي للموبايل -->
-    <nav class="fixed bottom-0 w-full glass-panel border-t-0 flex justify-around items-center p-3 pb-safe z-50 md:hidden shadow-lg">
-        <a href="#" onclick="closeAllModals()" class="flex flex-col items-center text-blue-500">
-            <i class="fa-solid fa-house text-lg mb-1"></i>
-            <span class="text-[10px] font-bold">الرئيسية</span>
+    <!-- شريط التنقل السفلي للموبايل -->
+<nav class="md:hidden fixed inset-x-0 bottom-0 z-50 px-3"
+     style="padding-bottom:max(env(safe-area-inset-bottom),10px)">
+    <div class="glass-panel rounded-3xl flex items-stretch gap-1 p-1.5 shadow-2xl shadow-black/60">
+
+        <a href="#" data-nav="home" onclick="closeAllModals(); setNav('home'); return false;" class="nav-item active">
+            <i class="fa-solid fa-house"></i><span>الرئيسية</span>
         </a>
-        <a href="#" onclick="openSearch()" class="flex flex-col items-center text-gray-400 hover:text-white transition">
-            <i class="fa-solid fa-magnifying-glass text-lg mb-1"></i>
-            <span class="text-[10px] font-bold">بحث</span>
+
+        <a href="#" data-nav="search" onclick="openSearch(); setNav('search'); return false;" class="nav-item">
+            <i class="fa-solid fa-magnifying-glass"></i><span>بحث</span>
         </a>
-        <a href="#" onclick="openVideoHub(); return false;" class="flex flex-col items-center text-red-400 hover:text-red-300 transition">
-            <i class="fa-solid fa-circle-play text-lg mb-1"></i>
-            <span class="text-[10px] font-bold">فيديو</span>
+
+        <a href="#" data-nav="video" onclick="openVideoHub(); setNav('video'); return false;" class="nav-item nav-video">
+            <i class="fa-solid fa-circle-play"></i><span>فيديو</span>
         </a>
-        <a href="#" onclick="openCommunity(); return false;" class="comm-entry hidden flex flex-col items-center text-purple-400 hover:text-purple-300 transition">
-    <i class="fa-solid fa-comments text-lg mb-1"></i>
-    <span class="text-[10px] font-bold">مجتمع</span>
-</a>
-        <a href="#" onclick="openMyList(); return false;" class="flex flex-col items-center text-gray-400 hover:text-white transition">
-            <i class="fa-solid fa-bookmark text-lg mb-1"></i>
-            <span class="text-[10px] font-bold">قائمتي</span>
+
+        <a href="#" data-nav="comm" onclick="openCommunity(); setNav('comm'); return false;" class="nav-item nav-comm comm-entry hidden">
+            <i class="fa-solid fa-comments"></i><span>مجتمع</span>
         </a>
-        <a href="#" onclick="openProfile()" class="flex flex-col items-center text-gray-400 hover:text-white transition">
-            <i class="fa-solid fa-user text-lg mb-1"></i>
-            <span class="text-[10px] font-bold">حسابي</span>
+
+        <a href="#" data-nav="more" onclick="openMore(); return false;" class="nav-item">
+            <i class="fa-solid fa-grip"></i><span>المزيد</span>
         </a>
-    </nav>
+    </div>
+</nav>
+
+<!-- ورقة "المزيد" -->
+<div id="more-sheet" class="fixed inset-0 z-[60] hidden">
+    <div class="absolute inset-0 bg-black/60" onclick="closeMore()"></div>
+    <div id="more-panel"
+         class="absolute bottom-0 inset-x-0 bg-[#11141b] border-t border-white/5 rounded-t-3xl px-5 pt-3 translate-y-full transition-transform duration-300"
+         style="padding-bottom:max(env(safe-area-inset-bottom),24px)">
+        <div class="w-10 h-1 bg-white/20 rounded-full mx-auto mb-5"></div>
+
+        <div class="grid grid-cols-4 gap-y-5 gap-x-2 text-center">
+            <button class="more-item" onclick="closeMore(); openMyList();">
+                <div class="ico text-blue-400"><i class="fa-solid fa-bookmark"></i></div>قائمتي
+            </button>
+            <button class="more-item" onclick="closeMore(); openProfile();">
+                <div class="ico text-gray-300"><i class="fa-solid fa-user"></i></div>حسابي
+            </button>
+
+            <!-- أي ميزة جديدة تضيفها: انسخ زر منهم وغيّر الأيقونة والاسم والدالة -->
+            <!--
+            <button class="more-item" onclick="closeMore(); openXXX();">
+                <div class="ico text-yellow-400"><i class="fa-solid fa-star"></i></div>الاسم
+            </button>
+            -->
+        </div>
+    </div>
+</div>
 
     <!-- ========================================= -->
     <!-- شاشة البحث المنبثقة (الحل الأكيد للسكرول) -->
@@ -447,8 +493,15 @@
                 </div>
 
                 <!-- أزرار التحكم السفلية -->
-                <div class="space-y-3">
-                    <button onclick="tg.showAlert('للحصول على VIP، تواصل مع الإدارة في البوت.')" class="w-full bg-[#11141b] flex items-center justify-between p-4 rounded-xl hover:bg-slate-800 transition border border-white/5 shadow-sm">
+                <<!-- أزرار التحكم السفلية -->
+            <div class="space-y-3">
+                <!-- الزر الجديد الخاص بالإعلانات -->
+                <button onclick="playSupportAd()" class="w-full bg-[#11141b] flex items-center justify-between p-4 rounded-xl hover:bg-slate-800 transition border border-green-500/30 shadow-sm">
+                    <div class="flex items-center gap-4 text-green-400"><i class="fa-solid fa-play-circle text-xl w-6"></i> <span class="font-semibold text-white">شاهد إعلان (دعم/نقاط)</span></div>
+                    <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                </button>
+
+                <button onclick="tg.showAlert('للحصول على VIP، تواصل مع الإدارة في البوت.')" class="w-full bg-[#11141b] flex items-center justify-between p-4 rounded-xl hover:bg-slate-800 transition border border-white/5 shadow-sm">
                         <div class="flex items-center gap-4 text-yellow-500"><i class="fa-solid fa-crown text-xl w-6"></i> <span class="font-semibold text-white">الترقية لـ VIP</span></div>
                         <i class="fa-solid fa-chevron-left text-gray-600"></i>
                     </button>
@@ -621,11 +674,25 @@
     <!-- السكربتات الأساسية -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
     <script>
-        const tg = window.Telegram.WebApp;
-        try { tg.expand(); } catch(e) {}
-        try { tg.disableVerticalSwipes(); } catch(e) {} 
-        try { tg.setHeaderColor('#0d1017'); } catch(e) {}
-        try { tg.setBackgroundColor('#0a0c10'); } catch(e) {}
+    const tg = window.Telegram.WebApp;
+    try { tg.expand(); } catch(e) {}
+    try { tg.disableVerticalSwipes(); } catch(e) {} 
+    try { tg.setHeaderColor('#0d1017'); } catch(e) {}
+    try { tg.setBackgroundColor('#0a0c10'); } catch(e) {}
+
+    // 1. تهيئة إعلانات Adsgram بالـ ID الخاص بك
+    const AdController = window.Adsgram.init({ blockId: "57468" });
+
+    // 2. دالة تشغيل الإعلان
+    function playSupportAd() {
+        AdController.show().then((result) => {
+            // الكود الذي يعمل بعد انتهاء الإعلان بنجاح
+            tg.showAlert('شكراً لك! تمت المشاهدة بنجاح.');
+        }).catch((result) => {
+            // الكود الذي يعمل إذا تم إغلاق الإعلان قبل انتهائه
+            console.log("لم تكتمل المشاهدة", result);
+        });
+    }
 
         let allMangasData = []; 
         let heroMangaId = null;
@@ -1027,6 +1094,7 @@ function openMyList() {
             document.getElementById(id).classList.add('hidden'));
     }, 300);
     clearBrowseHash();
+    setNav('home');
 }
 
         // تم إضافة الدالة المفقودة هنا والتي كانت تسبب الخطأ وتوقف الموقع
@@ -1986,6 +2054,24 @@ async function buildHomeGenres() {
         });
     }
 
+
+    function setNav(key) {
+    document.querySelectorAll('.nav-item').forEach(el =>
+        el.classList.toggle('active', el.dataset.nav === key));
+}
+
+function openMore() {
+    const sheet = document.getElementById('more-sheet');
+    const panel = document.getElementById('more-panel');
+    sheet.classList.remove('hidden');
+    requestAnimationFrame(() => panel.classList.remove('translate-y-full'));
+}
+
+function closeMore() {
+    const sheet = document.getElementById('more-sheet');
+    document.getElementById('more-panel').classList.add('translate-y-full');
+    setTimeout(() => sheet.classList.add('hidden'), 300);
+}
 
     </script>
 
