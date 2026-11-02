@@ -76,7 +76,7 @@
 
 <div class="top-head">
   <h1><i class="fa-solid fa-feather-pointed" style="color:#3b82f6"></i> استوديو المؤلفين</h1>
-  <span id="trust-badge" class="badge-status">⏳ كاتب صاعد</span>
+  <span id="trust-badge" class="badge-status hidden"></span>
 </div>
 
 <div id="banner"></div>
@@ -384,6 +384,16 @@ async function loadMine() {
   const defaultGenres = ["أكشن","فانتازيا","رومانسي","غموض","نظام","إيسيكاي","تاريخي","رعب","كوميديا","دراما","فنون قتالية","موريم","شريحة من الحياة","نفسي","خيال علمي"];
   buildGenres(defaultGenres);
 
+  // ⚡ إظهار الرتبة المحفوظة فوراً في 0 ثانية لمنع أي وميض
+  const cachedBadge = localStorage.getItem("sm_writer_badge");
+  const cachedTrusted = localStorage.getItem("sm_writer_trusted") === "1";
+  if (cachedBadge) {
+    isTrusted = cachedTrusted;
+    $("trust-badge").textContent = cachedBadge;
+    $("trust-badge").classList.toggle("trusted", cachedTrusted);
+    $("trust-badge").classList.remove("hidden");
+  }
+
   try {
     const uid = tg.initDataUnsafe?.user?.id || "";
     const r = await fetch(`${API}/api/my-novels?uid=${uid}`, { headers: headers() });
@@ -391,13 +401,27 @@ async function loadMine() {
     if (!d.success) return render();
     slotsLeft = d.slots_left;
     isTrusted = !!d.is_trusted;
+
+    let badgeText = "⏳ كاتب صاعد";
+    let badgeGreen = false;
     if (isTrusted) {
-      $("trust-badge").textContent = "👑 كاتب موثوق (نشر فوري)";
-      $("trust-badge").classList.add("trusted");
+      badgeText = "👑 كاتب موثوق (نشر فوري)";
+      badgeGreen = true;
     } else if (d.novels && d.novels.length > 0) {
-      $("trust-badge").textContent = "✍️ مؤلف معتمد (" + d.novels.length + " رواية)";
-      $("trust-badge").classList.add("trusted");
+      badgeText = "✍️ مؤلف معتمد (" + d.novels.length + " رواية)";
+      badgeGreen = true;
     }
+
+    $("trust-badge").textContent = badgeText;
+    $("trust-badge").classList.toggle("trusted", badgeGreen);
+    $("trust-badge").classList.remove("hidden");
+
+    // حفظ الرتبة في الذاكرة لتظهر في 0 ثانية في المرات القادمة
+    try {
+      localStorage.setItem("sm_writer_badge", badgeText);
+      localStorage.setItem("sm_writer_trusted", badgeGreen ? "1" : "0");
+    } catch (_) {}
+
     buildGenres(d.genres && d.genres.length ? d.genres : defaultGenres);
     myNovelsList = d.novels || [];
     $("novel-id").innerHTML = myNovelsList.map(n => `<option value="${n.id}">${esc(n.title)}${n.alt_titles ? ' | ' + esc(n.alt_titles) : ''}</option>`).join("");
