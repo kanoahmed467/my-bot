@@ -390,35 +390,54 @@ $("tab-novel").onclick = () => setMode("novel");
 $("tab-chapter").onclick = () => setMode("chapter");
 $("tab-edit").onclick = () => setMode("edit");
 
+function applyWriterData(d) {
+  if (!d || !d.success) return;
+  slotsLeft = d.slots_left;
+  isTrusted = !!d.is_trusted;
+
+  const defaultGenres = ["أكشن","فانتازيا","رومانسي","غموض","نظام","إيسيكاي","تاريخي","رعب","كوميديا","دراما","فنون قتالية","موريم","شريحة من الحياة","نفسي","خيال علمي"];
+  buildGenres(d.genres && d.genres.length ? d.genres : defaultGenres);
+
+  myNovelsList = d.novels || [];
+  $("novel-id").innerHTML = myNovelsList.map(n => `<option value="${n.id}">${esc(n.title)}${n.alt_titles ? ' | ' + esc(n.alt_titles) : ''}</option>`).join("");
+  $("tab-chapter").disabled = myNovelsList.length === 0;
+  $("tab-edit").disabled = myNovelsList.length === 0;
+
+  const b = $("trust-badge");
+  if (isTrusted) {
+    b.textContent = "👑 كاتب موثوق (نشر فوري)";
+    b.classList.add("trusted");
+  } else if (myNovelsList.length > 0) {
+    b.textContent = "✍️ مؤلف معتمد (" + myNovelsList.length + " رواية)";
+    b.classList.add("trusted");
+  } else {
+    b.textContent = "✨ مؤلف جديد";
+    b.classList.remove("trusted");
+  }
+  b.classList.remove("hidden");
+  render();
+}
+
 async function loadMine() {
   loadDraft();
   const defaultGenres = ["أكشن","فانتازيا","رومانسي","غموض","نظام","إيسيكاي","تاريخي","رعب","كوميديا","دراما","فنون قتالية","موريم","شريحة من الحياة","نفسي","خيال علمي"];
   buildGenres(defaultGenres);
 
-  // إخفاء الشارة مؤقتاً حتى يرد السيرفر
-  $("trust-badge").classList.add("hidden");
+  // ⚡ 1. عرض فوري في 0.00 ثانية من الكاش بدون انتظار السيرفر!
+  try {
+    const cached = JSON.parse(localStorage.getItem("sm_writer_cache_" + MY_UID) || "null");
+    if (cached && cached.success) {
+      applyWriterData(cached);
+    }
+  } catch (_) {}
 
+  // 🔄 2. تحديث صامت في الخلفية من السيرفر
   try {
     const r = await fetch(`${API}/api/my-novels?uid=${encodeURIComponent(MY_UID)}`, { headers: headers() });
     const d = await r.json();
-    if (!d.success) return render();
-    slotsLeft = d.slots_left;
-    isTrusted = !!d.is_trusted;
-
-    buildGenres(d.genres && d.genres.length ? d.genres : defaultGenres);
-    myNovelsList = d.novels || [];
-    $("novel-id").innerHTML = myNovelsList.map(n => `<option value="${n.id}">${esc(n.title)}${n.alt_titles ? ' | ' + esc(n.alt_titles) : ''}</option>`).join("");
-    $("tab-chapter").disabled = myNovelsList.length === 0;
-    $("tab-edit").disabled = myNovelsList.length === 0;
-
-    if (isTrusted) {
-      $("trust-badge").textContent = "👑 كاتب موثوق (نشر فوري)";
-      $("trust-badge").classList.add("trusted");
-      $("trust-badge").classList.remove("hidden");
-    } else if (myNovelsList.length > 0) {
-      $("trust-badge").textContent = "✍️ مؤلف معتمد (" + myNovelsList.length + " رواية)";
-      $("trust-badge").classList.add("trusted");
-      $("trust-badge").classList.remove("hidden");
+    if (d && d.success) {
+      try { localStorage.setItem("sm_writer_cache_" + MY_UID, JSON.stringify(d)); } catch (_) {}
+      applyWriterData(d);
     }
   } catch (_) {}
   render();
