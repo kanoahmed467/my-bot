@@ -390,6 +390,10 @@
                 <div class="ico text-gray-300"><i class="fa-solid fa-user"></i></div>حسابي
             </button>
 
+            <button class="more-item" onclick="closeMore(); openWriter();">
+    <div class="ico text-emerald-400"><i class="fa-solid fa-pen-nib"></i></div>اكتب رواية
+</button>
+
             <!-- أي ميزة جديدة تضيفها: انسخ زر منهم وغيّر الأيقونة والاسم والدالة -->
             <!--
             <button class="more-item" onclick="closeMore(); openXXX();">
@@ -2071,6 +2075,12 @@ function closeMore() {
     const sheet = document.getElementById('more-sheet');
     document.getElementById('more-panel').classList.add('translate-y-full');
     setTimeout(() => sheet.classList.add('hidden'), 300);
+}
+
+
+function openWriter() {
+    try { tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
+    window.location.href = 'write.html';
 }
 
     </script>
