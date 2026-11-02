@@ -1078,6 +1078,13 @@ function openMyList() {
                     // تشغيل السحب وتحديث بيانات المستخدم
                     initSwiper();
                     fetchRealtimeUserData();
+                    if (currentUser && currentUser.id) {
+    fetch(`${API_BASE_URL}/api/my-novels?uid=${currentUser.id}`, {
+        headers: { "X-Telegram-Init-Data": tg.initData || "" }
+    }).then(r => r.json()).then(d => {
+        if (d && d.success) localStorage.setItem("sm_writer_cache_" + currentUser.id, JSON.stringify(d));
+    }).catch(() => {});
+}
                     addViewAllButtons();
                     buildHomeGenres();
                     restoreBrowseFromHash();
