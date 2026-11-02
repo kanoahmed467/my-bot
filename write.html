@@ -185,7 +185,18 @@ const RULES = {
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const headers = () => ({ "X-Telegram-Init-Data": tg.initData || "" });
+
+// 🔥 جلب الآيدي وبيانات التوثيق من كل الأماكن الممكنة حتى لو تليجرام مسحها عند فتح write.html
+const urlParams = new URLSearchParams(location.search);
+const MY_UID = tg.initDataUnsafe?.user?.id || urlParams.get("uid") || localStorage.getItem("sm_uid") || "";
+const MY_NAME = tg.initDataUnsafe?.user?.first_name || localStorage.getItem("sm_uname") || "مؤلف";
+const MY_INIT_DATA = tg.initData || sessionStorage.getItem("sm_tg_init") || "";
+
+if (MY_UID) {
+  try { localStorage.setItem("sm_uid", String(MY_UID)); } catch (_) {}
+}
+
+const headers = () => ({ "X-Telegram-Init-Data": MY_INIT_DATA });
 
 let mode = "novel", coverFile = null, slotsLeft = null, busy = false, isTrusted = false;
 let picked = new Set(), allGenresList = [], myNovelsList = [];
@@ -384,49 +395,31 @@ async function loadMine() {
   const defaultGenres = ["أكشن","فانتازيا","رومانسي","غموض","نظام","إيسيكاي","تاريخي","رعب","كوميديا","دراما","فنون قتالية","موريم","شريحة من الحياة","نفسي","خيال علمي"];
   buildGenres(defaultGenres);
 
-  // ⚡ إظهار الرتبة المحفوظة فوراً في 0 ثانية لمنع أي وميض
-  const cachedBadge = localStorage.getItem("sm_writer_badge");
-  const cachedTrusted = localStorage.getItem("sm_writer_trusted") === "1";
-  if (cachedBadge) {
-    isTrusted = cachedTrusted;
-    $("trust-badge").textContent = cachedBadge;
-    $("trust-badge").classList.toggle("trusted", cachedTrusted);
-    $("trust-badge").classList.remove("hidden");
-  }
+  // إخفاء الشارة مؤقتاً حتى يرد السيرفر
+  $("trust-badge").classList.add("hidden");
 
   try {
-    const uid = tg.initDataUnsafe?.user?.id || "";
-    const r = await fetch(`${API}/api/my-novels?uid=${uid}`, { headers: headers() });
+    const r = await fetch(`${API}/api/my-novels?uid=${encodeURIComponent(MY_UID)}`, { headers: headers() });
     const d = await r.json();
     if (!d.success) return render();
     slotsLeft = d.slots_left;
     isTrusted = !!d.is_trusted;
-
-    let badgeText = "⏳ كاتب صاعد";
-    let badgeGreen = false;
-    if (isTrusted) {
-      badgeText = "👑 كاتب موثوق (نشر فوري)";
-      badgeGreen = true;
-    } else if (d.novels && d.novels.length > 0) {
-      badgeText = "✍️ مؤلف معتمد (" + d.novels.length + " رواية)";
-      badgeGreen = true;
-    }
-
-    $("trust-badge").textContent = badgeText;
-    $("trust-badge").classList.toggle("trusted", badgeGreen);
-    $("trust-badge").classList.remove("hidden");
-
-    // حفظ الرتبة في الذاكرة لتظهر في 0 ثانية في المرات القادمة
-    try {
-      localStorage.setItem("sm_writer_badge", badgeText);
-      localStorage.setItem("sm_writer_trusted", badgeGreen ? "1" : "0");
-    } catch (_) {}
 
     buildGenres(d.genres && d.genres.length ? d.genres : defaultGenres);
     myNovelsList = d.novels || [];
     $("novel-id").innerHTML = myNovelsList.map(n => `<option value="${n.id}">${esc(n.title)}${n.alt_titles ? ' | ' + esc(n.alt_titles) : ''}</option>`).join("");
     $("tab-chapter").disabled = myNovelsList.length === 0;
     $("tab-edit").disabled = myNovelsList.length === 0;
+
+    if (isTrusted) {
+      $("trust-badge").textContent = "👑 كاتب موثوق (نشر فوري)";
+      $("trust-badge").classList.add("trusted");
+      $("trust-badge").classList.remove("hidden");
+    } else if (myNovelsList.length > 0) {
+      $("trust-badge").textContent = "✍️ مؤلف معتمد (" + myNovelsList.length + " رواية)";
+      $("trust-badge").classList.add("trusted");
+      $("trust-badge").classList.remove("hidden");
+    }
   } catch (_) {}
   render();
 }
@@ -437,8 +430,6 @@ $("submit").onclick = async () => {
 
   try {
     let res;
-    const uid = tg.initDataUnsafe?.user?.id || "";
-    const uname = tg.initDataUnsafe?.user?.first_name || "مؤلف";
     const titleAr = $("title-ar").value.trim();
     const titleEn = $("title-en").value.trim();
     const mainTitle = titleAr || titleEn;
@@ -446,8 +437,6 @@ $("submit").onclick = async () => {
 
     if (mode === "novel") {
       const fd = new FormData();
-      fd.append("user_id", uid);
-      fd.append("user_name", uname);
       fd.append("title", mainTitle);
       fd.append("title_ar", titleAr);
       fd.append("title_en", titleEn);
@@ -457,14 +446,12 @@ $("submit").onclick = async () => {
       fd.append("cover", coverFile);
       fd.append("chapter_title", $("chapter-title").value.trim());
       fd.append("content", $("content").value.trim());
-      res = await fetch(`${API}/api/novels`, { method: "POST", headers: headers(), body: fd });
+      res = await fetch(`${API}/api/novels?uid=${encodeURIComponent(MY_UID)}`, { method: "POST", headers: headers(), body: fd });
     } else if (mode === "chapter") {
-      res = await fetch(`${API}/api/chapters`, {
+      res = await fetch(`${API}/api/chapters?uid=${encodeURIComponent(MY_UID)}`, {
         method: "POST",
         headers: { ...headers(), "Content-Type": "application/json" },
         body: JSON.stringify({
-          user_id: uid,
-          user_name: uname,
           manga_id: +$("novel-id").value,
           chapter_number: $("chapter-num").value.trim(),
           chapter_title: $("chapter-title").value.trim(),
@@ -473,7 +460,6 @@ $("submit").onclick = async () => {
       });
     } else if (mode === "edit") {
       const fd = new FormData();
-      fd.append("user_id", uid);
       fd.append("manga_id", $("novel-id").value);
       fd.append("title", mainTitle);
       fd.append("alt_titles", altTitle);
@@ -481,7 +467,7 @@ $("submit").onclick = async () => {
       fd.append("synopsis", $("synopsis").value.trim());
       fd.append("genre", [...picked].join(" • "));
       if (coverFile) fd.append("cover", coverFile);
-      res = await fetch(`${API}/api/novels/edit`, { method: "POST", headers: headers(), body: fd });
+      res = await fetch(`${API}/api/novels/edit?uid=${encodeURIComponent(MY_UID)}`, { method: "POST", headers: headers(), body: fd });
     }
 
     const d = await res.json().catch(() => ({}));
