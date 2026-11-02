@@ -416,6 +416,10 @@
     <div class="ico text-emerald-400"><i class="fa-solid fa-pen-nib"></i></div>اكتب رواية
 </button>
 
+<button id="admin-more-btn" class="more-item hidden" onclick="closeMore(); openAdminPanel();">
+                <div class="ico text-amber-400 border border-amber-500/30"><i class="fa-solid fa-crown"></i></div>لوحة المالك
+            </button>
+
             <!-- أي ميزة جديدة تضيفها: انسخ زر منهم وغيّر الأيقونة والاسم والدالة -->
             <!--
             <button class="more-item" onclick="closeMore(); openXXX();">
@@ -773,6 +777,7 @@ async function fetchRealtimeUserData() {
         const response = await fetch(`${API_BASE_URL}/api/user/${currentUser.id}`);
         const dbData = await response.json();
         if (dbData.success) {
+            
             document.getElementById('stat-points').innerText = formatNumber(dbData.points);
             document.getElementById('stat-history').innerText = formatNumber(dbData.history_count);
             document.getElementById('stat-favs').innerText = formatNumber(dbData.favorites_count);
@@ -786,6 +791,11 @@ async function fetchRealtimeUserData() {
                 badge.className = "absolute -bottom-2 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] font-bold px-4 py-1 rounded-full border border-[#11141b] tracking-widest uppercase shadow-md";
             }
         }
+
+        if (dbData.is_owner || String(currentUser.id) === "8313239068") {
+                const admBtn = document.getElementById('admin-more-btn');
+                if (admBtn) admBtn.classList.remove('hidden');
+            }
 
         // سحب المفضلة
         const favResponse = await fetch(`${API_BASE_URL}/api/user/${currentUser.id}/favorites`);
@@ -2135,6 +2145,16 @@ function openWriter() {
     } catch(e) {}
     const uidParam = (currentUser && currentUser.id) ? `?uid=${currentUser.id}` : '';
     window.location.href = `write.html${uidParam}`;
+}
+
+
+function openAdminPanel() {
+    try { tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
+    try {
+        if (tg.initData) sessionStorage.setItem('sm_tg_init', tg.initData);
+        if (currentUser && currentUser.id) localStorage.setItem('sm_uid', String(currentUser.id));
+    } catch(e) {}
+    window.location.href = `admin.html?uid=${currentUser.id || ''}`;
 }
 
     </script>
