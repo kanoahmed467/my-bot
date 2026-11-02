@@ -265,9 +265,10 @@ function formatParagraphs() {
 }
 
 function saveDraft() {
-  if (mode === "edit") return;
+  // لا نحفظ المسودة إلا لو كنا في وضع (رواية جديدة) فقط، وليس أثناء التعديل!
+  if (mode !== "novel") return;
   try {
-    localStorage.setItem("sm_writer_draft", JSON.stringify({
+    localStorage.setItem("sm_writer_draft_v2", JSON.stringify({
       titleAr: $("title-ar").value, titleEn: $("title-en").value,
       synopsis: $("synopsis").value, chTitle: $("chapter-title").value,
       content: $("content").value, genres: [...picked]
@@ -277,13 +278,24 @@ function saveDraft() {
 
 function loadDraft() {
   try {
-    const d = JSON.parse(localStorage.getItem("sm_writer_draft") || "null");
-    if (!d) return;
-    if (d.titleAr) $("title-ar").value = d.titleAr;
-    if (d.titleEn) $("title-en").value = d.titleEn;
-    if (d.synopsis) $("synopsis").value = d.synopsis;
-    if (d.chTitle) $("chapter-title").value = d.chTitle;
-    if (d.content) $("content").value = d.content;
+    // مسح المسودة القديمة العالقة من الإصدار السابق نهائياً
+    localStorage.removeItem("sm_writer_draft");
+    const d = JSON.parse(localStorage.getItem("sm_writer_draft_v2") || "null");
+    if (!d) {
+      $("title-ar").value = "";
+      $("title-en").value = "";
+      $("synopsis").value = "";
+      $("chapter-title").value = "";
+      $("content").value = "";
+      picked.clear();
+      return;
+    }
+    $("title-ar").value = d.titleAr || "";
+    $("title-en").value = d.titleEn || "";
+    $("synopsis").value = d.synopsis || "";
+    $("chapter-title").value = d.chTitle || "";
+    $("content").value = d.content || "";
+    picked.clear();
     if (Array.isArray(d.genres)) d.genres.forEach(g => picked.add(g));
   } catch (_) {}
 }
@@ -382,7 +394,22 @@ function setMode(m) {
   $("cover-opt-lbl").textContent = m === "edit" ? "(اختياري — اتركه للاحتفاظ بالغلاف الحالي)" : "(إجباري)";
   $("ch-label").textContent = m === "novel" ? "عنوان الفصل الأول" : "عنوان الفصل الجديد";
 
-  if (m === "edit") populateEditFields();
+  if (m === "edit") {
+    populateEditFields();
+  } else if (m === "novel") {
+    // 🧹 تنظيف صورة غلاف الرواية السابقة وإرجاع خانات الرواية الجديدة نظيفة 100%
+    coverFile = null;
+    $("cover").value = "";
+    $("cover-preview").style.backgroundImage = "";
+    $("cover-preview").innerHTML = '<i class="fa-regular fa-image"></i>';
+    $("cover-msg").textContent = "JPG / PNG / WEBP — حتى 3MB";
+    $("cover-msg").className = "";
+    loadDraft();
+    buildGenres(allGenresList);
+  } else if (m === "chapter") {
+    $("chapter-title").value = "";
+    $("chapter-num").value = "";
+  }
   render();
 }
 
