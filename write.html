@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>اكتب روايتك | Speed Manga</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{--bg:#0a0c10;--card:#11141b;--field:#1c212c;--primary:#3b82f6;--muted:#8b93a1;--err:#f87171;--ok:#4ade80}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:#fff;font-family:'Tajawal',sans-serif;padding:16px 16px calc(28px + env(safe-area-inset-bottom))}
+  h1{font-size:20px;font-weight:900;margin:4px 0 14px}
+  .tabs{display:flex;gap:8px;margin-bottom:6px}
+  .tabs button{flex:1;padding:11px;border:0;border-radius:12px;background:var(--card);color:var(--muted);font:inherit;font-weight:700}
+  .tabs button.on{background:var(--primary);color:#fff} .tabs button:disabled{opacity:.35}
+  label{display:block;margin:16px 0 6px;font-weight:700;font-size:14px}
+  input[type=text],textarea,select{width:100%;padding:12px;border-radius:12px;border:1px solid transparent;background:var(--field);color:#fff;font:inherit}
+  textarea{min-height:90px;resize:vertical} #content{min-height:260px;line-height:1.9}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:4px}
+  .good{color:var(--ok)} .bad{color:var(--err)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px} .chip{padding:7px 13px;border-radius:999px;background:var(--field);color:#cbd5e1;font-size:13px;font-weight:700;border:1px solid transparent}
+  .chip.on{background:rgba(59,130,246,.18);color:#60a5fa;border-color:rgba(59,130,246,.5)}
+  #cover-row{display:flex;gap:12px;align-items:center} #cover-preview{width:84px;height:118px;border-radius:10px;background:var(--field) center/cover;flex:none}
+  #banner{display:none;margin:12px 0;padding:10px 12px;border-radius:12px;background:rgba(248,113,113,.12);color:var(--err);font-size:13px}
+  #submit{width:100%;margin-top:24px;padding:15px;border:0;border-radius:14px;background:var(--primary);color:#fff;font:inherit;font-weight:900;font-size:16px}
+  #submit:disabled{opacity:.35}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<h1>✍️ اكتب روايتك</h1>
+<div id="banner"></div>
+<div class="tabs">
+  <button id="tab-novel" class="on" type="button">رواية جديدة</button>
+  <button id="tab-chapter" type="button" disabled>فصل جديد</button>
+</div>
+
+<div id="novel-part">
+  <label>عنوان الرواية</label><input id="title" type="text" maxlength="100" autocomplete="off">
+  <label>غلاف الرواية</label>
+  <div id="cover-row"><div id="cover-preview"></div>
+    <div style="flex:1"><input id="cover" type="file" accept="image/jpeg,image/png,image/webp" style="width:100%;color:#cbd5e1">
+    <div class="meta"><span id="cover-msg">JPG / PNG / WEBP — حتى 3MB</span></div></div></div>
+  <label>التصنيف (حتى 3)</label><div id="genres" class="chips"></div>
+  <label>الملخص</label><textarea id="synopsis"></textarea><div class="meta"><span></span><span id="synopsis-msg"></span></div>
+</div>
+
+<div id="chapter-part" class="hidden">
+  <label>اختر الرواية</label><select id="novel-id"></select>
+</div>
+
+<label id="ch-label">الفصل الأول — العنوان</label><input id="chapter-title" type="text" maxlength="100" autocomplete="off">
+<label>محتوى الفصل</label><textarea id="content"></textarea><div class="meta"><span></span><span id="content-msg"></span></div>
+
+<button id="submit" type="button" disabled>إرسال للمراجعة</button>
+
+<script>
+const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
+try { tg.BackButton.show(); tg.BackButton.onClick(() => history.back()); } catch (e) {}
+
+// ====== الإعدادات (لازم تطابق novels_module.py) ======
+const API = "https://apispeedmanga.hidenplay.net";
+const RULES = { titleMin: 3, synopsisMin: 50, contentMin: 500, coverMax: 3 * 1024 * 1024,
+                coverTypes: ["image/jpeg", "image/png", "image/webp"], maxGenres: 3 };
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const headers = () => ({ "X-Telegram-Init-Data": tg.initData });
+
+let mode = "novel", coverFile = null, slotsLeft = null, busy = false, picked = new Set();
+
+function validate() {
+  const e = {};
+  const content = $("content").value.trim().length;
+  if (!$("chapter-title").value.trim()) e.chTitle = 1;
+  if (content < RULES.contentMin) e.content = 1;
+  if (mode === "novel") {
+    if ($("title").value.trim().length < RULES.titleMin) e.title = 1;
+    if (!coverFile) e.cover = 1;
+    if (!picked.size) e.genre = 1;
+    if ($("synopsis").value.trim().length < RULES.synopsisMin) e.synopsis = 1;
+  } else if (!$("novel-id").value) e.novel = 1;
+  if (slotsLeft === 0) e.limit = 1;
+  return e;
+}
+
+function render() {
+  const e = validate();
+  const c = $("content").value.trim().length, s = $("synopsis").value.trim().length;
+  $("content-msg").textContent = `${c} / ${RULES.contentMin}`; $("content-msg").className = e.content ? "bad" : "good";
+  $("synopsis-msg").textContent = `${s} / ${RULES.synopsisMin}`; $("synopsis-msg").className = e.synopsis ? "bad" : "good";
+  $("banner").style.display = e.limit ? "block" : "none";
+  $("banner").textContent = "عندك طلبات تحت المراجعة بالفعل. استنى لحد ما تتراجع قبل ما ترفع جديد.";
+  $("submit").disabled = busy || Object.keys(e).length > 0;      // الزرار مقفول لحد ما كل الشروط تتحقق
+}
+
+["title", "synopsis", "chapter-title", "content", "novel-id"].forEach(id => $(id).addEventListener("input", render));
+
+$("cover").addEventListener("change", ev => {
+  const f = ev.target.files[0]; coverFile = null; $("cover-preview").style.backgroundImage = "";
+  if (!f) return render();
+  if (!RULES.coverTypes.includes(f.type)) { $("cover-msg").textContent = "الصيغة غير مدعومة"; $("cover-msg").className = "bad"; return render(); }
+  if (f.size > RULES.coverMax) { $("cover-msg").textContent = "الحجم أكبر من 3MB"; $("cover-msg").className = "bad"; return render(); }
+  coverFile = f; $("cover-msg").textContent = f.name; $("cover-msg").className = "good";
+  $("cover-preview").style.backgroundImage = `url(${URL.createObjectURL(f)})`;
+  render();
+});
+
+function buildGenres(list) {
+  $("genres").innerHTML = list.map(g => `<button type="button" class="chip" data-g="${esc(g)}">${esc(g)}</button>`).join("");
+  $("genres").querySelectorAll(".chip").forEach(b => b.onclick = () => {
+    const g = b.dataset.g;
+    if (picked.has(g)) picked.delete(g);
+    else if (picked.size < RULES.maxGenres) picked.add(g);
+    b.classList.toggle("on", picked.has(g)); render();
+  });
+}
+
+function setMode(m) {
+  mode = m;
+  $("tab-novel").classList.toggle("on", m === "novel"); $("tab-chapter").classList.toggle("on", m === "chapter");
+  $("novel-part").classList.toggle("hidden", m !== "novel"); $("chapter-part").classList.toggle("hidden", m !== "chapter");
+  $("ch-label").textContent = m === "novel" ? "الفصل الأول — العنوان" : "عنوان الفصل";
+  render();
+}
+$("tab-novel").onclick = () => setMode("novel"); $("tab-chapter").onclick = () => setMode("chapter");
+
+async function loadMine() {
+  try {
+    const r = await fetch(`${API}/api/my-novels`, { headers: headers() });
+    const d = await r.json();
+    if (!d.success) return;
+    slotsLeft = d.slots_left; buildGenres(d.genres || []);
+    $("novel-id").innerHTML = d.novels.map(n => `<option value="${n.id}">${esc(n.title)}</option>`).join("");
+    $("tab-chapter").disabled = d.novels.length === 0;
+  } catch (_) {}
+  render();
+}
+
+$("submit").onclick = async () => {
+  if (Object.keys(validate()).length) return;
+  busy = true; render(); $("submit").textContent = "جارٍ الإرسال…";
+  try {
+    let res;
+    if (mode === "novel") {
+      const fd = new FormData();
+      fd.append("title", $("title").value.trim()); fd.append("synopsis", $("synopsis").value.trim());
+      fd.append("genre", [...picked].join("|")); fd.append("cover", coverFile);
+      fd.append("chapter_title", $("chapter-title").value.trim()); fd.append("content", $("content").value.trim());
+      res = await fetch(`${API}/api/novels`, { method: "POST", headers: headers(), body: fd });
+    } else {
+      res = await fetch(`${API}/api/chapters`, { method: "POST", headers: { ...headers(), "Content-Type": "application/json" },
+        body: JSON.stringify({ manga_id: +$("novel-id").value, chapter_title: $("chapter-title").value.trim(), content: $("content").value.trim() }) });
+    }
+    const d = await res.json().catch(() => ({}));
+    if (!res.ok || !d.success) throw new Error(d.error || "حدث خطأ، حاول مرة أخرى");
+    try { tg.HapticFeedback.notificationOccurred("success"); } catch (_) {}
+    tg.showAlert(d.auto ? "تم النشر مباشرة ✅" : "تم الإرسال للمراجعة، هنبلغك بالنتيجة في البوت ✅", () => history.back());
+  } catch (err) {
+    try { tg.HapticFeedback.notificationOccurred("error"); } catch (_) {}
+    tg.showAlert(err.message);
+    busy = false; $("submit").textContent = "إرسال للمراجعة"; render();
+  }
+};
+
+loadMine(); render();
+</script>
+</body>
+</html>

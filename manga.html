@@ -70,6 +70,9 @@ body { background:var(--bg-base); color:#fff; font-family:'Tajawal',sans-serif; 
         <button onclick="openInBot()" class="bg-gray-800/80 text-white px-5 py-2.5 rounded-md font-bold flex items-center gap-2 hover:bg-gray-700 transition">
           <i class="fa-brands fa-telegram"></i> فتح في البوت
         </button>
+                <button id="btn-report" onclick="openReport()" class="hidden bg-gray-800/80 text-gray-300 px-4 py-2.5 rounded-md font-bold items-center gap-2 hover:bg-gray-700 transition">
+          <i class="fa-solid fa-flag"></i> إبلاغ
+        </button>
       </div>
     </div>
   </section>
@@ -254,6 +257,10 @@ function render() {
 
   renderChapters();
   renderSimilar();
+  if (m.is_user) {
+    $('btn-report').classList.remove('hidden'); $('btn-report').classList.add('flex');
+    $('badges').innerHTML += '<span class="bg-emerald-600/90 px-2 py-0.5 rounded text-xs font-bold">✍️ كتّاب المجتمع</span>';
+  }
 
   $('page').classList.remove('hidden');
   requestAnimationFrame(updateDescToggle);
@@ -357,6 +364,33 @@ async function init() {
   }
 }
 init();
+</script>
+
+<div id="report-sheet" class="fixed inset-0 z-[300] hidden">
+  <div class="absolute inset-0 bg-black/60" onclick="closeReport()"></div>
+  <div class="absolute bottom-0 inset-x-0 bg-[#11141b] rounded-t-3xl p-5 space-y-2" style="padding-bottom:max(env(safe-area-inset-bottom),20px)">
+    <h3 class="font-black mb-2">سبب البلاغ</h3>
+    <button class="w-full text-right p-3 rounded-xl bg-[#1c212c]" onclick="sendReport('stolen')">محتوى مسروق</button>
+    <button class="w-full text-right p-3 rounded-xl bg-[#1c212c]" onclick="sendReport('spam')">سبام أو محتوى عشوائي</button>
+    <button class="w-full text-right p-3 rounded-xl bg-[#1c212c]" onclick="sendReport('abuse')">محتوى مخالف</button>
+    <button class="w-full text-right p-3 rounded-xl bg-[#1c212c]" onclick="sendReport('other')">سبب آخر</button>
+  </div>
+</div>
+<script>
+const openReport = () => $('report-sheet').classList.remove('hidden');
+const closeReport = () => $('report-sheet').classList.add('hidden');
+async function sendReport(reason) {
+  closeReport();
+  try {
+    const r = await fetch(`${API_BASE_URL}/api/report`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': tg.initData },
+      body: JSON.stringify({ manga_id: manga.id, reason })
+    });
+    const d = await r.json().catch(() => ({}));
+    tg.showAlert(d.success ? 'وصلنا بلاغك، شكراً ✅' : (d.error || 'تعذّر إرسال البلاغ'));
+  } catch (e) { tg.showAlert('تعذّر الاتصال بالسيرفر'); }
+}
 </script>
 </body>
 </html>
