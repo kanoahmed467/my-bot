@@ -185,10 +185,7 @@ const RULES = {
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const headers = () => ({
-  "X-Telegram-Init-Data": tg.initData || "",
-  "X-Telegram-User-Id": String(tg.initDataUnsafe?.user?.id || "")
-});
+const headers = () => ({ "X-Telegram-Init-Data": tg.initData || "" });
 
 let mode = "novel", coverFile = null, slotsLeft = null, busy = false, isTrusted = false;
 let picked = new Set(), allGenresList = [], myNovelsList = [];
@@ -396,6 +393,9 @@ async function loadMine() {
     isTrusted = !!d.is_trusted;
     if (isTrusted) {
       $("trust-badge").textContent = "👑 كاتب موثوق (نشر فوري)";
+      $("trust-badge").classList.add("trusted");
+    } else if (d.novels && d.novels.length > 0) {
+      $("trust-badge").textContent = "✍️ مؤلف معتمد (" + d.novels.length + " رواية)";
       $("trust-badge").classList.add("trusted");
     }
     buildGenres(d.genres && d.genres.length ? d.genres : defaultGenres);
