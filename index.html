@@ -2119,7 +2119,15 @@ function closeMore() {
 
 function openWriter() {
     try { tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
-    window.location.href = 'write.html';
+    try {
+        if (tg.initData) sessionStorage.setItem('sm_tg_init', tg.initData);
+        if (currentUser && currentUser.id) {
+            localStorage.setItem('sm_uid', String(currentUser.id));
+            localStorage.setItem('sm_uname', String(currentUser.name || 'مؤلف'));
+        }
+    } catch(e) {}
+    const uidParam = (currentUser && currentUser.id) ? `?uid=${currentUser.id}` : '';
+    window.location.href = `write.html${uidParam}`;
 }
 
     </script>
