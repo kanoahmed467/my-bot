@@ -381,11 +381,13 @@ const openReport = () => $('report-sheet').classList.remove('hidden');
 const closeReport = () => $('report-sheet').classList.add('hidden');
 async function sendReport(reason) {
   closeReport();
+  const uid = tg.initDataUnsafe?.user?.id || localStorage.getItem('sm_uid') || '';
+  const initData = tg.initData || sessionStorage.getItem('sm_tg_init') || '';
   try {
-    const r = await fetch(`${API_BASE_URL}/api/report`, {
+    const r = await fetch(`${API_BASE_URL}/api/report?uid=${encodeURIComponent(uid)}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': tg.initData },
-      body: JSON.stringify({ manga_id: manga.id, reason })
+      headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': initData },
+      body: JSON.stringify({ user_id: uid, manga_id: manga.id, reason })
     });
     const d = await r.json().catch(() => ({}));
     tg.showAlert(d.success ? 'وصلنا بلاغك، شكراً ✅' : (d.error || 'تعذّر إرسال البلاغ'));
