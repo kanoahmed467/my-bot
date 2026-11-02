@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#060810">
+<title>لوحة تحكم المالك | Speed Manga</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --bg:#060810;--card:#0f1320;--card2:#141a2c;--field:#161c2e;--primary:#3b82f6;--violet:#8b5cf6;
+    --gold:#f59e0b;--emerald:#10b981;--err:#ef4444;--muted:#8b95a7;--border:rgba(255,255,255,.08);
+    --ease:cubic-bezier(.22,.9,.3,1)
+  }
+  @property --a{syntax:'<angle>';inherits:false;initial-value:0deg}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.18) transparent}
+  ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:9px}
+  html{scroll-behavior:smooth}
+
+  body{
+    margin:0;background:var(--bg);color:#fff;font-family:'Tajawal',sans-serif;position:relative;overflow-x:hidden;
+    padding:0 14px calc(40px + env(safe-area-inset-bottom));min-height:100vh
+  }
+  /* خلفية حيّة: إضاءات بتتحرك ببطء */
+  body::before,body::after{content:"";position:fixed;z-index:-1;border-radius:50%;filter:blur(70px);pointer-events:none;will-change:transform}
+  body::before{width:380px;height:380px;top:-130px;right:-110px;background:radial-gradient(circle,rgba(245,158,11,.38),transparent 65%);animation:drift1 15s ease-in-out infinite alternate}
+  body::after{width:440px;height:440px;bottom:-160px;left:-130px;background:radial-gradient(circle,rgba(99,102,241,.40),transparent 65%);animation:drift2 18s ease-in-out infinite alternate}
+
+  /* ===== الهيدر ===== */
+  .top-bar{
+    position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    margin:0 -14px 10px;padding:calc(12px + env(safe-area-inset-top)) 14px 12px;
+    background:linear-gradient(to bottom,rgba(6,8,16,.94) 62%,rgba(6,8,16,0));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)
+  }
+  .title-wrap{flex:1;min-width:0;text-align:center}
+  .top-bar h1{
+    font-size:19px;font-weight:900;margin:0;display:flex;align-items:center;justify-content:center;gap:8px;
+    background:linear-gradient(90deg,#fff,#cbd5e1 60%,#fbbf24);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent
+  }
+  .top-bar h1 i{-webkit-text-fill-color:#f59e0b;animation:crown 3.2s ease-in-out infinite}
+  .sub{font-size:11px;color:var(--muted);margin-top:3px;display:flex;align-items:center;justify-content:center;gap:6px;letter-spacing:.2px}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:#34d399;animation:ping 1.9s infinite}
+  .icon-btn{
+    position:relative;overflow:hidden;width:40px;height:40px;border-radius:13px;border:1px solid var(--border);
+    background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));color:#fff;display:grid;place-items:center;cursor:pointer;
+    flex:none;transition:transform .25s var(--ease),background .25s,border-color .25s;backdrop-filter:blur(8px)
+  }
+  .icon-btn:active{transform:scale(.88)}
+  .icon-btn.spin i{animation:spinOnce .8s var(--ease)}
+  @media (hover:hover){.icon-btn:hover{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.1)}}
+
+  /* ===== التبويبات ===== */
+  .tabs{
+    position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:5px;margin-bottom:18px;border-radius:19px;
+    background:rgba(15,19,32,.72);border:1px solid var(--border);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    box-shadow:0 12px 34px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05)
+  }
+  .tabs button{
+    position:relative;z-index:1;overflow:hidden;padding:10px 4px;border:0;border-radius:14px;background:transparent;color:var(--muted);
+    font:inherit;font-size:12px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;
+    transition:color .3s,transform .25s var(--ease)
+  }
+  .tabs button:active{transform:scale(.94)}
+  .tabs button i{font-size:16px;transition:transform .45s var(--ease)}
+  .tabs button.on{color:#fff;background:linear-gradient(135deg,#2563eb,#4f46e5);box-shadow:0 6px 18px rgba(79,70,229,.4)}
+  .tabs button.on i{transform:translateY(-1px) scale(1.18)}
+  .tab-ind{
+    position:absolute;top:5px;bottom:5px;left:0;width:0;z-index:0;border-radius:14px;opacity:0;
+    background:linear-gradient(135deg,#3b82f6,#6366f1 58%,#8b5cf6);box-shadow:0 8px 22px rgba(79,70,229,.5),inset 0 1px 0 rgba(255,255,255,.25);
+    transition:transform .5s var(--ease),width .5s var(--ease)
+  }
+  .tabs.js .tab-ind{opacity:1}
+  .tabs.js button.on{background:transparent;box-shadow:none}
+  .count-pill{min-width:21px;text-align:center;font-size:10px;padding:1px 7px;border-radius:99px;background:rgba(255,255,255,.1);color:#cbd5e1;transition:background .3s,color .3s}
+  .count-pill.has{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;animation:pillPulse 2.2s infinite}
+
+  /* ===== الكروت ===== */
+  #view-box{position:relative}
+  .item-card{
+    position:relative;overflow:hidden;border:1px solid transparent;border-radius:21px;padding:15px;margin-bottom:15px;
+    background:linear-gradient(180deg,rgba(23,29,46,.97),rgba(15,19,32,.97)) padding-box,
+               linear-gradient(140deg,rgba(255,255,255,.18),rgba(255,255,255,.03) 38%,rgba(99,102,241,.32) 100%) border-box;
+    box-shadow:0 16px 42px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05);
+    animation:rise .65s var(--ease) backwards;animation-delay:calc(var(--n,0) * 75ms);
+    transition:transform .35s var(--ease),box-shadow .35s
+  }
+  .item-card::before{content:"";position:absolute;top:0;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);z-index:2;pointer-events:none}
+  .item-card::after{content:"";position:absolute;width:200px;height:200px;top:-110px;left:-70px;background:radial-gradient(circle,rgba(99,102,241,.22),transparent 70%);pointer-events:none;z-index:0}
+  .item-card>*{position:relative;z-index:1}
+  #view-box>.item-card:nth-child(1){--n:0}#view-box>.item-card:nth-child(2){--n:1}#view-box>.item-card:nth-child(3){--n:2}
+  #view-box>.item-card:nth-child(4){--n:3}#view-box>.item-card:nth-child(5){--n:4}#view-box>.item-card:nth-child(6){--n:5}
+  #view-box>.item-card:nth-child(7){--n:6}#view-box>.item-card:nth-child(n+8){--n:7}
+  @media (hover:hover){.item-card:hover{transform:translateY(-3px);box-shadow:0 22px 50px rgba(0,0,0,.55),0 0 0 1px rgba(99,102,241,.25),inset 0 1px 0 rgba(255,255,255,.06)}}
+
+  .user-header{display:flex;align-items:center;gap:12px;padding-bottom:13px;margin-bottom:13px;border-bottom:1px solid transparent;
+    border-image:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent) 1}
+  .user-header img{
+    width:49px;height:49px;border-radius:50%;object-fit:cover;flex:none;border:2.5px solid transparent;
+    background:linear-gradient(#1e293b,#1e293b) padding-box,conic-gradient(from var(--a),#3b82f6,#8b5cf6,#f59e0b,#3b82f6) border-box;
+    animation:spinA 6s linear infinite;box-shadow:0 6px 18px rgba(0,0,0,.45)
+  }
+  .u-info{flex:1;min-width:0}
+  .u-name{font-size:15px;font-weight:900;color:#fff;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .u-sub{font-size:12px;color:var(--muted);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap;direction:ltr;justify-content:flex-end}
+  .u-sub a{transition:color .2s}
+  .badge{position:relative;overflow:hidden;font-size:10px;padding:3px 9px;border-radius:99px;font-weight:800;letter-spacing:.1px}
+  .badge.novel{background:rgba(59,130,246,.16);color:#7db4ff;border:1px solid rgba(59,130,246,.38);box-shadow:0 0 14px rgba(59,130,246,.15)}
+  .badge.chap{background:rgba(168,85,247,.16);color:#c9a0ff;border:1px solid rgba(168,85,247,.38);box-shadow:0 0 14px rgba(168,85,247,.15)}
+  .badge.trust{background:linear-gradient(135deg,rgba(245,158,11,.22),rgba(16,185,129,.18));color:#fcd34d;border:1px solid rgba(245,158,11,.5);box-shadow:0 0 16px rgba(245,158,11,.25)}
+  .badge.trust::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.4) 50%,transparent 70%);transform:translateX(-130%);animation:shine 3.4s infinite}
+
+  .novel-preview{display:flex;gap:13px;margin-bottom:13px}
+  .novel-preview img{
+    width:80px;height:114px;border-radius:12px;object-fit:cover;flex:none;background:#0d1017;border:1px solid var(--border);
+    box-shadow:0 14px 26px rgba(0,0,0,.55);transition:transform .5s var(--ease)
+  }
+  @media (hover:hover){.novel-preview img:hover{transform:scale(1.06) rotate(-1.5deg)}}
+  .np-meta{flex:1;min-width:0}
+  .np-title{font-size:16px;font-weight:900;margin:0 0 4px;color:#fff;line-height:1.5}
+  .np-alt{font-size:12px;color:#7db4ff;margin:0 0 6px;font-weight:700}
+  .np-genres{font-size:11px;color:#cbd5e1;margin-bottom:7px}
+  .np-syn{font-size:12px;color:var(--muted);line-height:1.7;max-height:62px;overflow-y:auto;background:rgba(22,28,46,.85);padding:9px 10px;border-radius:11px;border:1px solid var(--border)}
+
+  .chap-box{
+    background:linear-gradient(180deg,rgba(22,28,46,.9),rgba(18,23,38,.9));border:1px solid var(--border);border-inline-start:3px solid #6366f1;
+    border-radius:13px;padding:11px 13px;margin-bottom:13px
+  }
+  .chap-box-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;font-weight:800;color:#e2e8f0;margin-bottom:7px}
+  .chap-text-preview{font-size:13px;line-height:1.9;color:#cbd5e1;max-height:112px;overflow-y:auto;white-space:pre-wrap}
+
+  .inp{
+    width:100%;padding:11px 13px;border-radius:12px;border:1px solid var(--border);background:rgba(22,28,46,.9);color:#fff;
+    font:inherit;font-size:13px;margin-bottom:11px;outline:none;transition:border-color .25s,box-shadow .3s,background .25s
+  }
+  .inp::placeholder{color:#5b6579}
+  .inp:focus{border-color:rgba(99,102,241,.8);background:rgba(26,33,54,.95);box-shadow:0 0 0 4px rgba(99,102,241,.16),0 8px 22px rgba(0,0,0,.3)}
+
+  /* ===== الأزرار ===== */
+  .btn-row{display:flex;gap:9px;flex-wrap:wrap}
+  .btn{
+    position:relative;overflow:hidden;flex:1;min-width:110px;padding:11px 12px;border:0;border-radius:13px;font:inherit;font-size:12px;font-weight:800;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;color:#fff;
+    transition:transform .25s var(--ease),box-shadow .3s,filter .25s
+  }
+  .btn::after{content:"";position:absolute;top:0;bottom:0;left:-90%;width:55%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.3),transparent);transform:skewX(-20deg);pointer-events:none}
+  .btn:active{transform:scale(.95);filter:brightness(1.08)}
+  @media (hover:hover){.btn:hover{transform:translateY(-2px)}.btn:hover::after{animation:sweep .85s}}
+  .btn.ok{background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 8px 20px rgba(16,185,129,.34)}
+  .btn.ok::after{animation:sweep 4.8s 1.2s infinite}
+  .btn.gold{background:linear-gradient(110deg,#fbbf24,#f59e0b,#d97706,#fbbf24);background-size:220% 100%;animation:goldflow 4.2s linear infinite;color:#1a1100;box-shadow:0 8px 22px rgba(245,158,11,.42)}
+  .btn.no{background:rgba(239,68,68,.12);color:#fca5a5;border:1px solid rgba(239,68,68,.36)}
+  @media (hover:hover){.btn.no:hover{background:rgba(239,68,68,.22);box-shadow:0 8px 20px rgba(239,68,68,.22)}}
+  .btn.sec{background:rgba(255,255,255,.05);color:#cbd5e1;border:1px solid var(--border)}
+  @media (hover:hover){.btn.sec:hover{background:rgba(255,255,255,.1)}}
+  .btn.pri{background:linear-gradient(135deg,#3b82f6,#4f46e5);box-shadow:0 8px 20px rgba(59,130,246,.36)}
+  .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.35);transform:scale(0);animation:ripple .65s ease-out;pointer-events:none}
+
+  .search-results-mini{margin:9px 0;max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:7px}
+  .sr-item{display:flex;align-items:center;gap:10px;background:rgba(13,16,23,.9);padding:8px 10px;border-radius:12px;border:1px solid var(--border);animation:rise .45s var(--ease) backwards;transition:border-color .25s,transform .25s var(--ease)}
+  @media (hover:hover){.sr-item:hover{border-color:rgba(99,102,241,.5);transform:translateX(-3px)}}
+  .sr-item img{width:36px;height:50px;border-radius:7px;object-fit:cover;flex:none;box-shadow:0 6px 14px rgba(0,0,0,.45)}
+  .sr-item .sr-t{flex:1;font-size:12px;font-weight:800;color:#fff}
+  .sr-item button{position:relative;overflow:hidden;padding:7px 13px;border:0;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#4f46e5);color:#fff;font:inherit;font-size:11px;font-weight:800;cursor:pointer;box-shadow:0 6px 14px rgba(59,130,246,.3);transition:transform .2s var(--ease)}
+  .sr-item button:active{transform:scale(.92)}
+
+  /* ===== حالات فاضية / تحميل ===== */
+  .empty{text-align:center;padding:56px 20px;color:var(--muted);font-weight:700;line-height:1.9;animation:rise .7s var(--ease) backwards}
+  .empty i{display:block;font-size:46px;margin:0 auto 14px;background:linear-gradient(135deg,#60a5fa,#a78bfa 55%,#f59e0b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .empty i:not(.fa-spin){animation:floaty 3.4s ease-in-out infinite}
+  .empty i.fa-spin{filter:drop-shadow(0 0 14px rgba(96,165,250,.75))}
+
+  /* ===== نافذة القراءة ===== */
+  #reader-modal{position:fixed;inset:0;background:rgba(3,5,10,.84);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);z-index:200;display:none;flex-direction:column;padding:16px}
+  #reader-modal.open{display:flex;animation:fadeIn .28s ease}
+  .rm-box{
+    flex:1;display:flex;flex-direction:column;overflow:hidden;border-radius:22px;border:1px solid transparent;
+    background:linear-gradient(180deg,#121829,#0d111c) padding-box,linear-gradient(140deg,rgba(255,255,255,.2),rgba(255,255,255,.04) 40%,rgba(99,102,241,.4)) border-box;
+    box-shadow:0 30px 80px rgba(0,0,0,.65)
+  }
+  #reader-modal.open .rm-box{animation:popIn .5s var(--ease)}
+  .rm-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:900;background:rgba(255,255,255,.02)}
+  .rm-body{padding:18px;overflow-y:auto;flex:1;line-height:2.1;font-size:16px;white-space:pre-wrap;color:#e6ebf5}
+
+  /* ===== الحركات ===== */
+  @keyframes rise{from{opacity:0;transform:translateY(26px) scale(.97)}to{opacity:1;transform:none}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes popIn{from{opacity:0;transform:translateY(30px) scale(.94)}to{opacity:1;transform:none}}
+  @keyframes drift1{from{transform:translate(0,0) scale(1)}to{transform:translate(-90px,130px) scale(1.25)}}
+  @keyframes drift2{from{transform:translate(0,0) scale(1)}to{transform:translate(110px,-120px) scale(1.2)}}
+  @keyframes ping{0%{box-shadow:0 0 0 0 rgba(52,211,153,.7)}80%,100%{box-shadow:0 0 0 9px rgba(52,211,153,0)}}
+  @keyframes crown{0%,100%{transform:translateY(0) rotate(-6deg);filter:drop-shadow(0 0 4px rgba(245,158,11,.5))}50%{transform:translateY(-3px) rotate(6deg);filter:drop-shadow(0 0 12px rgba(245,158,11,.95))}}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  @keyframes spinOnce{to{transform:rotate(360deg)}}
+  @keyframes spinA{to{--a:360deg}}
+  @keyframes shine{0%,60%{transform:translateX(-130%)}100%{transform:translateX(130%)}}
+  @keyframes sweep{from{left:-90%}to{left:140%}}
+  @keyframes goldflow{to{background-position:220% 0}}
+  @keyframes pillPulse{0%{box-shadow:0 0 0 0 rgba(245,158,11,.6)}70%,100%{box-shadow:0 0 0 8px rgba(245,158,11,0)}}
+  @keyframes ripple{to{transform:scale(1);opacity:0}}
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="icon-btn" onclick="history.back()"><i class="fa-solid fa-arrow-right"></i></button>
+  <div class="title-wrap">
+    <h1><i class="fa-solid fa-crown" style="color:#f59e0b"></i> غرفة عمليات المالك</h1>
+    <div class="sub"><span class="live-dot"></span> Speed Manga • مراجعة مباشرة</div>
+  </div>
+  <button class="icon-btn" id="refresh-btn" onclick="loadOverview()"><i class="fa-solid fa-rotate"></i></button>
+</div>
+
+<div class="tabs">
+  <button id="t-subs" class="on" onclick="setTab('subs')">
+    <i class="fa-solid fa-book-open-reader"></i><span>مراجعة الروايات</span><span id="c-subs" class="count-pill">0</span>
+  </button>
+  <button id="t-reqs" onclick="setTab('reqs')">
+    <i class="fa-solid fa-inbox"></i><span>طلبات البوت</span><span id="c-reqs" class="count-pill">0</span>
+  </button>
+  <button id="t-reps" onclick="setTab('reps')">
+    <i class="fa-solid fa-flag"></i><span>البلاغات</span><span id="c-reps" class="count-pill">0</span>
+  </button>
+  <button id="t-auths" onclick="setTab('auths')">
+    <i class="fa-solid fa-user-check"></i><span>المؤلفون</span><span id="c-auths" class="count-pill">0</span>
+  </button>
+</div>
+
+<div id="view-box"></div>
+
+<!-- نافذة قراءة النص الكامل للفصل قبل الموافقة -->
+<div id="reader-modal">
+  <div class="rm-box">
+    <div class="rm-head">
+      <span id="rm-title">النص الكامل</span>
+      <button class="icon-btn" onclick="document.getElementById('reader-modal').classList.remove('open')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="rm-body" class="rm-body"></div>
+  </div>
+</div>
+
+<script>
+const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
+try { tg.BackButton.show(); tg.BackButton.onClick(() => history.back()); } catch (e) {}
+
+const API = "https://apispeedmanga.hidenplay.net";
+const urlParams = new URLSearchParams(location.search);
+const MY_UID = tg.initDataUnsafe?.user?.id || urlParams.get("uid") || localStorage.getItem("sm_uid") || "";
+const MY_INIT_DATA = tg.initData || sessionStorage.getItem("sm_tg_init") || "";
+const headers = () => ({ "X-Telegram-Init-Data": MY_INIT_DATA, "Content-Type": "application/json" });
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmtTime = ts => ts ? new Date(ts * 1000).toLocaleString("ar-EG", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+
+let currentTab = "subs";
+let DATA = { submissions: [], requests: [], reports: [], authors: [] };
+
+function setTab(t) {
+  currentTab = t;
+  ["subs", "reqs", "reps", "auths"].forEach(k => $("t-" + k).classList.toggle("on", k === t));
+  renderCurrentTab();
+}
+
+async function loadOverview() {
+  $("view-box").innerHTML = `<div class="empty"><i class="fa-solid fa-spinner fa-spin"></i>جاري جلب الطلبات وبيانات الأعضاء من تليجرام...</div>`;
+  try {
+    const r = await fetch(`${API}/api/admin/overview?uid=${encodeURIComponent(MY_UID)}`, { headers: headers() });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || "غير مصرح لك");
+    DATA = d;
+    $("c-subs").textContent = d.submissions.length;
+    $("c-reqs").textContent = d.requests.length;
+    $("c-reps").textContent = d.reports.length;
+    $("c-auths").textContent = d.authors.length;
+    renderCurrentTab();
+  } catch (e) {
+    $("view-box").innerHTML = `<div class="empty"><i class="fa-solid fa-lock"></i>${esc(e.message)}</div>`;
+  }
+}
+
+function renderUserHead(u, rightBadgeHtml = "") {
+  const uname = u.username ? `@${esc(u.username)}` : "بدون يوزر";
+  const tgLink = u.username ? `https://t.me/${u.username}` : `tg://user?id=${u.user_id}`;
+  return `
+    <div class="user-header">
+      <img src="${esc(u.photo)}" alt="" onerror="this.src='https://ui-avatars.com/api/?name=U&background=1e293b&color=fff'">
+      <div class="u-info">
+        <div class="u-name">
+          <span>${esc(u.name || "عضو")}</span>
+          ${u.is_trusted ? '<span class="badge trust">👑 كاتب موثوق</span>' : ''}
+          ${rightBadgeHtml}
+        </div>
+        <div class="u-sub">
+          <span>ID: <b>${u.user_id}</b></span>
+          <a href="${tgLink}" target="_blank" style="color:#60a5fa;text-decoration:none">${uname}</a>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderCurrentTab() {
+  const box = $("view-box");
+
+  // 1️⃣ تبويب مراجعة الروايات والفصول المؤلفة
+  if (currentTab === "subs") {
+    if (!DATA.submissions.length) {
+      box.innerHTML = `<div class="empty"><i class="fa-solid fa-circle-check"></i>لا توجد روايات أو فصول بانتظار المراجعة حالياً ✨</div>`;
+      return;
+    }
+    box.innerHTML = DATA.submissions.map((s, idx) => {
+      const isNovel = s.kind === "novel";
+      const badge = isNovel ? '<span class="badge novel">📚 رواية جديدة</span>' : `<span class="badge chap">📑 فصل جديد (${esc(s.parent_title)})</span>`;
+      return `
+        <div class="item-card" id="sub-card-${s.id}">
+          ${renderUserHead(s.author || {}, badge)}
+          ${isNovel ? `
+            <div class="novel-preview">
+              <img src="${esc(s.cover_url)}" alt="">
+              <div class="np-meta">
+                <h3 class="np-title">${esc(s.title)}</h3>
+                ${s.alt_titles ? `<div class="np-alt">${esc(s.alt_titles)}</div>` : ''}
+                <div class="np-genres">🎭 ${esc(s.genre)}</div>
+                <div class="np-syn">${esc(s.synopsis)}</div>
+              </div>
+            </div>` : ''}
+          <div class="chap-box">
+            <div class="chap-box-head">
+              <span>📖 ${esc(s.chapter_title)} ${s.chapter_number ? `(فصل ${esc(s.chapter_number)})` : ''}</span>
+              <span style="color:#60a5fa;font-size:11px">${s.content.length} حرف • ${fmtTime(s.created_at)}</span>
+            </div>
+            <div class="chap-text-preview">${esc(s.content.slice(0, 350))}...</div>
+            <button class="btn sec" style="width:100%;margin-top:8px" onclick="openFullText(${idx})">
+              <i class="fa-solid fa-expand"></i> قراءة الفصل كاملاً (${s.content.length} حرف)
+            </button>
+          </div>
+          <input id="sub-note-${s.id}" class="inp" type="text" placeholder="ملاحظة للكاتب عند القبول أو سبب الرفض (اختياري)...">
+          <div class="btn-row">
+            <button class="btn ok" onclick="actSub(${s.id}, 'approve')"><i class="fa-solid fa-check"></i> قبول ونشر</button>
+            <button class="btn gold" onclick="actSub(${s.id}, 'approve_trust')"><i class="fa-solid fa-crown"></i> قبول + توثيق الكاتب</button>
+            <button class="btn no" onclick="actSub(${s.id}, 'reject')"><i class="fa-solid fa-xmark"></i> رفض</button>
+          </div>
+        </div>`;
+    }).join("");
+    return;
+  }
+
+  // 2️⃣ تبويب طلبات البوت (/request) مع البحث الفوري وإرسال العمل للعضو
+  if (currentTab === "reqs") {
+    if (!DATA.requests.length) {
+      box.innerHTML = `<div class="empty"><i class="fa-solid fa-inbox"></i>لا توجد طلبات معلقة من الأعضاء حالياً ✨</div>`;
+      return;
+    }
+    box.innerHTML = DATA.requests.map(r => `
+      <div class="item-card" id="req-card-${r.id}">
+        ${renderUserHead(r.user || {}, `<span class="badge novel">${fmtTime(r.created_at)}</span>`)}
+        <div class="chap-box" style="margin-bottom:10px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">📖 العمل المطلوب من العضو:</div>
+          <div style="font-size:15px;font-weight:900;color:#60a5fa">${esc(r.request_text)}</div>
+        </div>
+
+        <!-- البحث السريع في مكتبة البوت لإرسال العمل مباشرة -->
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <input id="req-srch-${r.id}" class="inp" style="margin:0;flex:1" type="text" value="${esc(r.request_text)}" placeholder="ابحث عن العمل في المكتبة لإرساله...">
+          <button class="btn pri" style="flex:none;min-width:90px" onclick="searchMangaForReq(${r.id})"><i class="fa-solid fa-magnifying-glass"></i> بحث</button>
+        </div>
+        <div id="req-results-${r.id}" class="search-results-mini"></div>
+
+        <input id="req-reply-${r.id}" class="inp" type="text" placeholder="أو اكتب رداً نصياً لإرساله للعضو في البوت...">
+        <div class="btn-row">
+          <button class="btn ok" onclick="actReq(${r.id}, 'reply_text', 0)"><i class="fa-solid fa-paper-plane"></i> إرسال الرد النصي</button>
+          <button class="btn no" onclick="actReq(${r.id}, 'dismiss', 0)"><i class="fa-solid fa-trash"></i> إخفاء الطلب</button>
+        </div>
+      </div>`).join("");
+    return;
+  }
+
+  // 3️⃣ تبويب البلاغات
+  if (currentTab === "reps") {
+    if (!DATA.reports.length) {
+      box.innerHTML = `<div class="empty"><i class="fa-solid fa-shield-heart"></i>لا توجد أي بلاغات حالياً، المجتمع نظيف ✨</div>`;
+      return;
+    }
+    box.innerHTML = DATA.reports.map(rp => `
+      <div class="item-card">
+        ${renderUserHead(rp.author || {}, `<span class="badge" style="background:rgba(239,68,68,.2);color:#f87171">${rp.total_reports} بلاغ</span>`)}
+        <div class="chap-box">
+          <div class="np-title">📘 الرواية المبلّغ عنها: ${esc(rp.title)}</div>
+          <div style="font-size:12px;color:#f87171;margin-top:4px">🚩 أسباب البلاغات: ${esc(rp.reasons)}</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn sec" onclick="actReport(${rp.manga_id}, 'ignore')"><i class="fa-solid fa-check"></i> تجاهل البلاغات</button>
+          <button class="btn no" onclick="actReport(${rp.manga_id}, 'delete')"><i class="fa-solid fa-trash"></i> حذف الرواية</button>
+          <button class="btn no" onclick="actReport(${rp.manga_id}, 'ban_author')"><i class="fa-solid fa-ban"></i> حظر الكاتب وحذف أعماله</button>
+        </div>
+      </div>`).join("");
+    return;
+  }
+
+  // 4️⃣ تبويب إدارة المؤلفين وتوثيقهم
+  if (currentTab === "auths") {
+    if (!DATA.authors.length) {
+      box.innerHTML = `<div class="empty"><i class="fa-solid fa-users"></i>لا يوجد مؤلفون مسجلون بعد.</div>`;
+      return;
+    }
+    box.innerHTML = DATA.authors.map(au => `
+      <div class="item-card">
+        ${renderUserHead(au, `<span class="badge novel">📚 ${au.novels_count} رواية</span>`)}
+        <div class="btn-row">
+          ${au.is_trusted
+            ? `<button class="btn no" onclick="toggleTrust(${au.user_id}, false)"><i class="fa-solid fa-user-minus"></i> سحب التوثيق (إرجاعه للمراجعة)</button>`
+            : `<button class="btn gold" onclick="toggleTrust(${au.user_id}, true)"><i class="fa-solid fa-crown"></i> منحه رتبة (كاتب موثوق 👑)</button>`}
+        </div>
+      </div>`).join("");
+  }
+}
+
+function openFullText(idx) {
+  const s = DATA.submissions[idx];
+  if (!s) return;
+  $("rm-title").textContent = `${s.title || s.parent_title} — ${s.chapter_title}`;
+  $("rm-body").textContent = s.content;
+  $("reader-modal").classList.add("open");
+}
+
+async function actSub(sid, action) {
+  const note = ($("sub-note-" + sid)?.value || "").trim();
+  try {
+    const r = await fetch(`${API}/api/admin/submission_action?uid=${encodeURIComponent(MY_UID)}`, {
+      method: "POST", headers: headers(),
+      body: JSON.stringify({ admin_id: MY_UID, submission_id: sid, action, note })
+    });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error);
+    try { tg.HapticFeedback.notificationOccurred("success"); } catch (_) {}
+    loadOverview();
+  } catch (e) { tg.showAlert(e.message || "حدث خطأ"); }
+}
+
+async function searchMangaForReq(reqId) {
+  const q = ($("req-srch-" + reqId)?.value || "").trim();
+  const resBox = $("req-results-" + reqId);
+  if (!q) return;
+  resBox.innerHTML = `<div style="font-size:12px;color:#60a5fa;padding:6px">⏳ جاري البحث في مكتبة البوت...</div>`;
+  try {
+    const r = await fetch(`${API}/api/search?q=${encodeURIComponent(q)}`);
+    const d = await r.json();
+    if (!d.success || !d.results.length) {
+      resBox.innerHTML = `<div style="font-size:12px;color:#f87171;padding:6px">❌ لم يتم العثور على عمل بهذا الاسم في المكتبة.</div>`;
+      return;
+    }
+    resBox.innerHTML = d.results.slice(0, 6).map(m => `
+      <div class="sr-item">
+        <img src="${esc(m.image_url)}" alt="">
+        <div class="sr-t">${esc(m.title)} <span style="color:#f59e0b;font-size:10px">★ ${esc(m.rating)}</span></div>
+        <button onclick="actReq(${reqId}, 'send_manga', ${m.id})"><i class="fa-solid fa-paper-plane"></i> إرسال للعضو</button>
+      </div>`).join("");
+  } catch (_) {
+    resBox.innerHTML = `<div style="font-size:12px;color:#f87171;padding:6px">تعذر البحث</div>`;
+  }
+}
+
+async function actReq(reqId, action, mangaId) {
+  const replyText = ($("req-reply-" + reqId)?.value || "").trim();
+  if (action === "reply_text" && !replyText) {
+    tg.showAlert("اكتب نص الرد أولاً أو ابحث عن العمل وأرسله!");
+    return;
+  }
+  try {
+    const r = await fetch(`${API}/api/admin/request_action?uid=${encodeURIComponent(MY_UID)}`, {
+      method: "POST", headers: headers(),
+      body: JSON.stringify({ admin_id: MY_UID, request_id: reqId, action, manga_id: mangaId, reply_text: replyText })
+    });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error);
+    try { tg.HapticFeedback.notificationOccurred("success"); } catch (_) {}
+    tg.showAlert(action === "send_manga" ? "🚀 تم إرسال العمل بزر القراءة المباشر للعضو بنجاح!" : "✅ تم تنفيذ الإجراء بنجاح!");
+    loadOverview();
+  } catch (e) { tg.showAlert(e.message || "حدث خطأ"); }
+}
+
+async function actReport(mangaId, action) {
+  try {
+    const r = await fetch(`${API}/api/admin/report_action?uid=${encodeURIComponent(MY_UID)}`, {
+      method: "POST", headers: headers(),
+      body: JSON.stringify({ admin_id: MY_UID, manga_id: mangaId, action })
+    });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error);
+    loadOverview();
+  } catch (e) { tg.showAlert(e.message || "حدث خطأ"); }
+}
+
+async function toggleTrust(userId, trust) {
+  try {
+    const r = await fetch(`${API}/api/admin/trust_action?uid=${encodeURIComponent(MY_UID)}`, {
+      method: "POST", headers: headers(),
+      body: JSON.stringify({ admin_id: MY_UID, user_id: userId, trust })
+    });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error);
+    try { tg.HapticFeedback.notificationOccurred("success"); } catch (_) {}
+    loadOverview();
+  } catch (e) { tg.showAlert(e.message || "حدث خطأ"); }
+}
+
+loadOverview();
+</script>
+
+<script>
+/* تحسينات الشكل والحركة فقط — مفيش هنا أي منطق بيلمس الداتا أو الـ API */
+(function () {
+  try { Telegram.WebApp.setHeaderColor('#060810'); Telegram.WebApp.setBackgroundColor('#060810'); } catch (_) {}
+
+  // 1) مؤشر التبويب المنزلق
+  const tabs = document.querySelector('.tabs');
+  if (tabs) {
+    const ind = document.createElement('i'); ind.className = 'tab-ind'; tabs.prepend(ind);
+    const place = () => {
+      const on = tabs.querySelector('button.on'); if (!on) return;
+      ind.style.width = on.offsetWidth + 'px'; ind.style.transform = 'translateX(' + on.offsetLeft + 'px)';
+    };
+    tabs.classList.add('js');
+    ind.style.transition = 'none'; place();
+    requestAnimationFrame(() => requestAnimationFrame(() => { ind.style.transition = ''; place(); }));
+    new MutationObserver(place).observe(tabs, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    addEventListener('resize', place);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(place);
+    tabs.addEventListener('click', e => { if (e.target.closest('button')) { try { Telegram.WebApp.HapticFeedback.selectionChanged(); } catch (_) {} } });
+  }
+
+  // 2) عدّادات التبويبات: تنبض لو فيها حاجة، وتنط لما الرقم يتغير
+  document.querySelectorAll('.count-pill').forEach(p => {
+    const sync = () => p.classList.toggle('has', (parseInt(p.textContent, 10) || 0) > 0);
+    sync();
+    new MutationObserver(() => {
+      sync();
+      if (p.animate) p.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.5)' }, { transform: 'scale(1)' }], { duration: 450, easing: 'cubic-bezier(.22,.9,.3,1)' });
+    }).observe(p, { childList: true, characterData: true, subtree: true });
+  });
+
+  // 3) موجة اللمس على الأزرار
+  document.addEventListener('pointerdown', e => {
+    const el = e.target.closest('.btn,.icon-btn,.tabs button,.sr-item button'); if (!el) return;
+    const r = el.getBoundingClientRect(), s = Math.max(r.width, r.height) * 2, d = document.createElement('span');
+    d.className = 'ripple';
+    d.style.cssText = 'width:' + s + 'px;height:' + s + 'px;left:' + (e.clientX - r.left - s / 2) + 'px;top:' + (e.clientY - r.top - s / 2) + 'px';
+    el.appendChild(d); d.addEventListener('animationend', () => d.remove());
+  }, { passive: true });
+
+  // 4) دوران زرار التحديث
+  const rb = document.getElementById('refresh-btn');
+  if (rb) rb.addEventListener('click', () => { rb.classList.remove('spin'); void rb.offsetWidth; rb.classList.add('spin'); });
+})();
+</script>
+</body>
+</html>
