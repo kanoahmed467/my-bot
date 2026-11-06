@@ -53,7 +53,7 @@
 
   /* ===== التبويبات ===== */
   .tabs{
-    position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:5px;margin-bottom:18px;border-radius:19px;
+    position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:5px;margin-bottom:18px;border-radius:19px;
     background:rgba(15,19,32,.72);border:1px solid var(--border);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
     box-shadow:0 12px 34px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05)
   }
@@ -214,11 +214,14 @@
 </div>
 
 <div class="tabs">
-  <button id="t-subs" class="on" onclick="setTab('subs')">
-    <i class="fa-solid fa-book-open-reader"></i><span>مراجعة الروايات</span><span id="c-subs" class="count-pill">0</span>
+  <button id="t-live" class="on" onclick="setTab('live')">
+    <i class="fa-solid fa-satellite-dish" style="color:#34d399"></i><span>النشطون الآن</span><span id="c-live" class="count-pill has">0</span>
+  </button>
+  <button id="t-subs" onclick="setTab('subs')">
+    <i class="fa-solid fa-book-open-reader"></i><span>الروايات</span><span id="c-subs" class="count-pill">0</span>
   </button>
   <button id="t-reqs" onclick="setTab('reqs')">
-    <i class="fa-solid fa-inbox"></i><span>طلبات البوت</span><span id="c-reqs" class="count-pill">0</span>
+    <i class="fa-solid fa-inbox"></i><span>الطلبات</span><span id="c-reqs" class="count-pill">0</span>
   </button>
   <button id="t-reps" onclick="setTab('reps')">
     <i class="fa-solid fa-flag"></i><span>البلاغات</span><span id="c-reps" class="count-pill">0</span>
@@ -255,14 +258,102 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmtTime = ts => ts ? new Date(ts * 1000).toLocaleString("ar-EG", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
 
-let currentTab = "subs";
+let currentTab = "live";
 let DATA = { submissions: [], requests: [], reports: [], authors: [] };
+let LIVE_DATA = { online_now: 0, total_recent: 0, users: [] };
+let liveTimer = null;
+
+function fmtAgo(sec) {
+  if (sec < 10) return "الآن 🔥";
+  if (sec < 60) return `منذ ${sec} ثانية`;
+  const m = Math.floor(sec / 60);
+  return `منذ ${m} دقيقة`;
+}
+
+async function fetchLiveUsers(silent = false) {
+  try {
+    const r = await fetch(`${API}/api/admin/live_users?uid=${encodeURIComponent(MY_UID)}`, { headers: headers() });
+    const d = await r.json();
+    if (d && d.success) {
+      LIVE_DATA = d;
+      $("c-live").textContent = d.online_now || d.users.length;
+      if (currentTab === "live") renderLiveTab();
+    }
+  } catch (_) {}
+}
+
+function renderLiveTab() {
+  const box = $("view-box");
+  if (!LIVE_DATA.users || !LIVE_DATA.users.length) {
+    box.innerHTML = `<div class="empty"><i class="fa-solid fa-satellite-dish"></i>لا يوجد مستخدمون نشطون في هذه اللحظة.. سيظهر أي عضو هنا فور لمسه للبوت أو الميني آب 📡</div>`;
+    return;
+  }
+
+  const summaryCard = `
+    <div class="item-card" style="padding:12px 15px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="live-dot" style="width:10px;height:10px"></span>
+        <div>
+          <div style="font-size:14px;font-weight:900;color:#fff">رادار النشاط الحي (تحديث تلقائي كل 4 ثوانٍ)</div>
+          <div style="font-size:11px;color:var(--muted)">يعرض من يستخدم البوت أو الميني آب في آخر 15 دقيقة</div>
+        </div>
+      </div>
+      <div style="text-align:left">
+        <div style="font-size:18px;font-weight:900;color:#34d399">${LIVE_DATA.online_now} <span style="font-size:11px;color:var(--muted)">نشط اللحظة</span></div>
+        <div style="font-size:10px;color:#60a5fa">إجمالي قريب: ${LIVE_DATA.total_recent}</div>
+      </div>
+    </div>`;
+
+  const cards = LIVE_DATA.users.map(u => {
+    const uname = u.username ? `@${esc(u.username)}` : "بدون يوزر";
+    const tgLink = u.username ? `https://t.me/${u.username}` : `tg://user?id=${u.user_id}`;
+    const srcBadge = u.source === "webapp"
+      ? `<span class="badge chap"><i class="fa-solid fa-mobile-screen"></i> الميني آب</span>`
+      : `<span class="badge novel"><i class="fa-brands fa-telegram"></i> البوت</span>`;
+    const statusBadge = u.is_online_now
+      ? `<span class="badge" style="background:rgba(16,185,129,.2);color:#34d399;border:1px solid rgba(16,185,129,.4)">🟢 متصل الآن (${fmtAgo(u.ago_seconds)})</span>`
+      : `<span class="badge" style="background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.3)">🟡 ${fmtAgo(u.ago_seconds)}</span>`;
+
+    return `
+      <div class="item-card" style="margin-bottom:10px;padding:13px">
+        <div class="user-header" style="margin-bottom:8px;padding-bottom:8px">
+          <img src="${esc(u.photo)}" alt="" onerror="this.src='https://ui-avatars.com/api/?name=U&background=1e293b&color=fff'">
+          <div class="u-info">
+            <div class="u-name">
+              <span>${esc(u.name)}</span>
+              ${srcBadge}
+              ${statusBadge}
+            </div>
+            <div class="u-sub">
+              <span>ID: <b>${u.user_id}</b></span>
+              <a href="${tgLink}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:800">${uname}</a>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:#e2e8f0;background:rgba(22,28,46,.85);padding:8px 11px;border-radius:10px;border-right:3px solid #34d399;display:flex;justify-content:space-between;align-items:center">
+          <span><b>النشاط الحالي:</b> ${esc(u.action)}</span>
+          <a href="${tgLink}" target="_blank" style="color:#34d399;font-size:11px;font-weight:800;text-decoration:none"><i class="fa-regular fa-paper-plane"></i> مراسلة</a>
+        </div>
+      </div>`;
+  }).join("");
+
+  box.innerHTML = summaryCard + cards;
+}
 
 function setTab(t) {
   currentTab = t;
-  ["subs", "reqs", "reps", "auths"].forEach(k => $("t-" + k).classList.toggle("on", k === t));
-  renderCurrentTab();
+  ["live", "subs", "reqs", "reps", "auths"].forEach(k => $("t-" + k)?.classList.toggle("on", k === t));
+  if (t === "live") {
+    renderLiveTab();
+    fetchLiveUsers(true);
+  } else {
+    renderCurrentTab();
+  }
 }
+
+// تشغيل التحديث اللحظي للرادار كل 4 ثوانٍ
+fetchLiveUsers();
+liveTimer = setInterval(() => fetchLiveUsers(true), 4000);
 
 async function loadOverview() {
   $("view-box").innerHTML = `<div class="empty"><i class="fa-solid fa-spinner fa-spin"></i>جاري جلب الطلبات وبيانات الأعضاء من تليجرام...</div>`;
@@ -275,7 +366,9 @@ async function loadOverview() {
     $("c-reqs").textContent = d.requests.length;
     $("c-reps").textContent = d.reports.length;
     $("c-auths").textContent = d.authors.length;
-    renderCurrentTab();
+    fetchLiveUsers(true);
+    if (currentTab === "live") renderLiveTab();
+    else renderCurrentTab();
   } catch (e) {
     $("view-box").innerHTML = `<div class="empty"><i class="fa-solid fa-lock"></i>${esc(e.message)}</div>`;
   }

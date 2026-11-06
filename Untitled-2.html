@@ -1,0 +1,2194 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Speed Manga App</title>
+    
+    <!-- خطوط جوجل -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- مكتبات الأيقونات والسحب -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+    
+    <!-- مكتبة تليجرام وتيلويند -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- مكتبة إعلانات Adsgram -->
+<script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+
+
+
+    <style>
+        :root {
+            --bg-base: #0a0c10;
+            --primary: #3b82f6;
+        }
+        body {
+            background-color: var(--bg-base);
+            color: white;
+            font-family: 'Tajawal', sans-serif;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .glass-panel {
+            background: rgba(17, 20, 27, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;padding:8px 0;border-radius:18px;color:#8b93a1;transition:.2s;}
+.nav-item.hidden{display:none;}
+.nav-item i{font-size:19px;}
+.nav-item span{font-size:10px;font-weight:700;}
+.nav-item.active{color:#3b82f6;background:rgba(59,130,246,.14);}
+.nav-item.nav-video.active{color:#f87171;background:rgba(248,113,113,.14);}
+.nav-item.nav-comm.active{color:#c084fc;background:rgba(192,132,252,.14);}
+.nav-item:active{transform:scale(.92);}
+
+.more-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:#cbd5e1;font-size:11px;font-weight:700;}
+.more-item .ico{width:52px;height:52px;border-radius:16px;background:#1c212c;
+  display:flex;align-items:center;justify-content:center;font-size:20px;transition:.15s;}
+.more-item:active .ico{transform:scale(.92);background:#252b38;}
+        
+        .hero-gradient { background: linear-gradient(0deg, var(--bg-base) 0%, rgba(10,12,16,0.6) 50%, transparent 100%); }
+
+/* ===== Hero Slider v2 ===== */
+.hero-slide{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .9s ease, visibility .9s;}
+.hero-slide.active{opacity:1;visibility:visible;z-index:5;}
+
+/* الخلفية المغبشة */
+.hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  filter:blur(26px) saturate(1.35) brightness(.65);transform:scale(1.25);}
+.hero-slide.active .hero-bg{animation:bgDrift 14s ease-in-out infinite alternate;}
+@keyframes bgDrift{
+  from{transform:scale(1.25) translate(0,0);}
+  to{transform:scale(1.4) translate(-3%,2%);}
+}
+
+/* البوستر */
+.hero-poster-wrap{perspective:1000px;}
+.hero-poster{
+  border-radius:14px;
+  box-shadow:0 30px 70px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.12),0 0 90px rgba(59,130,246,.25);
+  opacity:0;transform:translateX(-70px) rotateY(20deg) scale(.88);
+}
+.hero-slide.active .hero-poster{
+  animation:posterIn 1s cubic-bezier(.2,.8,.2,1) .15s forwards, posterFloat 5s ease-in-out 1.2s infinite;
+}
+@keyframes posterIn{to{opacity:1;transform:translateX(0) rotateY(0) scale(1);}}
+@keyframes posterFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+
+/* ظهور النصوص واحد ورا التاني */
+.hero-item{opacity:0;transform:translateY(26px);}
+.hero-slide.active .hero-item{animation:heroIn .85s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:var(--d,0s);}
+@keyframes heroIn{to{opacity:1;transform:translateY(0);}}
+
+/* تدرجات التغميق */
+.hero-side-gradient{background:linear-gradient(270deg,rgba(10,12,16,.75) 0%,rgba(10,12,16,.25) 60%,transparent 100%);}
+
+/* أشرطة التقدم */
+.hero-bar{position:relative;height:4px;width:26px;border-radius:99px;background:rgba(255,255,255,.2);overflow:hidden;cursor:pointer;transition:width .4s ease;}
+.hero-bar.active{width:54px;}
+.hero-bar i{position:absolute;inset:0;background:#fff;transform-origin:right;transform:scaleX(0);}
+.hero-bar.done i{transform:scaleX(1);}
+.hero-bar.active i{animation:heroProgress 7s linear forwards;}
+#hero-section.paused .hero-bar.active i{animation-play-state:paused;}
+@keyframes heroProgress{to{transform:scaleX(1);}}
+
+/* الأسهم */
+.hero-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:20;width:44px;height:44px;border-radius:50%;
+  background:rgba(0,0,0,.4);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);color:#fff;
+  display:none;align-items:center;justify-content:center;transition:.2s;}
+.hero-arrow:hover{background:var(--primary);transform:translateY(-50%) scale(1.1);}
+@media(min-width:768px){.hero-arrow{display:flex;}}
+
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        /* إعدادات السلايدر فقط */
+        .swiper-wrapper { direction: rtl; }
+        .swiper-slide { width: 130px !important; transition: transform 0.2s ease; }
+        @media (min-width: 768px) { .swiper-slide { width: 170px !important; } }
+        
+        /* إعدادات الكروت العامة */
+        .manga-card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.4);
+            z-index: 10;
+        }
+
+        /* إصلاح السحب في الشاشات المنبثقة للموبايل */
+        .scrollable-modal {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+            touch-action: pan-y;
+        }
+
+        .hero-shade{
+  background:
+    linear-gradient(270deg, rgba(10,12,16,.82) 0%, rgba(10,12,16,.55) 50%, rgba(10,12,16,.15) 100%),
+    linear-gradient(0deg, rgba(10,12,16,.9) 0%, transparent 45%);
+}
+
+.hero-slide h1{text-shadow:0 4px 24px rgba(0,0,0,.8);}
+.hero-slide p{text-shadow:0 2px 12px rgba(0,0,0,.9);color:#e5e7eb;}
+
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { scrollbar-width: none; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-base); }
+        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 10px; }
+
+
+        /* ===== المجتمع ===== */
+.comm-bg{background-color:#0b0e14;background-image:radial-gradient(rgba(255,255,255,.035) 1px,transparent 1px);background-size:18px 18px;}
+.comm-row{display:flex;gap:8px;justify-content:flex-start;}
+.comm-row.mine{justify-content:flex-end;}
+.comm-bubble{max-width:78%;padding:7px 11px 5px;border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.3);animation:commPop .2s ease-out;}
+.comm-other{background:#1c212c;border-bottom-right-radius:4px;}
+.comm-mine{background:linear-gradient(135deg,#2563eb,#3b82f6);border-bottom-left-radius:4px;}
+.comm-day{font-size:11px;color:#9ca3af;background:rgba(255,255,255,.06);padding:3px 12px;border-radius:99px;}
+@keyframes commPop{from{opacity:0;transform:translateY(8px) scale(.97);}to{opacity:1;transform:none;}}
+.comm-sk{background:linear-gradient(90deg,#161a23 25%,#222836 50%,#161a23 75%);background-size:200% 100%;animation:commShimmer 1.3s infinite;border-radius:16px;}
+@keyframes commShimmer{to{background-position:-200% 0;}}
+
+
+/* ===== فقاعة الكتابة (WhatsApp Typing 3 Dots) ===== */
+.typing-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    animation: commPop 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.typing-avatar-ring {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    border-radius: 9999px;
+    padding: 1.5px;
+    background: linear-gradient(135deg, #3b82f6, #a855f7);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.45);
+}
+.typing-bubble {
+    background: #1c2230;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px 14px;
+    border-radius: 18px;
+    border-bottom-right-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+}
+.typing-dot {
+    width: 7px;
+    height: 7px;
+    background: #60a5fa;
+    border-radius: 50%;
+    display: inline-block;
+    animation: waBounce 1.3s infinite ease-in-out;
+}
+.typing-dot:nth-child(1) { animation-delay: 0s; }
+.typing-dot:nth-child(2) { animation-delay: 0.18s; background: #818cf8; }
+.typing-dot:nth-child(3) { animation-delay: 0.36s; background: #c084fc; }
+@keyframes waBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+    30% { transform: translateY(-6px) scale(1.15); opacity: 1; }
+}
+    </style>
+</head>
+<body class="flex pb-20 md:pb-0">
+
+    <!-- شاشة التحميل -->
+    <div id="splash-screen" class="fixed inset-0 z-[9999] bg-[#0a0c10] flex flex-col items-center justify-center transition-opacity duration-300">
+        <div class="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+        <h1 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">
+            Speed Manga
+        </h1>
+    </div>
+
+    <!-- القائمة الجانبية (للكمبيوتر) -->
+    <!-- القائمة الجانبية (للكمبيوتر) -->
+    <aside class="hidden md:flex flex-col w-64 h-screen fixed right-0 top-0 bg-[#0d1017] border-l border-white/5 z-40 p-6">
+        <div class="flex items-center gap-3 mb-10">
+            <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-xl font-bold shadow-lg">S</div>
+            <h1 class="text-2xl font-black tracking-wide">سبيد مانجا</h1>
+        </div>
+
+        <nav class="flex-1 space-y-2">
+            <a href="#" onclick="closeAllModals(); window.scrollTo(0,0);" class="flex items-center gap-4 px-4 py-3 rounded-xl bg-blue-600/10 text-blue-400 font-bold transition">
+                <i class="fa-solid fa-house text-lg w-5"></i> الرئيسية
+            </a>
+            <a href="#" onclick="openSearch()" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
+                <i class="fa-solid fa-magnifying-glass text-lg w-5"></i> البحث السريع
+            </a>
+            <a href="#" onclick="openProfile()" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
+                <i class="fa-solid fa-bookmark text-lg w-5"></i> أعمالي المفضلة
+            </a>
+            <a href="#" onclick="openVideoHub(); return false;" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
+                <i class="fa-solid fa-circle-play text-lg w-5 text-red-500"></i> مشغل الفيديو (Stream)
+            </a>
+            <a href="#" onclick="openCommunity(); return false;" class="comm-entry hidden flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
+    <i class="fa-solid fa-comments text-lg w-5 text-purple-400"></i> المجتمع
+</a>
+            
+            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mt-8 mb-4 px-4">تصفح سريع</h3>
+            <a href="#section-top" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
+                <i class="fa-solid fa-star text-lg w-5 text-yellow-500"></i> الأعلى تقييماً
+            </a>
+            <a href="#section-completed" class="flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition font-semibold">
+                <i class="fa-solid fa-check-double text-lg w-5 text-green-500"></i> مكتملة
+            </a>
+        </nav>
+
+        <div class="mt-auto pt-6 border-t border-white/5">
+            <div onclick="openProfile()" class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 cursor-pointer transition">
+                <div class="w-10 h-10 rounded-full bg-slate-700 overflow-hidden">
+                    <img id="side-user-avatar" src="https://ui-avatars.com/api/?name=Guest&background=random" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <h4 id="side-user-name" class="text-sm font-bold">ضيف</h4>
+                    <p class="text-xs text-gray-400">حسابي وإعداداتي</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="w-full md:pr-64 min-h-screen relative">
+        
+<div id="hero-section" class="relative w-full h-[72vh] min-h-[500px] md:h-[75vh] bg-slate-900 hidden overflow-hidden">
+    <div id="hero-slides" class="absolute inset-0"></div>
+    <div class="absolute inset-0 hero-gradient pointer-events-none z-[1]"></div>
+    <div class="absolute inset-0 hero-side-gradient pointer-events-none z-[1]"></div>
+
+    <button class="hero-arrow right-4" onclick="heroNext(-1)"><i class="fa-solid fa-chevron-right"></i></button>
+    <button class="hero-arrow left-4" onclick="heroNext(1)"><i class="fa-solid fa-chevron-left"></i></button>
+
+    <div id="hero-indicators" class="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-2 z-20"></div>
+</div>
+
+        <!-- القوائم الأفقية -->
+        <!-- القوائم الأفقية (الصفحة الرئيسية) -->
+        <div id="main-content" class="px-4 md:px-8 mt-6 relative z-20 hidden space-y-10 pb-28 md:pb-10">
+            
+<div class="comm-entry hidden fade-in-up">
+    <button onclick="openCommunity()" class="w-full text-right rounded-2xl p-4 flex items-center gap-4 bg-gradient-to-l from-blue-600/20 via-purple-600/10 to-transparent border border-blue-500/20 hover:border-blue-500/50 transition active:scale-[.99]">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-2xl shadow-lg flex-none"><i class="fa-solid fa-comments"></i></div>
+        <div class="flex-1">
+            <h3 class="font-black text-base">مجتمع سبيد مانجا 💬</h3>
+            <p class="text-xs text-gray-400 mt-1">ناقش الفصول وشارك ترشيحاتك مع القرّاء</p>
+        </div>
+        <i class="fa-solid fa-chevron-left text-gray-500"></i>
+    </button>
+</div>
+        <!-- التصنيفات -->
+<div class="fade-in-up">
+    <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 border-pink-500 pr-2">تصفح بالتصنيف</h2>
+    <div id="home-genres" class="flex gap-2 overflow-x-auto no-scrollbar pb-1"></div>
+</div>
+            
+
+            <!-- أحدث الأعمال -->
+            <div class="fade-in-up" style="animation-delay: 0.1s;">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 border-blue-500 pr-2">أحدث الأعمال</h2>
+                <div class="swiper mySwiper overflow-visible">
+                    <div class="swiper-wrapper" id="latest-mangas"></div>
+                </div>
+            </div>
+
+            <!-- الأعلى تقييماً -->
+            <div id="section-top" class="fade-in-up" style="animation-delay: 0.2s;">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 border-yellow-500 pr-2">الأعلى تقييماً 🌟</h2>
+                <div class="swiper mySwiper overflow-visible">
+                    <div class="swiper-wrapper" id="top-rated-mangas"></div>
+                </div>
+            </div>
+
+            <!-- مانهوا كورية -->
+            <div class="fade-in-up" style="animation-delay: 0.3s;">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 border-red-500 pr-2">مانهوا كورية 🇰🇷</h2>
+                <div class="swiper mySwiper overflow-visible">
+                    <div class="swiper-wrapper" id="korean-mangas"></div>
+                </div>
+            </div>
+
+            <!-- مانجا يابانية -->
+            <div class="fade-in-up" style="animation-delay: 0.4s;">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 border-gray-400 pr-2">مانجا يابانية 🇯🇵</h2>
+                <div class="swiper mySwiper overflow-visible">
+                    <div class="swiper-wrapper" id="japanese-mangas"></div>
+                </div>
+            </div>
+
+
+            <!-- 📖 روايات عالمية ومترجمة (من المصادر) -->
+            <div id="section-novels" class="fade-in-up" style="animation-delay: 0.45s;">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 border-purple-500 pr-2">روايات عالمية ومترجمة 📖</h2>
+                <div class="swiper mySwiper overflow-visible">
+                    <div class="swiper-wrapper" id="source-novels"></div>
+                </div>
+            </div>
+
+            <!-- ✍️ روايات كتّاب المجتمع (المؤلفة) -->
+            <div id="section-authored-novels" class="fade-in-up" style="animation-delay: 0.48s;">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-bold flex items-center gap-2 border-r-4 border-emerald-500 pr-2">روايات كتّاب المجتمع ✍️</h2>
+                    <button onclick="openWriter()" class="bg-emerald-600/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold px-3 py-1.5 rounded-full hover:bg-emerald-600 hover:text-white transition">
+                        <i class="fa-solid fa-pen-nib ml-1"></i> اكتب روايتك
+                    </button>
+                </div>
+                <div class="swiper mySwiper overflow-visible">
+                    <div class="swiper-wrapper" id="authored-novels"></div>
+                </div>
+            </div>
+
+            <!-- أعمال مكتملة -->
+            <div id="section-completed" class="fade-in-up" style="animation-delay: 0.5s;">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 border-green-500 pr-2">أعمال مكتملة 🏁</h2>
+                <div class="swiper mySwiper overflow-visible">
+                    <div class="swiper-wrapper" id="completed-mangas"></div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- شريط التنقل السفلي للموبايل -->
+    <!-- شريط التنقل السفلي للموبايل -->
+<nav class="md:hidden fixed inset-x-0 bottom-0 z-50 px-3"
+     style="padding-bottom:max(env(safe-area-inset-bottom),10px)">
+    <div class="glass-panel rounded-3xl flex items-stretch gap-1 p-1.5 shadow-2xl shadow-black/60">
+
+        <a href="#" data-nav="home" onclick="closeAllModals(); setNav('home'); return false;" class="nav-item active">
+            <i class="fa-solid fa-house"></i><span>الرئيسية</span>
+        </a>
+
+        <a href="#" data-nav="search" onclick="openSearch(); setNav('search'); return false;" class="nav-item">
+            <i class="fa-solid fa-magnifying-glass"></i><span>بحث</span>
+        </a>
+
+        <a href="#" data-nav="video" onclick="openVideoHub(); setNav('video'); return false;" class="nav-item nav-video">
+            <i class="fa-solid fa-circle-play"></i><span>فيديو</span>
+        </a>
+
+        <a href="#" data-nav="comm" onclick="openCommunity(); setNav('comm'); return false;" class="nav-item nav-comm comm-entry hidden">
+            <i class="fa-solid fa-comments"></i><span>مجتمع</span>
+        </a>
+
+        <a href="#" data-nav="more" onclick="openMore(); return false;" class="nav-item">
+            <i class="fa-solid fa-grip"></i><span>المزيد</span>
+        </a>
+    </div>
+</nav>
+
+<!-- ورقة "المزيد" -->
+<div id="more-sheet" class="fixed inset-0 z-[60] hidden">
+    <div class="absolute inset-0 bg-black/60" onclick="closeMore()"></div>
+    <div id="more-panel"
+         class="absolute bottom-0 inset-x-0 bg-[#11141b] border-t border-white/5 rounded-t-3xl px-5 pt-3 translate-y-full transition-transform duration-300"
+         style="padding-bottom:max(env(safe-area-inset-bottom),24px)">
+        <div class="w-10 h-1 bg-white/20 rounded-full mx-auto mb-5"></div>
+
+        <div class="grid grid-cols-4 gap-y-5 gap-x-2 text-center">
+            <button class="more-item" onclick="closeMore(); openMyList();">
+                <div class="ico text-blue-400"><i class="fa-solid fa-bookmark"></i></div>قائمتي
+            </button>
+            <button class="more-item" onclick="closeMore(); openProfile();">
+                <div class="ico text-gray-300"><i class="fa-solid fa-user"></i></div>حسابي
+            </button>
+
+            <button class="more-item" onclick="closeMore(); openWriter();">
+    <div class="ico text-emerald-400"><i class="fa-solid fa-pen-nib"></i></div>اكتب رواية
+</button>
+
+<button id="admin-more-btn" class="more-item hidden" onclick="closeMore(); openAdminPanel();">
+                <div class="ico text-amber-400 border border-amber-500/30"><i class="fa-solid fa-crown"></i></div>لوحة المالك
+            </button>
+
+            <!-- أي ميزة جديدة تضيفها: انسخ زر منهم وغيّر الأيقونة والاسم والدالة -->
+            <!--
+            <button class="more-item" onclick="closeMore(); openXXX();">
+                <div class="ico text-yellow-400"><i class="fa-solid fa-star"></i></div>الاسم
+            </button>
+            -->
+        </div>
+    </div>
+</div>
+
+    <!-- ========================================= -->
+    <!-- شاشة البحث المنبثقة (الحل الأكيد للسكرول) -->
+    <!-- ========================================= -->
+    <div id="search-modal" class="fixed inset-0 h-[100dvh] w-full z-[100] bg-[#0a0c10] hidden flex flex-col transition-opacity duration-300 opacity-0">
+        <!-- هيدر البحث ثابت لا يتحرك -->
+        <div class="flex-none p-4 md:p-6 flex items-center gap-3 bg-[#0d1017] border-b border-white/5 shadow-md z-10">
+            <button onclick="closeAllModals()" class="text-gray-400 hover:text-white p-2">
+                <i class="fa-solid fa-arrow-right text-xl"></i>
+            </button>
+            <div class="flex-1 relative max-w-2xl mx-auto">
+                <i class="fa-solid fa-search absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="search-input" placeholder="ابحث عن عمل..." autocomplete="off"
+                       class="w-full bg-[#1c212c] text-white rounded-lg py-3 pr-12 pl-4 focus:outline-none focus:ring-1 focus:ring-blue-500 border border-white/5 font-semibold placeholder-gray-500">
+            </div>
+        </div>
+        
+        <!-- منطقة نتائج البحث (هنا السر: min-h-0 تجبر السكرول على العمل) -->
+        <div class="flex-1 min-h-0 overflow-y-auto w-full relative z-0 scrollable-modal">
+            <!-- أضفنا pb-32 هنا لكي لا تغطي حافة الشاشة السفلية على آخر مانجا -->
+            <div id="search-results" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6 max-w-7xl mx-auto p-4 md:p-8 pb-32">
+                <div class="col-span-full flex flex-col items-center justify-center h-[50vh] text-gray-600">
+                    <i class="fa-solid fa-book-open text-4xl mb-3 opacity-50"></i>
+                    <p>اكتب اسم العمل للبحث...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- شاشة الحساب (الحل الأكيد للسكرول) -->
+    <!-- ========================================= -->
+    <div id="profile-modal" class="fixed inset-0 h-[100dvh] w-full z-[100] bg-[#0a0c10] hidden flex flex-col transition-transform transform translate-y-full duration-300">
+        <!-- هيدر الشاشة ثابت -->
+        <div class="flex-none p-4 flex items-center justify-between border-b border-white/5 bg-[#0d1017] shadow-md z-10">
+            <button onclick="closeAllModals()" class="text-gray-400 hover:text-white p-2">
+                <i class="fa-solid fa-arrow-right text-xl"></i>
+            </button>
+            <h2 class="text-lg font-bold text-gray-200">حسابي</h2>
+            <div class="w-8"></div>
+        </div>
+
+        <!-- شاشة "جاري التحقق" -->
+        <div id="profile-loading" class="flex-1 flex flex-col items-center justify-center">
+            <div class="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+            <p class="text-blue-400 font-bold animate-pulse">جاري التحقق من حسابك...</p>
+        </div>
+        
+        <!-- المحتوى الفعلي للحساب (اسكرول شغال 100%) -->
+        <div id="profile-content" class="flex-1 min-h-0 overflow-y-auto w-full relative z-0 hidden scrollable-modal">
+            <div class="max-w-3xl mx-auto w-full p-4 md:p-8 pb-32">
+                <!-- البانر ومعلومات المستخدم -->
+                <div class="relative bg-[#11141b] rounded-2xl border border-white/5 overflow-hidden mb-6 shadow-xl">
+                    <div class="h-32 bg-[url('https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center opacity-40"></div>
+                    <div class="px-6 pb-6 relative">
+                        <div class="flex flex-col items-center -mt-16 mb-4">
+                            <div class="relative mb-3">
+                                <img id="prof-avatar" src="" class="w-28 h-28 rounded-full object-cover border-4 border-[#11141b] shadow-lg bg-slate-800">
+                                <div id="prof-badge" class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full border border-[#11141b] tracking-widest uppercase shadow-md">
+                                    FREE
+                                </div>
+                            </div>
+                            <h2 id="prof-name" class="text-2xl font-black text-white drop-shadow-md">...</h2>
+                            <p class="text-sm text-gray-400 mt-1">عضو في مكتبة سبيد مانجا</p>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 sm:gap-4 mt-6">
+                            <div class="bg-[#0a0c10] rounded-xl p-2 sm:p-4 text-center border border-white/5 shadow-inner">
+                                <i class="fa-solid fa-star text-yellow-500 mb-1 sm:mb-2 text-lg sm:text-xl"></i>
+                                <p id="stat-points" class="text-lg sm:text-2xl font-black text-white truncate px-1">0</p>
+                                <p class="text-[9px] sm:text-[10px] text-gray-500 mt-1 uppercase tracking-wider">نقاطي</p>
+                            </div>
+                            <div class="bg-[#0a0c10] rounded-xl p-2 sm:p-4 text-center border border-white/5 shadow-inner">
+                                <i class="fa-solid fa-book-open text-blue-500 mb-1 sm:mb-2 text-lg sm:text-xl"></i>
+                                <p id="stat-history" class="text-lg sm:text-2xl font-black text-white truncate px-1">0</p>
+                                <p class="text-[9px] sm:text-[10px] text-gray-500 mt-1 uppercase tracking-wider">قرأت</p>
+                            </div>
+                            <div class="bg-[#0a0c10] rounded-xl p-2 sm:p-4 text-center border border-white/5 shadow-inner">
+                                <i class="fa-solid fa-bookmark text-purple-500 mb-1 sm:mb-2 text-lg sm:text-xl"></i>
+                                <p id="stat-favs" class="text-lg sm:text-2xl font-black text-white truncate px-1">0</p>
+                                <p class="text-[9px] sm:text-[10px] text-gray-500 mt-1 uppercase tracking-wider">قائمتي</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- قائمة أعمالي المفضلة -->
+                <div class="mt-6 mb-8">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 border-purple-500 pr-2">أعمالي المفضلة</h3>
+                    <div id="user-favorites-list" class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                        <!-- سيتم إضافة الأعمال هنا بواسطة الجافاسكريبت -->
+                    </div>
+                </div>
+
+                <!-- أزرار التحكم السفلية -->
+                <<!-- أزرار التحكم السفلية -->
+            <div class="space-y-3">
+                <!-- الزر الجديد الخاص بالإعلانات -->
+                <button onclick="playSupportAd()" class="w-full bg-[#11141b] flex items-center justify-between p-4 rounded-xl hover:bg-slate-800 transition border border-green-500/30 shadow-sm">
+                    <div class="flex items-center gap-4 text-green-400"><i class="fa-solid fa-play-circle text-xl w-6"></i> <span class="font-semibold text-white">شاهد إعلان (دعم/نقاط)</span></div>
+                    <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                </button>
+
+                <button onclick="tg.showAlert('للحصول على VIP، تواصل مع الإدارة في البوت.')" class="w-full bg-[#11141b] flex items-center justify-between p-4 rounded-xl hover:bg-slate-800 transition border border-white/5 shadow-sm">
+                        <div class="flex items-center gap-4 text-yellow-500"><i class="fa-solid fa-crown text-xl w-6"></i> <span class="font-semibold text-white">الترقية لـ VIP</span></div>
+                        <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                    </button>
+                    <button class="w-full bg-[#11141b] flex items-center justify-between p-4 rounded-xl hover:bg-slate-800 transition border border-white/5 shadow-sm">
+                        <div class="flex items-center gap-4 text-blue-400"><i class="fa-solid fa-clock-rotate-left text-xl w-6"></i> <span class="font-semibold text-white">سجل القراءة</span></div>
+                        <i class="fa-solid fa-chevron-left text-gray-600"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- شاشة قائمتي -->
+<div id="list-modal" class="fixed inset-0 h-[100dvh] w-full z-[100] bg-[#0a0c10] hidden flex flex-col transition-transform transform translate-y-full duration-300">
+    <div class="flex-none p-4 flex items-center justify-between border-b border-white/5 bg-[#0d1017] shadow-md z-10">
+        <button onclick="closeAllModals()" class="text-gray-400 hover:text-white p-2">
+            <i class="fa-solid fa-arrow-right text-xl"></i>
+        </button>
+        <h2 class="text-lg font-bold text-gray-200">قائمتي</h2>
+        <div class="w-8"></div>
+    </div>
+
+    <!-- التابات -->
+    <div class="flex-none bg-[#0d1017] border-b border-white/5 z-10">
+        <div id="list-tabs" class="flex gap-2 overflow-x-auto no-scrollbar px-4 py-3 max-w-3xl mx-auto"></div>
+    </div>
+
+    <!-- المحتوى (سكرول) -->
+    <div class="flex-1 min-h-0 overflow-y-auto w-full relative z-0 scrollable-modal">
+        <div id="list-content" class="max-w-3xl mx-auto w-full p-4 md:p-8 pb-32"></div>
+    </div>
+</div>
+
+<!-- شاشة عرض الكل -->
+<div id="browse-modal" class="fixed inset-0 h-[100dvh] w-full z-[100] bg-[#0a0c10] hidden flex flex-col transition-transform transform translate-y-full duration-300">
+    <div class="flex-none p-4 flex items-center justify-between border-b border-white/5 bg-[#0d1017] shadow-md z-10">
+        <button onclick="closeAllModals()" class="text-gray-400 hover:text-white p-2">
+            <i class="fa-solid fa-arrow-right text-xl"></i>
+        </button>
+        <h2 id="browse-title" class="text-lg font-bold text-gray-200"></h2>
+        <div class="w-8"></div>
+    </div>
+
+    <div class="flex-none bg-[#0d1017] border-b border-white/5 z-10">
+        <div class="max-w-7xl mx-auto px-4 py-3 space-y-3">
+            <div id="browse-genres" class="flex gap-2 overflow-x-auto no-scrollbar"></div>
+            <div class="flex items-center justify-between gap-3">
+                <select id="browse-sort" onchange="setSort(this.value)"
+                        style="color-scheme:dark"
+                        class="bg-[#1c212c] text-white text-sm font-bold rounded-lg px-3 py-2 border border-white/5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <option value="">الترتيب الافتراضي</option>
+                    <option value="new">الأحدث</option>
+                    <option value="rating">الأعلى تقييماً</option>
+                    <option value="az">أبجدي (A-Z)</option>
+                </select>
+                <span id="browse-count" class="text-xs text-gray-500 font-semibold"></span>
+            </div>
+        </div>
+    </div>
+
+    <div id="browse-scroll" class="flex-1 min-h-0 overflow-y-auto w-full relative z-0 scrollable-modal">
+        <div class="max-w-7xl mx-auto w-full p-4 md:p-8 pb-32">
+            <div id="browse-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 md:gap-4"></div>
+            <div id="browse-pager" class="mt-8 flex items-center justify-center gap-2 flex-wrap"></div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ========================================= -->
+<!-- شاشة مجتمع سبيد مانجا الفخمة (عام + خاص + مراتب) -->
+<!-- ========================================= -->
+<div id="community-modal" class="fixed inset-0 h-[100dvh] w-full z-[100] bg-[#0a0c10] hidden flex flex-col transition-transform transform translate-y-full duration-300">
+    <!-- الهيدر العلوي -->
+    <div class="flex-none px-3 py-2.5 flex items-center gap-3 bg-[#0d1017] border-b border-white/5 shadow-md">
+        <button onclick="closeCommunity()" class="text-gray-400 hover:text-white p-2"><i class="fa-solid fa-arrow-right text-xl"></i></button>
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg"><i class="fa-solid fa-crown text-white"></i></div>
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+                <h3 id="comm-header-title" class="font-black text-sm truncate">مجتمع سبيد مانجا</h3>
+                <span id="comm-my-rank-pill" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 truncate">...</span>
+            </div>
+            <p id="comm-online" class="text-[11px] text-green-400">🟢 متصل الآن</p>
+        </div>
+        <!-- زر العودة للعام عندما تكون داخل محادثة خاصة -->
+        <button id="comm-back-public" onclick="switchCommTab('public')" class="hidden bg-white/10 hover:bg-white/20 text-xs font-bold px-3 py-1.5 rounded-lg transition">
+            <i class="fa-solid fa-users ml-1"></i> العودة للعام
+        </button>
+    </div>
+
+    <!-- شريط التابات الثلاثة (الشات العام | رسائلي الخاصة | المراتب والمتصدرين) -->
+    <div class="flex-none bg-[#11151f] border-b border-white/5 px-3 py-2 flex gap-2">
+        <button id="tab-btn-public" onclick="switchCommTab('public')" class="flex-1 py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 bg-blue-600 text-white shadow-md transition">
+            <i class="fa-solid fa-comments"></i> الشات العام
+        </button>
+        <button id="tab-btn-dms" onclick="switchCommTab('dms')" class="flex-1 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-[#1c212c] text-gray-400 hover:text-white transition">
+            <i class="fa-solid fa-envelope"></i> الخاص (1v1)
+        </button>
+        <button id="tab-btn-ranks" onclick="switchCommTab('ranks')" class="flex-1 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-[#1c212c] text-gray-400 hover:text-white transition">
+            <i class="fa-solid fa-trophy text-yellow-400"></i> المراتب
+        </button>
+    </div>
+
+    <!-- 1. لودينج شات على طريقة واتساب -->
+    <div id="comm-loading" class="flex-1 comm-bg px-3 py-6 space-y-3 overflow-hidden">
+        <div class="flex gap-2"><div class="comm-sk w-9 h-9 !rounded-full"></div><div class="comm-sk h-16 w-60"></div></div>
+        <div class="flex gap-2"><div class="comm-sk w-9 h-9 !rounded-full"></div><div class="comm-sk h-12 w-44"></div></div>
+        <div class="flex justify-end"><div class="comm-sk h-14 w-52"></div></div>
+        <div class="flex gap-2"><div class="comm-sk w-9 h-9 !rounded-full"></div><div class="comm-sk h-20 w-64"></div></div>
+        <p class="text-center text-xs text-blue-400 font-bold pt-4 animate-pulse"><i class="fa-solid fa-spinner fa-spin ml-1"></i> جاري مزامنة الرسائل والمراتب...</p>
+    </div>
+
+    <!-- 2. منطقة رسائل الشات (العام أو الخاص مع شخص) -->
+    <div id="comm-list" class="flex-1 min-h-0 overflow-y-auto scrollable-modal comm-bg px-3 py-4 hidden"></div>
+
+    <!-- 3. منطقة قائمة المحادثات الخاصة (Inbox) -->
+    <div id="comm-dms-view" class="flex-1 min-h-0 overflow-y-auto scrollable-modal bg-[#0b0e14] p-4 hidden"></div>
+
+    <!-- 4. منطقة لوحة المراتب والمتصدرين -->
+    <div id="comm-ranks-view" class="flex-1 min-h-0 overflow-y-auto scrollable-modal bg-[#0b0e14] p-4 hidden"></div>
+
+    <!-- زر النزول لآخر رسالة -->
+    <button id="comm-down" onclick="scrollCommunity()" class="hidden absolute bottom-24 left-4 w-10 h-10 rounded-full bg-blue-600 shadow-xl flex items-center justify-center z-10">
+        <i class="fa-solid fa-chevron-down"></i>
+    </button>
+
+
+    <!-- 💬 فقاعة جاري الكتابة (الصورة + الثلاث نقاط المتحركة مثل واتساب) -->
+    <div id="comm-typing-bar" class="hidden flex-none comm-bg border-t border-white/5">
+        <div id="comm-typing-content" class="typing-wrap"></div>
+    </div>
+
+    <!-- شريط الرد على رسالة (Reply Preview) -->
+    <div id="comm-reply-bar" class="hidden flex-none px-4 py-2 bg-[#161b26] border-t border-white/10 flex items-center justify-between">
+        <div class="border-r-2 border-blue-500 pr-2.5 min-w-0">
+            <div id="comm-reply-name" class="text-[11px] font-black text-blue-400 truncate"></div>
+            <div id="comm-reply-text" class="text-xs text-gray-400 truncate"></div>
+        </div>
+        <button onclick="clearCommReply()" class="text-gray-400 hover:text-white p-1"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- صندوق الكتابة والإرسال -->
+    <div id="comm-input-bar" class="flex-none p-2.5 pb-safe bg-[#0d1017] border-t border-white/5 flex items-end gap-2">
+        <textarea id="comm-input" rows="1" placeholder="اكتب رسالتك في المجتمع..." maxlength="500"
+            oninput="onCommInputType(this)"
+            class="flex-1 bg-[#1c212c] text-white rounded-2xl py-3 px-4 focus:outline-none focus:ring-1 focus:ring-blue-500 border border-white/5 resize-none max-h-[120px] text-[14px]"></textarea>
+        <button onclick="sendCommunityMessage()" class="w-11 h-11 flex-none rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 flex items-center justify-center shadow-lg active:scale-95 transition">
+            <i class="fa-solid fa-paper-plane"></i>
+        </button>
+    </div>
+
+    <!-- بطاقة العضو المنبثقة (عند الضغط على أي شخص لفتح شات خاص معه) -->
+    <div id="comm-user-card" class="hidden fixed inset-0 z-[150] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this)this.classList.add('hidden')">
+        <div class="bg-[#131722] border border-white/10 rounded-2xl p-6 w-full max-w-sm text-center shadow-2xl">
+            <img id="cuc-photo" src="" class="w-20 h-20 rounded-full mx-auto object-cover border-2 border-blue-500 shadow-lg mb-3">
+            <h3 id="cuc-name" class="text-lg font-black text-white"></h3>
+            <div id="cuc-rank" class="inline-block mt-1 px-3 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30"></div>
+            <div class="mt-5 flex gap-2">
+                <button id="cuc-dm-btn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-lg transition">
+                    <i class="fa-solid fa-paper-plane"></i> محادثة خاصة (1v1)
+                </button>
+                <button onclick="document.getElementById('comm-user-card').classList.add('hidden')" class="px-4 py-2.5 rounded-xl bg-white/10 text-gray-300 font-bold">إغلاق</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- السكربتات الأساسية -->
+    <!-- السكربتات الأساسية -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+    <script>
+    const tg = window.Telegram.WebApp;
+    try { tg.expand(); } catch(e) {}
+    try { tg.disableVerticalSwipes(); } catch(e) {} 
+    try { tg.setHeaderColor('#0d1017'); } catch(e) {}
+    try { tg.setBackgroundColor('#0a0c10'); } catch(e) {}
+
+    // 1. تهيئة إعلانات Adsgram بالـ ID الخاص بك
+    const AdController = window.Adsgram.init({ blockId: "57468" });
+
+    // 2. دالة تشغيل الإعلان
+    function playSupportAd() {
+        AdController.show().then((result) => {
+            // الكود الذي يعمل بعد انتهاء الإعلان بنجاح
+            tg.showAlert('شكراً لك! تمت المشاهدة بنجاح.');
+        }).catch((result) => {
+            // الكود الذي يعمل إذا تم إغلاق الإعلان قبل انتهائه
+            console.log("لم تكتمل المشاهدة", result);
+        });
+    }
+
+        let allMangasData = []; 
+        let heroMangaId = null;
+
+        // الرابط الذي حصلت عليه من لوحة التحكم 
+        const API_BASE_URL = "https://apispeedmanga.hidenplay.net";
+
+        let currentUser = {
+            id: null,
+            name: "ضيف",
+            photo: "https://ui-avatars.com/api/?name=Guest&background=1f2937&color=fff",
+        };
+
+        const tgData = tg.initDataUnsafe?.user;
+        if (tgData) {
+            currentUser.id = tgData.id;
+            currentUser.name = tgData.first_name + (tgData.last_name ? ' ' + tgData.last_name : '');
+            currentUser.photo = tgData.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=3b82f6&color=fff&bold=true`;
+        }
+
+        document.getElementById('side-user-name').innerText = currentUser.name;
+        document.getElementById('side-user-avatar').src = currentUser.photo;
+        document.getElementById('prof-name').innerText = currentUser.name;
+        document.getElementById('prof-avatar').src = currentUser.photo;
+
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
+        }
+
+        // ====== بيانات قائمتي ======
+let userFavorites = [];
+let favoritesLoaded = false;
+let currentListTab = 'all';
+
+const STATUS_INFO = {
+    reading:   { text: '📖 يقرأ',   title: 'أقرأها حالياً',  badge: 'bg-blue-600/90',   border: 'border-blue-500' },
+    plan:      { text: '⏳ يخطط',   title: 'مخطط لقراءتها',  badge: 'bg-yellow-600/90', border: 'border-yellow-500' },
+    completed: { text: '✅ اكتمل',  title: 'أعمال مكتملة',   badge: 'bg-green-600/90',  border: 'border-green-500' },
+    dropped:   { text: '❌ متوقف',  title: 'أعمال متوقفة',   badge: 'bg-red-600/90',    border: 'border-red-500' }
+};
+const getStatusInfo = (s) => STATUS_INFO[s] || { text: s || 'غير محدد', title: 'أخرى', badge: 'bg-gray-600/90', border: 'border-gray-500' };
+
+async function fetchRealtimeUserData() {
+    if (!currentUser.id) {
+        favoritesLoaded = true;
+        renderMyList();
+        return;
+    }
+    try {
+        const uUsername = tgData?.username || "";
+        const response = await fetch(`${API_BASE_URL}/api/user/${currentUser.id}?name=${encodeURIComponent(currentUser.name)}&username=${encodeURIComponent(uUsername)}&photo=${encodeURIComponent(currentUser.photo)}`);
+        const dbData = await response.json();
+        if (dbData.success) {
+            
+            document.getElementById('stat-points').innerText = formatNumber(dbData.points);
+            document.getElementById('stat-history').innerText = formatNumber(dbData.history_count);
+            document.getElementById('stat-favs').innerText = formatNumber(dbData.favorites_count);
+
+            const badge = document.getElementById('prof-badge');
+            if (dbData.is_vip) {
+                badge.innerHTML = "PRO VIP";
+                badge.className = "absolute -bottom-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-[10px] font-black px-4 py-1 rounded-full border border-[#11141b] shadow-[0_0_15px_rgba(234,179,8,0.4)] tracking-widest uppercase";
+            } else {
+                badge.innerHTML = "FREE";
+                badge.className = "absolute -bottom-2 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] font-bold px-4 py-1 rounded-full border border-[#11141b] tracking-widest uppercase shadow-md";
+            }
+        }
+
+        if (dbData.is_owner || String(currentUser.id) === "8313239068") {
+                const admBtn = document.getElementById('admin-more-btn');
+                if (admBtn) admBtn.classList.remove('hidden');
+            }
+
+        // سحب المفضلة
+        const favResponse = await fetch(`${API_BASE_URL}/api/user/${currentUser.id}/favorites`);
+        const favData = await favResponse.json();
+        const favBox = document.getElementById('user-favorites-list');
+
+        if (favData.success && favData.favorites.length > 0) {
+            userFavorites = favData.favorites;
+            favBox.innerHTML = userFavorites.map(m => {
+                const sInfo = getStatusInfo(m.status);
+                return `
+                    <div class="relative w-full aspect-[2/3] rounded-lg overflow-hidden cursor-pointer shadow-lg border border-white/10" onclick="openMangaDetails(${m.id})">
+                        <img src="${m.image_url}?t=${new Date().getTime()}" class="absolute inset-0 w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
+                        <div class="absolute top-1 right-1 ${sInfo.badge} backdrop-blur-md px-1.5 py-0.5 rounded text-[9px] font-bold text-white shadow-sm">${sInfo.text}</div>
+                        <div class="absolute bottom-0 left-0 right-0 p-1.5 text-center"><h3 class="text-[10px] font-bold text-white line-clamp-1 drop-shadow-md">${m.title}</h3></div>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            userFavorites = [];
+            favBox.innerHTML = `<p class="col-span-full text-center text-gray-500 text-sm py-6 bg-white/5 rounded-xl border border-white/5">قائمتك فارغة حالياً 📭</p>`;
+        }
+    } catch (error) { console.error("User API Error:", error); }
+
+    favoritesLoaded = true;
+    renderMyList();
+}
+
+
+const LIST_TABS = [
+    { key: 'all',       label: 'الكل',       icon: 'fa-layer-group' },
+    { key: 'reading',   label: 'أقرأها',     icon: 'fa-book-open' },
+    { key: 'plan',      label: 'مخطط لها',   icon: 'fa-clock' },
+    { key: 'completed', label: 'مكتملة',     icon: 'fa-check-double' },
+    { key: 'dropped',   label: 'متوقفة',     icon: 'fa-ban' }
+];
+
+const createListCard = (m) => {
+    const s = getStatusInfo(m.status);
+    return `
+        <div class="relative w-full aspect-[2/3] rounded-lg overflow-hidden cursor-pointer manga-card-hover bg-slate-800 border border-white/10" onclick="openMangaDetails(${m.id})">
+            <img src="${m.image_url}?t=${new Date().getTime()}"
+                 class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+                 alt="${m.title}"
+                 onerror="fixMissingCover(this, ${m.id}, '${m.title.replace(/'/g, "\\'")}')">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#0a0c10] via-transparent to-transparent opacity-90"></div>
+            <div class="absolute top-1 right-1 ${s.badge} backdrop-blur-md px-1.5 py-0.5 rounded text-[9px] font-bold text-white shadow-sm">${s.text}</div>
+            <div class="absolute bottom-0 left-0 right-0 p-2">
+                <h3 class="text-[11px] font-bold text-white line-clamp-2 leading-tight">${m.title}</h3>
+            </div>
+        </div>
+    `;
+};
+
+function setListTab(key) {
+    currentListTab = key;
+    renderMyList();
+    const box = document.getElementById('list-content');
+    if (box && box.parentElement) box.parentElement.scrollTop = 0;
+}
+
+function renderMyList() {
+    const tabsBox = document.getElementById('list-tabs');
+    const contentBox = document.getElementById('list-content');
+    if (!tabsBox || !contentBox) return;
+
+    const countOf = (key) => key === 'all'
+        ? userFavorites.length
+        : userFavorites.filter(m => m.status === key).length;
+
+    // التابات
+    tabsBox.innerHTML = LIST_TABS.map(t => {
+        const active = t.key === currentListTab;
+        return `
+            <button onclick="setListTab('${t.key}')"
+                class="shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition ${active ? 'bg-blue-600 text-white shadow-lg' : 'bg-[#1c212c] text-gray-400 border border-white/5 hover:text-white'}">
+                <i class="fa-solid ${t.icon} text-xs"></i>
+                ${t.label}
+                <span class="text-[10px] px-1.5 py-0.5 rounded-full ${active ? 'bg-white/20' : 'bg-white/5'}">${countOf(t.key)}</span>
+            </button>
+        `;
+    }).join('');
+
+    // جاري التحميل
+    if (!favoritesLoaded) {
+        contentBox.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-[50vh] text-blue-500">
+                <div class="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-3"></div>
+                <p class="font-bold">جاري تحميل قائمتك...</p>
+            </div>`;
+        return;
+    }
+
+    // القائمة فاضية
+    if (userFavorites.length === 0) {
+        contentBox.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-[50vh] text-gray-600">
+                <i class="fa-solid fa-bookmark text-4xl mb-3 opacity-50"></i>
+                <p>قائمتك فارغة حالياً 📭</p>
+            </div>`;
+        return;
+    }
+
+    const gridClass = "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3";
+
+    // تاب "الكل": مقسمة أقسام حسب الحالة
+    if (currentListTab === 'all') {
+        let html = Object.keys(STATUS_INFO).map(key => {
+            const items = userFavorites.filter(m => m.status === key);
+            if (!items.length) return '';
+            const info = STATUS_INFO[key];
+            return `
+                <div class="mb-8">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 ${info.border} pr-2">
+                        ${info.title}
+                        <span class="text-xs text-gray-500 font-semibold">(${items.length})</span>
+                    </h3>
+                    <div class="${gridClass}">${items.map(createListCard).join('')}</div>
+                </div>`;
+        }).join('');
+
+        const others = userFavorites.filter(m => !STATUS_INFO[m.status]);
+        if (others.length) {
+            html += `
+                <div class="mb-8">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2 border-r-4 border-gray-500 pr-2">أخرى <span class="text-xs text-gray-500 font-semibold">(${others.length})</span></h3>
+                    <div class="${gridClass}">${others.map(createListCard).join('')}</div>
+                </div>`;
+        }
+        contentBox.innerHTML = html;
+        return;
+    }
+
+    // تاب واحد
+    const items = userFavorites.filter(m => m.status === currentListTab);
+    if (!items.length) {
+        contentBox.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-[40vh] text-gray-600">
+                <i class="fa-solid fa-folder-open text-4xl mb-3 opacity-50"></i>
+                <p>مفيش أعمال في القسم ده</p>
+            </div>`;
+        return;
+    }
+    contentBox.innerHTML = `<div class="${gridClass}">${items.map(createListCard).join('')}</div>`;
+}
+
+function openMyList() {
+    document.body.style.overflow = 'hidden';
+    const modal = document.getElementById('list-modal');
+    modal.classList.remove('hidden');
+    setTimeout(() => modal.classList.remove('translate-y-full'), 10);
+    renderMyList();
+    fetchRealtimeUserData(); // تحديث البيانات كل ما تفتحها
+}
+
+        const createCarouselCard = (manga) => {
+            return `
+                <div class="swiper-slide cursor-pointer" onclick="openMangaDetails(${manga.id})">
+                    <div class="relative w-full aspect-[2/3] rounded-lg overflow-hidden mb-2 manga-card-hover bg-slate-800 border border-white/5">
+                        <img id="img-${manga.id}" src="${manga.image_url}?t=${new Date().getTime()}" 
+                             class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300" 
+                             alt="${manga.title}" 
+                             onerror="fixMissingCover(this, ${manga.id}, '${manga.title.replace(/'/g, "\\'")}')">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#0a0c10] via-transparent to-transparent opacity-80"></div>
+                        <div class="absolute top-1 right-1 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[10px] font-bold text-yellow-400">
+                            ★ ${manga.rating && manga.rating !== '0.0' ? manga.rating : 'N/A'}
+                        </div>
+                    </div>
+                    <h3 class="text-xs font-bold text-gray-200 line-clamp-1">${manga.title}</h3>
+                </div>
+            `;
+        };
+
+        const createGridCard = (manga) => {
+            return `
+                <div class="relative w-full aspect-[2/3] rounded-lg overflow-hidden cursor-pointer manga-card-hover bg-slate-800 border border-white/5" onclick="openMangaDetails(${manga.id})">
+                    <img id="img-grid-${manga.id}" src="${manga.image_url}?t=${new Date().getTime()}" 
+                         class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300" 
+                         alt="${manga.title}" 
+                         onerror="fixMissingCover(this, ${manga.id}, '${manga.title.replace(/'/g, "\\'")}')">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#0a0c10] via-transparent to-transparent opacity-90"></div>
+                    <div class="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded text-[10px] font-bold text-yellow-400">
+                        ★ ${manga.rating && manga.rating !== '0.0' ? manga.rating : 'N/A'}
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 p-2.5">
+                        <h3 class="text-xs sm:text-sm font-bold text-white line-clamp-2 leading-tight">${manga.title}</h3>
+                    </div>
+                </div>
+            `;
+        };
+
+        const currentlyFixingCovers = new Set();
+        async function fixMissingCover(imgElement, mangaId, title) {
+            imgElement.onerror = null;
+            if (currentlyFixingCovers.has(mangaId)) return;
+            currentlyFixingCovers.add(mangaId);
+            imgElement.src = `https://ui-avatars.com/api/?name=Loading...&background=1f2937&color=3b82f6&size=300`;
+            imgElement.style.opacity = '0.5';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/fix_cover/${mangaId}`);
+                const data = await response.json();
+                if (data.success) {
+                    setTimeout(() => {
+                        imgElement.style.opacity = '1';
+                        imgElement.src = `https://raw.githubusercontent.com/kanoahmed467/my-bot/main/covers/${mangaId}.jpg?t=${new Date().getTime()}`;
+                        imgElement.onerror = function() {
+                            this.onerror = null;
+                            this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=1f2937&color=3b82f6&size=300&font-size=0.1`;
+                        };
+                        setTimeout(() => currentlyFixingCovers.delete(mangaId), 10000);
+                    }, 5000);
+                } else throw new Error("Bot returned false");
+            } catch (error) {
+                imgElement.style.opacity = '1';
+                imgElement.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=1f2937&color=3b82f6&size=300&font-size=0.1`;
+                setTimeout(() => currentlyFixingCovers.delete(mangaId), 10000);
+            }
+        }
+
+        const githubDataUrl = 'https://raw.githubusercontent.com/kanoahmed467/my-bot/main/data.json';
+        let swiperInstance = null;
+
+        function initSwiper() {
+            if (swiperInstance) return; 
+            swiperInstance = new Swiper(".mySwiper", {
+                slidesPerView: "auto", spaceBetween: 12, freeMode: true, grabCursor: true, rtl: true
+            });
+        }
+
+        // دالة سحرية لخلط المصفوفات
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex > 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        const getRandomItems = (arr, count) => shuffleArray([...arr]).slice(0, count);
+
+        async function loadApp() {
+            try {
+                // سحب الداتا جاهزة ومقسمة من الـ API 
+                const liveResponse = await fetch(`${API_BASE_URL}/api/latest`);
+                const data = await liveResponse.json();
+
+                if (data.success) {
+                    // 0. الهيرو سلايدر (ناخد أول 6 من الأعلى تقييماً)
+                    buildHero(data.top.slice(0, 6));
+
+                    // 1. أحدث الأعمال
+                    document.getElementById('latest-mangas').innerHTML = data.latest.map(createCarouselCard).join('');
+                    
+                    // 2. الأعلى تقييماً
+                    document.getElementById('top-rated-mangas').innerHTML = data.top.map(createCarouselCard).join('');
+
+                    // 3. المانهوا الكورية والصينية
+                    document.getElementById('korean-mangas').innerHTML = data.korean.map(createCarouselCard).join('');
+                    
+                    // 4. المانجا اليابانية
+                    document.getElementById('japanese-mangas').innerHTML = data.japanese.map(createCarouselCard).join('');
+
+                    // 4.1 الروايات المترجمة (من المصادر)
+                    if (data.novels && data.novels.length > 0) {
+                        document.getElementById('source-novels').innerHTML = data.novels.map(createCarouselCard).join('');
+                    } else {
+                        document.getElementById('section-novels').style.display = 'none';
+                    }
+
+                    // 4.2 الروايات المؤلفة (كتّاب المجتمع)
+                    if (data.authored_novels && data.authored_novels.length > 0) {
+                        document.getElementById('authored-novels').innerHTML = data.authored_novels.map(createCarouselCard).join('');
+                    } else {
+                        document.getElementById('authored-novels').innerHTML = `<div class="text-xs text-gray-400 py-6 px-4 bg-white/5 rounded-xl border border-white/5 w-full text-center">لا توجد روايات مؤلفة بعد.. كن أول مؤلف ينشر روايته في المملكة! ✍️</div>`;
+                    }
+                    
+                    // 5. الأعمال المكتملة
+                    if (data.completed && data.completed.length > 0) {
+                        document.getElementById('completed-mangas').innerHTML = data.completed.map(createCarouselCard).join('');
+                    } else {
+                        // إخفاء القسم لو مفيش أعمال مكتملة
+                        const compSection = document.getElementById('section-completed');
+                        if (compSection) compSection.style.display = 'none';
+                    }
+
+                    // تشغيل السحب وتحديث بيانات المستخدم
+                    initSwiper();
+                    fetchRealtimeUserData();
+                    if (currentUser && currentUser.id) {
+    fetch(`${API_BASE_URL}/api/my-novels?uid=${currentUser.id}`, {
+        headers: { "X-Telegram-Init-Data": tg.initData || "" }
+    }).then(r => r.json()).then(d => {
+        if (d && d.success) localStorage.setItem("sm_writer_cache_" + currentUser.id, JSON.stringify(d));
+    }).catch(() => {});
+}
+                    addViewAllButtons();
+                    buildHomeGenres();
+                    restoreBrowseFromHash();
+
+                    // إخفاء شاشة التحميل وعرض الموقع
+                    document.getElementById('main-content').classList.remove('hidden');
+                    document.getElementById('splash-screen').style.opacity = '0';
+                    setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 300);
+                } else {
+                    document.getElementById('splash-screen').innerHTML = `<p class="text-white font-bold">لا توجد أعمال لعرضها حالياً.</p>`;
+                }
+            } catch (error) {
+                console.error("Error loading app:", error);
+                document.getElementById('splash-screen').innerHTML = `<p class="text-red-500 font-bold mb-2">حدث خطأ في الاتصال بسيرفر البوت.</p><p class="text-gray-400 text-sm">تأكد من أن البوت يعمل.</p>`;
+            }
+        }
+        function openSearch() {
+            document.body.style.overflow = 'hidden'; // قفل اسكرول الخلفية
+            const modal = document.getElementById('search-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                document.getElementById('search-input').focus();
+            }, 10);
+        }
+
+        function openProfile() {
+            document.body.style.overflow = 'hidden'; // قفل اسكرول الخلفية
+            const modal = document.getElementById('profile-modal');
+            const loading = document.getElementById('profile-loading');
+            const content = document.getElementById('profile-content');
+            
+            modal.classList.remove('hidden');
+            loading.classList.remove('hidden');
+            content.classList.add('hidden');
+            setTimeout(() => modal.classList.remove('translate-y-full'), 10);
+
+            fetchRealtimeUserData().then(() => {
+                setTimeout(() => {
+                    loading.classList.add('hidden');
+                    content.classList.remove('hidden');
+                }, 800);
+            });
+        }
+
+   function closeAllModals() {
+    document.body.style.overflow = '';
+    document.getElementById('search-modal').classList.add('opacity-0');
+    ['profile-modal', 'list-modal', 'browse-modal', 'community-modal'].forEach(id =>
+        document.getElementById(id).classList.add('translate-y-full'));
+    comm.opened = false; clearInterval(comm.timer);
+    setTimeout(() => {
+        ['search-modal', 'profile-modal', 'list-modal', 'browse-modal', 'community-modal'].forEach(id =>
+            document.getElementById(id).classList.add('hidden'));
+    }, 300);
+    clearBrowseHash();
+    setNav('home');
+}
+
+        // تم إضافة الدالة المفقودة هنا والتي كانت تسبب الخطأ وتوقف الموقع
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        const handleSearch = debounce(async (e) => {
+            const query = e.target.value.trim();
+            const resultsBox = document.getElementById('search-results');
+            
+            if(query.length < 2) {
+                resultsBox.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-[50vh] text-gray-600"><i class="fa-solid fa-book-open text-4xl mb-3 opacity-50"></i><p>اكتب اسم العمل للبحث...</p></div>`;
+                return;
+            }
+
+            resultsBox.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-[50vh] text-blue-500"><div class="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-3"></div><p class="font-bold">جاري البحث...</p></div>`;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                if(data.success && data.results.length > 0) {
+                    resultsBox.innerHTML = data.results.map(createGridCard).join('');
+                } else {
+                    resultsBox.innerHTML = `<div class="col-span-full text-center text-gray-500 py-10">لم أجد عملاً بهذا الاسم.</div>`;
+                }
+            } catch (error) {
+                const localResults = allMangasData.filter(m => 
+                    m.title.toLowerCase().includes(query.toLowerCase()) || 
+                    (m.alt_titles && m.alt_titles.toLowerCase().includes(query.toLowerCase()))
+                );
+
+                if(localResults.length > 0) {
+                    resultsBox.innerHTML = localResults.map(createGridCard).join('');
+                } else {
+                    resultsBox.innerHTML = `<div class="col-span-full text-center text-gray-500 py-10">لم أجد عملاً بهذا الاسم.</div>`;
+                }
+            }
+        }, 500);
+
+        document.getElementById('search-input').addEventListener('input', handleSearch);
+
+        function openMangaDetails(id) {
+    try { tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
+    window.location.href = `manga.html?id=${id}`;
+}
+// ================= Hero Slider v2 =================
+let heroList = [], heroIndex = 0, heroBound = false;
+const HERO_FALLBACK = 'https://via.placeholder.com/400x600?text=No+Cover';
+
+function buildHero(list) {
+    heroList = list;
+    const slidesBox = document.getElementById('hero-slides');
+    const barsBox = document.getElementById('hero-indicators');
+    const hero = document.getElementById('hero-section');
+
+    slidesBox.innerHTML = list.map(m => {
+        const genres = (m.genre || 'أكشن').split('•').map(g => g.trim()).filter(Boolean).slice(0, 3);
+        const rating = m.rating && m.rating !== '0.0' ? m.rating : 'N/A';
+        return `
+        <div class="hero-slide">
+            <img class="hero-bg" src="${m.image_url}" alt="" onerror="this.src='${HERO_FALLBACK}'">
+            <div class="absolute inset-0 hero-shade"></div>
+
+            <div class="absolute inset-0 z-10 flex flex-col md:flex-row items-center justify-end md:justify-between gap-4 md:gap-12 px-5 md:px-20 pt-5 pb-12 md:pb-14">
+
+                <!-- البوستر -->
+                <div class="hero-poster-wrap order-1 md:order-2 shrink-0">
+                    <img class="hero-poster w-[115px] sm:w-[140px] md:w-[230px] lg:w-[270px] aspect-[2/3] object-cover bg-slate-800"
+                         src="${m.image_url}" alt="" onerror="this.src='${HERO_FALLBACK}'">
+                </div>
+
+                <!-- النصوص -->
+                <div class="order-2 md:order-1 flex-1 min-w-0 flex flex-col items-center md:items-start text-center md:text-right">
+                    <div class="hero-item flex flex-wrap items-center justify-center md:justify-start gap-2 mb-3" style="--d:.2s">
+                        <span class="bg-blue-600 px-2.5 py-0.5 rounded text-xs font-bold">${m.origin || 'مانهوا'}</span>
+                        ${genres.map(g => `<span class="bg-white/10 backdrop-blur px-2.5 py-0.5 rounded text-xs font-bold border border-white/10">${g}</span>`).join('')}
+                        <span class="text-yellow-400 text-sm font-bold">★ ${rating}</span>
+                    </div>
+
+                    <h1 class="hero-item text-2xl md:text-5xl font-black mb-3 text-white drop-shadow-lg line-clamp-2 leading-tight" style="--d:.35s">${m.title}</h1>
+
+                    <p class="hero-item text-gray-200 text-xs md:text-base line-clamp-2 md:line-clamp-3 mb-5 max-w-xl leading-relaxed" style="--d:.5s">${m.description || ''}</p>
+
+                    <div class="hero-item flex gap-3" style="--d:.65s">
+                        <button onclick="openMangaDetails(${m.id})" class="bg-white text-black px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-blue-500 hover:text-white active:scale-95 transition shadow-lg">
+                            <i class="fa-solid fa-play"></i> قراءة الآن
+                        </button>
+                        <button class="bg-white/10 backdrop-blur text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 border border-white/15 hover:bg-white/20 active:scale-95 transition">
+                            <i class="fa-solid fa-plus"></i> قائمتي
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+
+    barsBox.innerHTML = list.map((_, i) =>
+        `<div class="hero-bar" onclick="goHero(${i})"><i></i></div>`).join('');
+
+    hero.classList.remove('hidden');
+
+    if (!heroBound) {
+        heroBound = true;
+        let startX = 0;
+        hero.addEventListener('touchstart', e => { startX = e.touches[0].clientX; hero.classList.add('paused'); }, { passive: true });
+        hero.addEventListener('touchend', e => {
+            hero.classList.remove('paused');
+            const dx = e.changedTouches[0].clientX - startX;
+            if (Math.abs(dx) > 50) heroNext(dx < 0 ? 1 : -1);
+        }, { passive: true });
+        hero.addEventListener('mouseenter', () => hero.classList.add('paused'));
+        hero.addEventListener('mouseleave', () => hero.classList.remove('paused'));
+
+        // لما شريط التقدم الحالي يخلص → الشريحة اللي بعدها (إصلاح الباج)
+        barsBox.addEventListener('animationend', e => {
+            if (e.animationName === 'heroProgress' && e.target.parentElement.classList.contains('active')) heroNext(1);
+        });
+    }
+
+    goHero(0);
+}
+
+function goHero(i) {
+    heroIndex = (i + heroList.length) % heroList.length;
+
+    document.querySelectorAll('.hero-slide').forEach((s, idx) =>
+        s.classList.toggle('active', idx === heroIndex));
+
+    const bars = document.querySelectorAll('.hero-bar');
+    bars.forEach(b => b.classList.remove('active', 'done'));
+    void document.getElementById('hero-indicators').offsetWidth; // يعيد تشغيل الأنيميشن
+    bars.forEach((b, idx) => {
+        if (idx < heroIndex) b.classList.add('done');
+        if (idx === heroIndex) b.classList.add('active');
+    });
+
+    heroMangaId = heroList[heroIndex].id;
+}
+
+function heroNext(dir) { goHero(heroIndex + dir); }
+
+
+// ================= عرض الكل (Browse) =================
+const $el = id => document.getElementById(id);
+const escHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const BROWSE_PER = 24;
+const BROWSE_TTL = 120000; // الكاش بيعيش دقيقتين
+const BROWSE_META = {
+    latest:          { title: 'أحدث الأعمال' },
+    top:             { title: 'الأعلى تقييماً' },
+    korean:          { title: 'مانهوا كورية' },
+    japanese:        { title: 'مانجا يابانية' },
+    novels:          { title: 'روايات عالمية ومترجمة 📖' },
+    authored_novels: { title: 'روايات كتّاب المجتمع ✍️' },
+    completed:       { title: 'أعمال مكتملة' },
+    all:             { title: 'كل الأعمال' }
+};
+const BROWSE_SECTIONS_MAP = {
+    'latest-mangas': 'latest', 'top-rated-mangas': 'top', 'korean-mangas': 'korean',
+    'japanese-mangas': 'japanese', 'source-novels': 'novels', 'authored-novels': 'authored_novels',
+    'completed-mangas': 'completed'
+};
+
+let browse = { section: 'latest', genre: '', sort: '', page: 1, pages: 1 };
+let browseGenres = [];
+let browseToken = 0;
+const apiCache = new Map();
+
+async function cachedJson(url) {
+    const hit = apiCache.get(url);
+    if (hit && Date.now() - hit.t < BROWSE_TTL) return hit.d;
+    const r = await fetch(url);
+    const d = await r.json();
+    if (d && d.success) apiCache.set(url, { t: Date.now(), d });
+    return d;
+}
+
+const browseUrl = (p) =>
+    `${API_BASE_URL}/api/browse?section=${browse.section}&genre=${encodeURIComponent(browse.genre)}&sort=${browse.sort}&page=${p}&per=${BROWSE_PER}`;
+
+// كارت بدون ?t= (عشان الصور تتحفظ في كاش المتصفح) ومع lazy loading
+const createBrowseCard = (m) => `
+    <div class="relative w-full aspect-[2/3] rounded-lg overflow-hidden cursor-pointer manga-card-hover bg-slate-800 border border-white/5 transition" onclick="openMangaDetails(${m.id})">
+        <img src="${escHtml(m.image_url)}" loading="lazy" decoding="async" alt="${escHtml(m.title)}"
+             class="absolute inset-0 w-full h-full object-cover"
+             onerror="fixMissingCover(this, ${m.id}, this.alt)">
+        <div class="absolute inset-0 bg-gradient-to-t from-[#0a0c10] via-transparent to-transparent opacity-90"></div>
+        <div class="absolute top-1.5 right-1.5 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded text-[10px] font-bold text-yellow-400">
+            ★ ${m.rating && m.rating !== '0.0' ? escHtml(m.rating) : 'N/A'}
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 p-2">
+            <h3 class="text-[11px] sm:text-xs font-bold text-white line-clamp-2 leading-tight">${escHtml(m.title)}</h3>
+        </div>
+    </div>`;
+
+function openBrowse(section, opts = {}) {
+    if (!BROWSE_META[section]) return;
+    browse = { section, genre: opts.genre || '', sort: opts.sort || '', page: opts.page || 1, pages: 1 };
+    $el('browse-title').innerText = BROWSE_META[section].title;
+    $el('browse-sort').value = browse.sort;
+    document.body.style.overflow = 'hidden';
+    const modal = $el('browse-modal');
+    modal.classList.remove('hidden');
+    setTimeout(() => modal.classList.remove('translate-y-full'), 10);
+    loadBrowseGenres();
+    loadBrowse();
+}
+
+async function loadBrowseGenres() {
+    browseGenres = [];
+    renderGenreChips();
+    try {
+        const d = await cachedJson(`${API_BASE_URL}/api/genres?section=${browse.section}`);
+        browseGenres = d.success ? d.genres.slice(0, 40) : [];
+    } catch (e) {}
+    renderGenreChips();
+}
+
+function renderGenreChips() {
+    const chip = (label, g, active, count) => `
+        <button data-g="${escHtml(g)}" onclick="setGenre(this.dataset.g)"
+            class="shrink-0 px-4 py-1.5 rounded-full text-sm font-bold transition ${active ? 'bg-blue-600 text-white shadow-lg' : 'bg-[#1c212c] text-gray-400 border border-white/5 hover:text-white'}">
+            ${escHtml(label)}${count != null ? ` <span class="text-[10px] opacity-70">${count}</span>` : ''}
+        </button>`;
+    $el('browse-genres').innerHTML =
+        chip('الكل', '', browse.genre === '', null) +
+        browseGenres.map(g => chip(g.name, g.name, browse.genre === g.name, g.count)).join('');
+}
+
+function setGenre(g) { browse.genre = g; browse.page = 1; renderGenreChips(); loadBrowse(); }
+function setSort(v)  { browse.sort = v;  browse.page = 1; loadBrowse(); }
+
+async function loadBrowse() {
+    const tok = ++browseToken;
+    const grid = $el('browse-grid');
+    grid.innerHTML = Array.from({ length: 12 }, () =>
+        '<div class="aspect-[2/3] rounded-lg bg-slate-800/60 animate-pulse"></div>').join('');
+    $el('browse-pager').innerHTML = '';
+    saveBrowseHash();
+
+    try {
+        const d = await cachedJson(browseUrl(browse.page));
+        if (tok !== browseToken) return; // المستخدم غيّر الفلتر قبل ما الرد يوصل
+        if (!d.success) throw new Error('bad response');
+
+        browse.page = d.page;
+        browse.pages = d.pages;
+        $el('browse-count').innerText = `${d.total} عمل`;
+
+        if (!d.mangas.length) {
+            grid.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center py-20 text-gray-600">
+                <i class="fa-solid fa-folder-open text-4xl mb-3 opacity-50"></i><p>مفيش أعمال في التصنيف ده</p></div>`;
+            return;
+        }
+        grid.innerHTML = d.mangas.map(createBrowseCard).join('');
+        renderPager();
+        // تحميل الصفحة اللي بعدها في الخلفية عشان التنقل يبقى فوري
+        if (d.page < d.pages) cachedJson(browseUrl(d.page + 1)).catch(() => {});
+    } catch (e) {
+        if (tok !== browseToken) return;
+        grid.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center py-20 text-gray-500">
+            <i class="fa-solid fa-wifi text-4xl mb-3 opacity-50"></i>
+            <p class="mb-4">حصل خطأ في الاتصال بالسيرفر</p>
+            <button onclick="loadBrowse()" class="bg-white text-black px-5 py-2 rounded-md font-bold">إعادة المحاولة</button></div>`;
+    }
+}
+
+function goPage(n) {
+    if (n < 1 || n > browse.pages || n === browse.page) return;
+    browse.page = n;
+    $el('browse-scroll').scrollTo({ top: 0, behavior: 'smooth' });
+    loadBrowse();
+}
+
+function renderPager() {
+    const box = $el('browse-pager');
+    const { page, pages } = browse;
+    if (pages <= 1) { box.innerHTML = ''; return; }
+
+    const set = new Set([1, 2, pages - 1, pages, page - 1, page, page + 1]);
+    const list = [...set].filter(n => n >= 1 && n <= pages).sort((a, b) => a - b);
+    const base = 'min-w-[40px] h-10 px-3 rounded-lg text-sm font-bold flex items-center justify-center transition border';
+
+    let html = `<button onclick="goPage(${page - 1})" ${page === 1 ? 'disabled' : ''}
+        class="${base} bg-[#1c212c] border-white/5 text-gray-300 disabled:opacity-30"><i class="fa-solid fa-chevron-right text-xs"></i></button>`;
+    let prev = 0;
+    list.forEach(n => {
+        if (n - prev > 1) html += `<span class="text-gray-600 px-1">…</span>`;
+        html += `<button onclick="goPage(${n})" class="${base} ${n === page
+            ? 'bg-blue-600 border-blue-500 text-white shadow-lg'
+            : 'bg-[#1c212c] border-white/5 text-gray-300 hover:text-white'}">${n}</button>`;
+        prev = n;
+    });
+    html += `<button onclick="goPage(${page + 1})" ${page === pages ? 'disabled' : ''}
+        class="${base} bg-[#1c212c] border-white/5 text-gray-300 disabled:opacity-30"><i class="fa-solid fa-chevron-left text-xs"></i></button>`;
+    box.innerHTML = html;
+}
+
+// حفظ مكانك في الرابط: لما ترجع من صفحة العمل ترجع لنفس القسم والصفحة
+function saveBrowseHash() {
+    try {
+        history.replaceState(null, '', '#b=' + encodeURIComponent(JSON.stringify(
+            { s: browse.section, g: browse.genre, so: browse.sort, p: browse.page })));
+    } catch (e) {}
+}
+function clearBrowseHash() {
+    try { if (location.hash.startsWith('#b=')) history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+}
+function restoreBrowseFromHash() {
+    const m = location.hash.match(/^#b=(.+)$/);
+    if (!m) return;
+    try {
+        const s = JSON.parse(decodeURIComponent(m[1]));
+        if (BROWSE_META[s.s]) openBrowse(s.s, { genre: s.g || '', sort: s.so || '', page: s.p || 1 });
+    } catch (e) {}
+}
+
+// زرار "عرض الكل" جنب عنوان كل قسم (من غير ما تعدل الـ HTML بإيدك)
+function addViewAllButtons() {
+    Object.entries(BROWSE_SECTIONS_MAP).forEach(([id, key]) => {
+        const h2 = $el(id)?.closest('.swiper')?.previousElementSibling;
+        if (!h2 || h2.dataset.va) return;
+        h2.dataset.va = '1';
+        h2.classList.remove('mb-4');
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between mb-4';
+        h2.parentNode.insertBefore(row, h2);
+        row.appendChild(h2);
+        row.insertAdjacentHTML('beforeend',
+            `<button onclick="openBrowse('${key}')" class="text-sm font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition">
+                عرض الكل <i class="fa-solid fa-chevron-left text-[10px]"></i></button>`);
+    });
+}
+
+function openVideoHub() {
+    const modal = document.getElementById('video-modal');
+    modal.classList.remove('hidden');
+}
+
+function playFromInput() {
+    const msgId = document.getElementById('stream-msg-id').value.trim();
+    const chatId = document.getElementById('stream-chat-id').value.trim();
+    if (!msgId) {
+        alert("اكتب رقم رسالة الفيديو (Message ID) في القناة أولاً!");
+        return;
+    }
+    playTelegramVideo(msgId, `بث مباشر - حلقة #${msgId}`, chatId || null);
+}
+
+function playTelegramVideo(messageId, title = "عرض الفيديو", chatId = null) {
+    const modal = document.getElementById('video-modal');
+    const player = document.getElementById('speed-video-player');
+    const titleEl = document.getElementById('video-modal-title');
+    const statusEl = document.getElementById('video-stream-status');
+
+    titleEl.innerText = title;
+    const streamUrl = (chatId && String(chatId).trim() !== "")
+        ? `${API_BASE_URL}/api/stream/${String(chatId).trim()}/${messageId}`
+        : `${API_BASE_URL}/api/stream/${messageId}`;
+
+    statusEl.innerText = "⏳ جاري الاتصال بسيرفر البث المباشر...";
+    statusEl.className = "text-xs text-blue-400 font-bold mt-2";
+
+    player.src = streamUrl;
+    modal.classList.remove('hidden');
+    player.load();
+    player.play().then(() => {
+        statusEl.innerText = "🟢 البث المباشر يعمل الآن (بدون تحميل)";
+        statusEl.className = "text-xs text-green-400 font-bold mt-2";
+    }).catch(() => {
+        statusEl.innerText = "▶️ اضغط على زر التشغيل في المشغل لبدء العرض";
+        statusEl.className = "text-xs text-yellow-400 font-bold mt-2";
+    });
+
+    player.onerror = () => {
+        statusEl.innerText = "❌ تعذر تشغيل الفيديو! تأكد من رقم الرسالة (Message ID) ومن أن الفيديو بصيغة MP4.";
+        statusEl.className = "text-xs text-red-400 font-bold mt-2";
+    };
+}
+
+function closeVideoPlayer() {
+    const modal = document.getElementById('video-modal');
+    const player = document.getElementById('speed-video-player');
+    player.pause();
+    player.removeAttribute('src');
+    player.load();
+    modal.classList.add('hidden');
+}
+
+// شريط التصنيفات في الرئيسية
+async function buildHomeGenres() {
+    const box = $el('home-genres');
+    if (!box) return;
+    try {
+        const d = await cachedJson(`${API_BASE_URL}/api/genres?section=all`);
+        if (!d.success || !d.genres.length) return;
+        box.innerHTML =
+            `<button onclick="openBrowse('all')" class="shrink-0 px-4 py-2 rounded-full bg-blue-600 text-sm font-bold shadow-lg">كل الأعمال</button>` +
+            d.genres.slice(0, 14).map(g =>
+                `<button data-g="${escHtml(g.name)}" onclick="openBrowse('all',{genre:this.dataset.g})"
+                    class="shrink-0 px-4 py-2 rounded-full bg-[#1c212c] border border-white/5 text-sm font-bold text-gray-300 hover:text-white hover:border-blue-500/40 transition">${escHtml(g.name)}</button>`
+            ).join('');
+    } catch (e) {}
+}
+
+        loadApp();
+
+        // لو الرابط فيه ?video=123 يفتح المشغل تلقائياً فور فتح الموقع
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('video')) {
+            setTimeout(() => {
+                playTelegramVideo(urlParams.get('video'), "مشاهدة الحلقة", urlParams.get('chat') || null);
+            }, 600);
+        }
+
+
+// ================= مجتمع سبيد مانجا المتكامل (عام + شات خاص + مراتب) =================
+    const COMM_POLL_MS = 1800;
+    const comm = {
+        tab: 'public',     // 'public' | 'dm_chat' | 'dms' | 'ranks'
+        peerId: 0,         // 0 = الشات العام، أو آيدي الشخص في الشات الخاص
+        peerName: '',
+        lastId: 0,
+        timer: null,
+        msgs: [],
+        sending: false,
+        opened: false,
+        isOwner: false,
+        replyTo: null,     // {id, name, text}
+        otherTypers: []
+    };
+
+    let _myTypingTimer = null;
+    let _lastTypingSent = 0;
+
+    const commEsc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const commTime = (ts) => new Date(ts * 1000).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+    const commDay = (ts) => {
+        const d = new Date(ts * 1000), t = new Date();
+        if (d.toDateString() === t.toDateString()) return 'اليوم';
+        const y = new Date(); y.setDate(t.getDate() - 1);
+        return d.toDateString() === y.toDateString() ? 'أمس' : d.toLocaleDateString('ar-EG');
+    };
+    const commColor = (id) => ['#f87171','#fb923c','#facc15','#4ade80','#22d3ee','#60a5fa','#c084fc','#f472b6'][Math.abs(Number(id) || 0) % 8];
+
+    function getRoleBadgeStyle(role) {
+        if (role === 'owner') return 'bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-black shadow-[0_0_10px_rgba(245,158,11,0.5)]';
+        if (role === 'admin') return 'bg-red-500/20 text-red-300 border border-red-500/40 font-bold';
+        if (role === 'vip')   return 'bg-purple-500/25 text-purple-200 border border-purple-400/40 font-bold';
+        return 'bg-white/10 text-gray-300 border border-white/10';
+    }
+
+    function initCommunityVisibility() {
+        document.querySelectorAll('.comm-entry').forEach(el => el.classList.remove('hidden'));
+    }
+
+    function openCommunity() {
+        if (!currentUser.id) {
+            alert('يرجى فتح التطبيق من داخل بوت تليجرام للمشاركة في المجتمع وحفظ رسائلك ومراتبك! 💬');
+            return;
+        }
+        document.body.style.overflow = 'hidden';
+        const modal = document.getElementById('community-modal');
+        modal.classList.remove('hidden');
+        setTimeout(() => modal.classList.remove('translate-y-full'), 10);
+        comm.opened = true;
+        try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+        switchCommTab('public');
+        refreshInboxAndRanks();
+    }
+
+    function closeCommunity() {
+        comm.opened = false;
+        clearInterval(comm.timer);
+        const modal = document.getElementById('community-modal');
+        modal.classList.add('translate-y-full');
+        document.body.style.overflow = '';
+        setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
+    function switchCommTab(tabName, peerId = 0, peerName = '') {
+        comm.tab = tabName;
+        comm.otherTypers = [];
+        clearInterval(comm.timer);
+        clearCommReply();
+        renderTypingIndicator();
+
+        const listEl = document.getElementById('comm-list');
+        const loadEl = document.getElementById('comm-loading');
+        const dmsEl = document.getElementById('comm-dms-view');
+        const ranksEl = document.getElementById('comm-ranks-view');
+        const inputBar = document.getElementById('comm-input-bar');
+        const backBtn = document.getElementById('comm-back-public');
+        const titleEl = document.getElementById('comm-header-title');
+
+        ['public', 'dms', 'ranks'].forEach(t => {
+            const btn = document.getElementById('tab-btn-' + t);
+            const isAct = (t === tabName) || (t === 'dms' && tabName === 'dm_chat');
+            btn.className = isAct
+                ? 'flex-1 py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 bg-blue-600 text-white shadow-md transition'
+                : 'flex-1 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-[#1c212c] text-gray-400 hover:text-white transition';
+        });
+
+        listEl.classList.add('hidden');
+        loadEl.classList.add('hidden');
+        dmsEl.classList.add('hidden');
+        ranksEl.classList.add('hidden');
+
+        if (tabName === 'public' || tabName === 'dm_chat') {
+            comm.peerId = tabName === 'dm_chat' ? Number(peerId) : 0;
+            comm.peerName = peerName;
+            titleEl.innerText = comm.peerId > 0 ? `💬 خاص: ${peerName}` : 'مجتمع سبيد مانجا';
+            document.getElementById('comm-input').placeholder = comm.peerId > 0 ? `اكتب رسالة خاصة لـ ${peerName}...` : 'اكتب رسالتك في المجتمع...';
+            backBtn.classList.toggle('hidden', comm.peerId === 0);
+            inputBar.classList.remove('hidden');
+            startChatStream();
+        } else if (tabName === 'dms') {
+            titleEl.innerText = '💌 محادثاتي الخاصة';
+            backBtn.classList.add('hidden');
+            inputBar.classList.add('hidden');
+            dmsEl.classList.remove('hidden');
+            refreshInboxAndRanks();
+        } else if (tabName === 'ranks') {
+            titleEl.innerText = '🏆 المراتب ولوحة الشرف';
+            backBtn.classList.add('hidden');
+            inputBar.classList.add('hidden');
+            ranksEl.classList.remove('hidden');
+            refreshInboxAndRanks();
+        }
+    }
+
+    async function startChatStream() {
+        const list = document.getElementById('comm-list');
+        const loading = document.getElementById('comm-loading');
+        list.classList.add('hidden');
+        loading.classList.remove('hidden');
+        comm.msgs = [];
+        comm.lastId = 0;
+        list.innerHTML = '';
+
+        await fetchCommunity();
+        setTimeout(() => {
+            if (comm.tab === 'public' || comm.tab === 'dm_chat') {
+                loading.classList.add('hidden');
+                list.classList.remove('hidden');
+                scrollCommunity(true);
+            }
+        }, 450);
+
+        clearInterval(comm.timer);
+        comm.timer = setInterval(() => {
+            if (comm.opened && (comm.tab === 'public' || comm.tab === 'dm_chat')) {
+                fetchCommunity();
+            }
+        }, COMM_POLL_MS);
+    }
+
+    function onCommInputType(el) {
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+
+        const hasText = el.value.trim().length > 0;
+        if (hasText) {
+            const now = Date.now();
+            if (now - _lastTypingSent > 1200) {
+                _lastTypingSent = now;
+                fetchCommunity('1');
+            }
+            clearTimeout(_myTypingTimer);
+            _myTypingTimer = setTimeout(() => {
+                _lastTypingSent = 0;
+                fetchCommunity('0');
+            }, 4500);
+        } else {
+            clearTimeout(_myTypingTimer);
+            _lastTypingSent = 0;
+            fetchCommunity('0');
+        }
+    }
+
+    async function fetchCommunity(typingFlag = null) {
+        try {
+            let url = `${API_BASE_URL}/api/community/messages?uid=${currentUser.id}&peer=${comm.peerId}&after=${comm.lastId}&limit=60`;
+            if (typingFlag !== null) {
+                url += `&typing=${typingFlag}&tname=${encodeURIComponent(currentUser.name || '')}&tphoto=${encodeURIComponent(currentUser.photo || '')}`;
+            }
+            const r = await fetch(url);
+            if (!r.ok) throw new Error(r.status);
+            const data = await r.json();
+            if (data.success) {
+                comm.isOwner = !!data.is_owner;
+                comm.otherTypers = (data.typing || []).filter(t => String(t.user_id) !== String(currentUser.id));
+
+                document.getElementById('comm-online').innerText = comm.otherTypers.length > 0
+                    ? `✍️ ${comm.otherTypers[0].name} يكتب الآن...`
+                    : (comm.peerId > 0 ? '🔒 محادثة خاصة مشفرة ومحفوظة' : `🟢 ${data.online ?? 1} متصل الآن في المجتمع`);
+
+                if (data.messages && data.messages.length) {
+                    addCommunityMessages(data.messages);
+                } else if (comm.msgs.length === 0) {
+                    renderCommunity();
+                }
+                renderTypingIndicator();
+            }
+        } catch (e) {
+            document.getElementById('comm-online').innerText = '⏳ جاري الاتصال بالسيرفر...';
+        }
+    }
+
+    function renderTypingIndicator() {
+        const bar = document.getElementById('comm-typing-bar');
+        const box = document.getElementById('comm-typing-content');
+        const list = document.getElementById('comm-list');
+
+        const oldRow = document.getElementById('comm-live-typing-row');
+        if (oldRow) oldRow.remove();
+
+        const typers = (comm.otherTypers || []).filter(t => String(t.user_id) !== String(currentUser.id));
+        if (typers.length === 0) {
+            if (bar) bar.classList.add('hidden');
+            return;
+        }
+
+        const t = typers[0];
+        const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(t.name || 'U')}&background=1f2937&color=fff`;
+        const bubbleHtml = `
+            <div class="typing-avatar-ring flex-none">
+                <img src="${commEsc(t.photo || fallbackAvatar)}" class="w-full h-full rounded-full object-cover" onerror="this.src='${fallbackAvatar}'">
+            </div>
+            <div class="typing-bubble">
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+            </div>
+            <span class="text-[11px] text-blue-300 font-bold animate-pulse">${commEsc(t.name)} يكتب الآن...</span>
+        `;
+
+        // 1. إظهار الفقاعة تحت آخر رسالة مباشرة داخل الشات مثل واتساب
+        if (list && !list.classList.contains('hidden')) {
+            const row = document.createElement('div');
+            row.id = 'comm-live-typing-row';
+            row.className = 'comm-row mt-2.5 items-center gap-2';
+            row.innerHTML = bubbleHtml;
+            list.appendChild(row);
+            if (list.scrollHeight - list.scrollTop - list.clientHeight < 160) {
+                list.scrollTo({ top: list.scrollHeight, behavior: 'smooth' });
+            }
+        }
+
+        // 2. وإظهارها في الشريط السفلي أيضاً لو كان المستخدم طالع لفوق في الشات
+        if (bar && box) {
+            box.innerHTML = bubbleHtml;
+            bar.classList.remove('hidden');
+        }
+    }
+
+    function addCommunityMessages(incoming) {
+        const list = document.getElementById('comm-list');
+        const nearBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 120;
+        let added = 0, fromOthers = false;
+        incoming.forEach(m => {
+            const tmp = m.client_id && comm.msgs.find(x => x.client_id === m.client_id);
+            if (tmp) { Object.assign(tmp, m, { status: 'sent' }); return; }
+            if (comm.msgs.some(x => Number(x.id) === Number(m.id))) return;
+            comm.msgs.push(m);
+            added++;
+            if (String(m.user_id) !== String(currentUser.id)) fromOthers = true;
+        });
+        comm.lastId = Math.max(comm.lastId, ...comm.msgs.map(m => Number(m.id) || 0));
+        renderCommunity();
+        renderTypingIndicator();
+        if (added && (nearBottom || !fromOthers)) scrollCommunity();
+        else if (added && fromOthers) document.getElementById('comm-down').classList.remove('hidden');
+    }
+
+    function renderCommunity() {
+        const list = document.getElementById('comm-list');
+        if (!comm.msgs.length) {
+            list.innerHTML = `<div class="flex flex-col items-center justify-center h-[50vh] text-gray-500 text-center">
+                <i class="fa-solid fa-comments text-4xl mb-3 opacity-40"></i>
+                <p class="text-sm font-bold">${comm.peerId > 0 ? 'ابدأ المحادثة الخاصة الآن 👋' : 'لا توجد رسائل بعد، كن أول من يفتتح النقاش! 🔥'}</p>
+            </div>`;
+            return;
+        }
+
+        let html = '', lastDay = '', lastUser = null;
+        comm.msgs.forEach(m => {
+            const mine = String(m.user_id) === String(currentUser.id);
+            const day = commDay(m.ts);
+            if (day !== lastDay) {
+                html += `<div class="flex justify-center my-3"><span class="comm-day">${commEsc(day)}</span></div>`;
+                lastDay = day; lastUser = null;
+            }
+            const first = lastUser !== m.user_id;
+            lastUser = m.user_id;
+            const tick = mine ? (m.status === 'sending' ? '<i class="fa-regular fa-clock text-[9px]"></i>' : '<i class="fa-solid fa-check-double text-[9px] text-blue-200"></i>') : '';
+            const badgeCls = getRoleBadgeStyle(m.role);
+
+            const replyBlock = m.reply_to_id ? `
+                <div class="mb-1.5 px-2.5 py-1 rounded-lg bg-black/25 border-r-2 border-blue-400 text-[11px]">
+                    <div class="font-bold text-blue-300 truncate">${commEsc(m.reply_to_name)}</div>
+                    <div class="text-white/70 truncate">${commEsc(m.reply_to_text)}</div>
+                </div>` : '';
+
+            const safeName = commEsc(m.name).replace(/'/g, "\\'");
+            const safePhoto = commEsc(m.photo).replace(/'/g, "\\'");
+            const safeRank = commEsc(m.rank || '').replace(/'/g, "\\'");
+            const safeTextShort = commEsc(m.text.slice(0, 60)).replace(/'/g, "\\'");
+
+            html += `
+            <div class="comm-row ${mine ? 'mine' : ''} ${first ? 'mt-2.5' : 'mt-1'}">
+                ${!mine ? (first
+                    ? `<img onclick="showCommUserCard(${m.user_id}, '${safeName}', '${safePhoto}', '${safeRank}')" src="${commEsc(m.photo)}" class="w-8 h-8 rounded-full object-cover flex-none self-end cursor-pointer border border-white/10 shadow" onerror="this.src='https://ui-avatars.com/api/?name=U&background=1f2937&color=fff'">`
+                    : '<div class="w-8 flex-none"></div>') : ''}
+                <div class="comm-bubble ${mine ? 'comm-mine' : 'comm-other'}">
+                    ${(!mine && first) ? `
+                        <div class="flex items-center gap-1.5 flex-wrap mb-1">
+                            <span onclick="showCommUserCard(${m.user_id}, '${safeName}', '${safePhoto}', '${safeRank}')" class="text-[11px] font-black cursor-pointer hover:underline" style="color:${commColor(m.user_id)}">${commEsc(m.name)}</span>
+                            <span class="text-[9px] px-1.5 py-0.5 rounded-full ${badgeCls}">${commEsc(m.rank || 'مغامر')}</span>
+                        </div>` : ''}
+                    ${replyBlock}
+                    <div class="text-[14px] leading-relaxed whitespace-pre-wrap break-words">${commEsc(m.text)}</div>
+                    <div class="text-[10px] text-white/50 mt-1 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2">
+                            <button onclick="setCommReply(${m.id}, '${safeName}', '${safeTextShort}')" class="hover:text-white"><i class="fa-solid fa-reply"></i></button>
+                            ${(mine || comm.isOwner) && !String(m.id).startsWith('tmp_') ? `<button onclick="deleteCommMsg(${m.id})" class="hover:text-red-400"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                        </div>
+                        <span class="flex items-center gap-1">${commTime(m.ts)} ${tick}</span>
+                    </div>
+                </div>
+                ${mine ? (first
+                    ? `<img src="${commEsc(currentUser.photo)}" class="w-8 h-8 rounded-full object-cover flex-none self-end border border-blue-400/40 shadow" onerror="this.src='https://ui-avatars.com/api/?name=Me&background=2563eb&color=fff'">`
+                    : '<div class="w-8 flex-none"></div>') : ''}
+            </div>`;
+        });
+        list.innerHTML = html;
+    }
+
+    function setCommReply(id, name, text) {
+        comm.replyTo = { id, name, text };
+        document.getElementById('comm-reply-name').innerText = `الرد على ${name}`;
+        document.getElementById('comm-reply-text').innerText = text;
+        document.getElementById('comm-reply-bar').classList.remove('hidden');
+        document.getElementById('comm-input').focus();
+    }
+
+    function clearCommReply() {
+        comm.replyTo = null;
+        document.getElementById('comm-reply-bar').classList.add('hidden');
+    }
+
+    function showCommUserCard(uid, name, photo, rank) {
+        if (String(uid) === String(currentUser.id)) return;
+        document.getElementById('cuc-name').innerText = name;
+        document.getElementById('cuc-photo').src = photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3b82f6&color=fff`;
+        document.getElementById('cuc-rank').innerText = rank || 'مغامر ⚔️';
+        document.getElementById('cuc-dm-btn').onclick = () => {
+            document.getElementById('comm-user-card').classList.add('hidden');
+            switchCommTab('dm_chat', uid, name);
+        };
+        document.getElementById('comm-user-card').classList.remove('hidden');
+    }
+
+    async function deleteCommMsg(msgId) {
+        try {
+            await fetch(`${API_BASE_URL}/api/community/delete`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: currentUser.id, msg_id: msgId })
+            });
+            comm.msgs = comm.msgs.filter(x => Number(x.id) !== Number(msgId));
+            renderCommunity();
+            renderTypingIndicator();
+        } catch (e) {}
+    }
+
+    function scrollCommunity(instant) {
+        const list = document.getElementById('comm-list');
+        list.scrollTo({ top: list.scrollHeight, behavior: instant ? 'auto' : 'smooth' });
+        document.getElementById('comm-down').classList.add('hidden');
+    }
+
+    async function sendCommunityMessage() {
+        const input = document.getElementById('comm-input');
+        const text = input.value.trim();
+        if (!text || comm.sending) return;
+        comm.sending = true;
+        clearTimeout(_myTypingTimer);
+        _lastTypingSent = 0;
+        input.value = ''; input.style.height = 'auto';
+
+        const replySnap = comm.replyTo ? { ...comm.replyTo } : null;
+        clearCommReply();
+
+        const client_id = 'c' + Date.now() + Math.random().toString(36).slice(2, 6);
+        const msg = {
+            id: 'tmp_' + client_id,
+            client_id,
+            user_id: currentUser.id,
+            receiver_id: comm.peerId,
+            name: currentUser.name,
+            photo: currentUser.photo,
+            text,
+            reply_to_id: replySnap ? replySnap.id : 0,
+            reply_to_name: replySnap ? replySnap.name : '',
+            reply_to_text: replySnap ? replySnap.text : '',
+            ts: Math.floor(Date.now() / 1000),
+            status: 'sending'
+        };
+        comm.msgs.push(msg);
+        renderCommunity();
+        scrollCommunity();
+        try { tg.HapticFeedback.impactOccurred('soft'); } catch (e) {}
+
+        try {
+            const r = await fetch(`${API_BASE_URL}/api/community/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    client_id,
+                    user_id: currentUser.id,
+                    receiver_id: comm.peerId,
+                    name: currentUser.name,
+                    photo: currentUser.photo,
+                    text,
+                    reply_to_id: msg.reply_to_id,
+                    reply_to_name: msg.reply_to_name,
+                    reply_to_text: msg.reply_to_text
+                })
+            });
+            const res = await r.json();
+            if (!r.ok || !res.success) {
+                throw new Error(res.error || 'send_failed');
+            }
+            Object.assign(msg, res, { status: 'sent' });
+            if (res.rank) document.getElementById('comm-my-rank-pill').innerText = res.rank;
+        } catch (e) {
+            comm.msgs = comm.msgs.filter(x => x !== msg);
+            if (e.message === 'bad_words') alert('⛔ يرجى الالتزام بقوانين مجتمع سبيد مانجا وعدم استخدام ألفاظ غير لائقة.');
+            else alert('تعذر إرسال الرسالة، حاول مرة أخرى');
+        }
+        comm.sending = false;
+        renderCommunity();
+        renderTypingIndicator();
+        scrollCommunity();
+    }
+
+    async function refreshInboxAndRanks() {
+        try {
+            const r = await fetch(`${API_BASE_URL}/api/community/inbox?uid=${currentUser.id || 0}`);
+            const d = await r.json();
+            if (!d.success) return;
+
+            if (d.my_info && d.my_info.rank) {
+                document.getElementById('comm-my-rank-pill').innerText = d.my_info.rank;
+            }
+
+            const dmsBox = document.getElementById('comm-dms-view');
+            if (!d.dms || !d.dms.length) {
+                dmsBox.innerHTML = `<div class="flex flex-col items-center justify-center h-[50vh] text-gray-500 text-center">
+                    <i class="fa-solid fa-envelope-open-text text-4xl mb-3 opacity-40"></i>
+                    <p class="font-bold text-sm">لا توجد محادثات خاصة بعد 📭</p>
+                    <p class="text-xs text-gray-600 mt-1">اضغط على صورة أو اسم أي عضو في الشات العام لبدء محادثة خاصة معه!</p>
+                </div>`;
+            } else {
+                dmsBox.innerHTML = `<div class="space-y-2.5 max-w-2xl mx-auto">` + d.dms.map(dm => `
+                    <div onclick="switchCommTab('dm_chat', ${dm.peer_id}, '${commEsc(dm.name).replace(/'/g, "\\'")}')"
+                         class="flex items-center gap-3 p-3 rounded-2xl bg-[#141923] hover:bg-[#1c2331] border border-white/5 cursor-pointer transition">
+                        <img src="${commEsc(dm.photo)}" class="w-12 h-12 rounded-full object-cover border border-blue-500/30" onerror="this.src='https://ui-avatars.com/api/?name=U&background=1f2937&color=fff'">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-black text-sm text-white truncate">${commEsc(dm.name)}</h4>
+                                <span class="text-[10px] text-gray-500">${commTime(dm.ts)}</span>
+                            </div>
+                            <span class="inline-block text-[9px] px-2 py-0.5 rounded-full ${getRoleBadgeStyle(dm.role)} my-0.5">${commEsc(dm.rank)}</span>
+                            <p class="text-xs text-gray-400 truncate mt-0.5">${commEsc(dm.last_text)}</p>
+                        </div>
+                    </div>
+                `).join('') + `</div>`;
+            }
+
+            const ranksBox = document.getElementById('comm-ranks-view');
+            const ranksGuide = [
+                { name: 'طيف مبتدئ 👻', pts: '0 - 20 نقطة' },
+                { name: 'متصفح سبيد ⚡', pts: '21 - 100 نقطة' },
+                { name: 'صائد الفصول 🏹', pts: '101 - 300 نقطة' },
+                { name: 'جنرال المانهوا ⚔️', pts: '301 - 600 نقطة' },
+                { name: 'ملك سبيد مانجا 👑', pts: '601 - 1000 نقطة' },
+                { name: 'إمبراطور العوالم 🌌', pts: '1001 - 3000 نقطة' },
+                { name: 'أسطورة سبيد الخالدة 🐉', pts: '+3000 نقطة' }
+            ];
+
+            ranksBox.innerHTML = `
+                <div class="max-w-2xl mx-auto space-y-6 pb-20">
+                    <div class="p-4 rounded-2xl bg-gradient-to-l from-blue-600/20 via-purple-600/15 to-[#141923] border border-blue-500/30 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-gray-400">رتبتك الحالية في المملكة</p>
+                            <h3 class="text-lg font-black text-white mt-0.5">${commEsc(d.my_info?.rank || 'طيف مبتدئ 👻')}</h3>
+                            <p class="text-xs text-blue-400 font-bold mt-1">نقاط تفاعلك: ${d.my_info?.points || 0} نقطة 🌟</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-2xl">🎖️</div>
+                    </div>
+
+                    <div class="bg-[#131722] border border-white/5 rounded-2xl p-4">
+                        <h4 class="font-black text-sm mb-3 text-yellow-400"><i class="fa-solid fa-wand-magic-sparkles ml-1"></i> نظام المراتب والترقيات (تزيد نقاطك مع القراءة والدردشة):</h4>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            ${ranksGuide.map(rg => `
+                                <div class="p-2.5 rounded-xl bg-[#0b0e14] border border-white/5">
+                                    <div class="text-xs font-bold text-white">${rg.name}</div>
+                                    <div class="text-[10px] text-gray-400 mt-0.5">${rg.pts}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="font-black text-sm mb-3 flex items-center gap-2"><i class="fa-solid fa-crown text-yellow-400"></i> متصدرو مجتمع سبيد مانجا</h4>
+                        <div class="space-y-2">
+                            ${(d.leaders || []).map((ld, idx) => `
+                                <div onclick="showCommUserCard(${ld.user_id}, '${commEsc(ld.name).replace(/'/g, "\\'")}', '${commEsc(ld.photo).replace(/'/g, "\\'")}', '${commEsc(ld.rank).replace(/'/g, "\\'")}')"
+                                     class="flex items-center gap-3 p-3 rounded-xl bg-[#131722] border border-white/5 cursor-pointer hover:border-blue-500/40 transition">
+                                    <div class="w-7 text-center font-black text-sm ${idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-300' : idx === 2 ? 'text-amber-600' : 'text-gray-500'}">#${idx + 1}</div>
+                                    <img src="${commEsc(ld.photo)}" class="w-10 h-10 rounded-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=U&background=1f2937&color=fff'">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-bold text-sm text-white truncate">${commEsc(ld.name)}</div>
+                                        <span class="inline-block text-[9px] px-2 py-0.5 rounded-full ${getRoleBadgeStyle(ld.role)} mt-0.5">${commEsc(ld.rank)}</span>
+                                    </div>
+                                    <div class="text-xs font-black text-yellow-400">${formatNumber(ld.points)} 🌟</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        } catch (e) {}
+    }
+
+    initCommunityVisibility();
+    const _commInputEl = document.getElementById('comm-input');
+    if (_commInputEl) {
+        _commInputEl.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey && window.innerWidth >= 768) {
+                e.preventDefault();
+                sendCommunityMessage();
+            }
+        });
+    }
+    const _commListEl = document.getElementById('comm-list');
+    if (_commListEl) {
+        _commListEl.addEventListener('scroll', e => {
+            const l = e.target;
+            if (l.scrollHeight - l.scrollTop - l.clientHeight < 80) document.getElementById('comm-down').classList.add('hidden');
+        });
+    }
+
+
+    function setNav(key) {
+    document.querySelectorAll('.nav-item').forEach(el =>
+        el.classList.toggle('active', el.dataset.nav === key));
+}
+
+function openMore() {
+    const sheet = document.getElementById('more-sheet');
+    const panel = document.getElementById('more-panel');
+    sheet.classList.remove('hidden');
+    requestAnimationFrame(() => panel.classList.remove('translate-y-full'));
+}
+
+function closeMore() {
+    const sheet = document.getElementById('more-sheet');
+    document.getElementById('more-panel').classList.add('translate-y-full');
+    setTimeout(() => sheet.classList.add('hidden'), 300);
+}
+
+
+function openWriter() {
+    try { tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
+    try {
+        if (tg.initData) sessionStorage.setItem('sm_tg_init', tg.initData);
+        if (currentUser && currentUser.id) {
+            localStorage.setItem('sm_uid', String(currentUser.id));
+            localStorage.setItem('sm_uname', String(currentUser.name || 'مؤلف'));
+        }
+    } catch(e) {}
+    const uidParam = (currentUser && currentUser.id) ? `?uid=${currentUser.id}` : '';
+    window.location.href = `write.html${uidParam}`;
+}
+
+
+function openAdminPanel() {
+    try { tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
+    try {
+        if (tg.initData) sessionStorage.setItem('sm_tg_init', tg.initData);
+        if (currentUser && currentUser.id) localStorage.setItem('sm_uid', String(currentUser.id));
+    } catch(e) {}
+    window.location.href = `admin.html?uid=${currentUser.id || ''}`;
+}
+
+    </script>
+
+<!-- شاشة مشغل الفيديو المباشر (Stream Hub) -->
+<div id="video-modal" class="fixed inset-0 z-[200] bg-black/95 hidden flex flex-col items-center justify-center p-4 overflow-y-auto">
+    <div class="w-full max-w-4xl flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-circle-play text-red-500 text-xl"></i>
+            <h3 id="video-modal-title" class="text-white font-bold text-base truncate">مشغل البث المباشر (Telegram Stream)</h3>
+        </div>
+        <button onclick="closeVideoPlayer()" class="text-gray-400 hover:text-white bg-white/10 w-10 h-10 rounded-full flex items-center justify-center">
+            <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+    </div>
+
+    <!-- شريط إدخال رقم رسالة الفيديو في القناة للتشغيل الفوري -->
+    <div class="w-full max-w-4xl bg-[#11141b] border border-white/10 rounded-xl p-3 mb-3 flex flex-col sm:flex-row gap-2">
+        <input id="stream-msg-id" type="number" placeholder="رقم رسالة الفيديو في القناة (مثال: 105)"
+               class="flex-1 bg-[#1c212c] text-white text-sm rounded-lg px-3 py-2.5 border border-white/5 focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold">
+        <input id="stream-chat-id" type="text" placeholder="آيدي القناة (اختياري، مثال: -1003756734193)"
+               class="sm:w-64 bg-[#1c212c] text-white text-sm rounded-lg px-3 py-2.5 border border-white/5 focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold">
+        <button onclick="playFromInput()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2.5 rounded-lg flex items-center justify-center gap-2 transition">
+            <i class="fa-solid fa-play"></i> تشغيل البث
+        </button>
+    </div>
+
+    <!-- المشغل الفعلي -->
+    <div class="w-full max-w-4xl aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+        <video id="speed-video-player" class="w-full h-full" controls playsinline preload="metadata"></video>
+    </div>
+    <p id="video-stream-status" class="text-xs text-gray-400 font-bold mt-2">💡 ارفع أي فيديو MP4 في قناتك واكتب رقم رسالته بالأعلى ليعمل البث فوراً.</p>
+</div>
+
+</body>
+</html>
